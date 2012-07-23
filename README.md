@@ -16,6 +16,13 @@ UnitySlippyMap is in early alpha stage and currently supports tiles from OpenStr
 
 It is regularly tested in Unity3D Editor and on iOS.
 
+See the [TODO list](/jderrough/UnitySlippyMap#todo) if you want to contribute and don't know where to start.
+
+License
+-------
+
+UnitySplippyMap is released under the [LGPL 3.0](http://www.gnu.org/licenses/lgpl.html).
+
 TODO
 ----
 
