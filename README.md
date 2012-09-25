@@ -34,7 +34,6 @@ Here is a short list of what could be fixed or added to UnitySlippyMap:
 * Add support for well known tile providers (derive from TileLayer.cs)
 * Add new map objects (polygons, lines, ...)
 * Add support for orthographic cameras
-* Display a location marker with orientation for the user
 * Better zoom rounding (>80%, <20%?)
 * Constraint the map to a given 'size', bounce on limits
 * Movements inertia
