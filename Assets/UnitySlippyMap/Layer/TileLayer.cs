@@ -96,13 +96,16 @@ public abstract class TileLayer : Layer
 		if (tileTemplate.transform.localScale.x != Map.RoundedHalfMapScale)
 			tileTemplate.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
 		
-		Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-		
-		CleanUpTiles(frustum, Map.RoundedZoom);
-		
-		visitedTiles.Clear();
-
-		UpdateTiles(frustum);
+        if (Camera.main != null)
+        {
+    		Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+    		
+    		CleanUpTiles(frustum, Map.RoundedZoom);
+    		
+    		visitedTiles.Clear();
+    
+    		UpdateTiles(frustum);
+        }
 		
 		// move the tiles by the map's root translation
 		Vector3 displacement = Map.gameObject.transform.position;

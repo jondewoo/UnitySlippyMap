@@ -178,7 +178,11 @@ namespace UnitySlippyMap
 		// </summary>
 		public static GameObject CreateTileTemplate()
 		{
-			GameObject tileTemplate = new GameObject("[Tile Template]");
+			return CreateTileTemplate("[Tile Template]");
+		}
+		public static GameObject CreateTileTemplate(string tileName)
+		{
+			GameObject tileTemplate = new GameObject(tileName);
 			MeshFilter meshFilter = tileTemplate.AddComponent<MeshFilter>();
 			MeshRenderer meshRenderer = tileTemplate.AddComponent<MeshRenderer>();
 			BoxCollider boxCollider = tileTemplate.AddComponent<BoxCollider>();
@@ -199,8 +203,8 @@ namespace UnitySlippyMap
 			mesh.uv = new Vector2[] { new Vector2(1.0f, 1.0f), new Vector2(1.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(0.0f, 1.0f) };
 			
 			// add a material
-			string shaderName = "Somian/Unlit/Transparent";
-			Shader shader = Shader.Find(shaderName);
+            string shaderName = "Somian/Unlit/Transparent";
+            Shader shader = Shader.Find(shaderName);
 			
 	#if DEBUG_LOG
 			Debug.Log("DEBUG: shader for tile template: " + shaderName + ", exists: " + (shader != null));

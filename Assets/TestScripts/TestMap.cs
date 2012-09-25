@@ -39,6 +39,7 @@ public class TestMap : MonoBehaviour
 		// 9 rue Gentil, Lyon
 		map.CenterWGS84 = new double[2] { 4.83527, 45.76487 };
 		map.UseLocation = true;
+		map.InputsEnabled = true;
 				
 		// create a test layer
 		TileLayer layer = map.CreateLayer<OSMTileLayer>("test tile layer");

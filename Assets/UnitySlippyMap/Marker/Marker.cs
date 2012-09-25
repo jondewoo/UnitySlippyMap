@@ -120,7 +120,7 @@ public class Marker : MonoBehaviour
 	// <summary>
 	// Offsets the marker's position before the map's root position is reset.
 	// </summary>
-	public void UpdateMarker()
+	public virtual void UpdateMarker()
 	{
 		// move the marker by the map's root translation
 		Vector3 displacement = Map.gameObject.transform.position;

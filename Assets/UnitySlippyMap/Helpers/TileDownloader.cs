@@ -55,7 +55,7 @@ public class TileDownloader : MonoBehaviour
 			return instance;
 		}
 	}
-	
+
 	private void EnsureDownloader()
 	{
 		LoadTiles();
@@ -96,15 +96,19 @@ public class TileDownloader : MonoBehaviour
 		
 		[XmlIgnore]
 		public Job		job;
+        [XmlIgnore]
+        public Job.JobCompleteHandler jobCompleteHandler;
 		
 		public TileEntry()
 		{
+            this.jobCompleteHandler = new Job.JobCompleteHandler(TileDownloader.Instance.JobTerminationEvent);
 		}
 		
 		public TileEntry(string url, Material material)
 		{
 			this.url = url;
 			this.material = material;
+            this.jobCompleteHandler = new Job.JobCompleteHandler(TileDownloader.Instance.JobTerminationEvent);
 		}
 		
 		public void StartDownload()
@@ -113,7 +117,7 @@ public class TileDownloader : MonoBehaviour
 			Debug.Log("DEBUG: TileEntry.StartDownload: " + url);
 #endif
 			job = new Job(DownloadCoroutine(), this);
-			job.JobComplete += new Job.JobCompleteHandler(TileDownloader.Instance.JobTerminationEvent);
+			job.JobComplete += jobCompleteHandler;
 		}
 		
 		public void StopDownload()
@@ -121,6 +125,7 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_LOG
 			Debug.Log("DEBUG: TileEntry.StopDownload: " + url);
 #endif
+            job.JobComplete -= jobCompleteHandler;
 			job.Kill();
 		}
 		
@@ -133,39 +138,51 @@ public class TileDownloader : MonoBehaviour
 				www = new WWW(url);
 				
 #if DEBUG_LOG
-			Debug.Log("DEBUG: TileEntry.DownloadCoroutine: tile url: " + www.url);
+			Debug.Log("DEBUG: TileEntry.DownloadCoroutine: (down)loading from tile url: " + www.url);
 #endif
 			
 			yield return www;
 			
 			if (www.error == null && www.text.Contains("404 Not Found") == false)
 			{
-				material.mainTexture = www.texture;
-				material.mainTexture.wrapMode = TextureWrapMode.Clamp;
-				material.mainTexture.filterMode = FilterMode.Trilinear;
-				
-				if (this.cached == false)
-				{
-					// write the png asynchroneously
-					byte[] bytes = (material.mainTexture as Texture2D).EncodeToPNG();
-					
-					this.size = bytes.Length;
-					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
-					this.guid = Guid.NewGuid().ToString();
-					
-					FileStream fs = new FileStream(Application.temporaryCachePath + "/" + this.guid + ".png", FileMode.Create);
-					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), this);
-				
+                if (www.texture.isBogus())
+                {
 #if DEBUG_LOG
-					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done downloading: " + www.url + ", writing to cache: " + fs.Name);
+                    Debug.LogError("DEBUG: TileEntry.DownloadCoroutine: image from cache is bogus, trying to download it: " + www.url + " [" + url + "]");
 #endif
-				}
-				else
-				{
+                    //TileDownloader.Instance.DeleteCachedTile(this);
+                    //TileDownloader.Instance.Get(url, material);
+                    error = true;
+                }
+                else
+                {
+                    material.mainTexture = www.texture;
+                    material.mainTexture.wrapMode = TextureWrapMode.Clamp;
+                    material.mainTexture.filterMode = FilterMode.Trilinear;             
+    
+                    if (this.cached == false)
+    				{
+    					// write the png asynchroneously
+    					byte[] bytes = (material.mainTexture as Texture2D).EncodeToPNG();
+    					
+    					this.size = bytes.Length;
+    					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
+    					this.guid = Guid.NewGuid().ToString();
+    					
+    					FileStream fs = new FileStream(Application.temporaryCachePath + "/" + this.guid + ".png", FileMode.Create);
+    					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), this);
+    				
 #if DEBUG_LOG
-					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading from cache: " + www.url);
+    					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done downloading: " + www.url + ", writing to cache: " + fs.Name);
 #endif
-				}
+    				}
+    				else
+    				{
+#if DEBUG_LOG
+    	    			Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading from cache: " + www.url + " [" + url + "]");
+#endif
+    				}
+                }
 			}
 			else
 			{
@@ -213,11 +230,15 @@ public class TileDownloader : MonoBehaviour
 	// </summary>
 	public void Get(string url, Material material)
 	{
+#if DEBUG_LOG
+        Debug.Log("DEBUG: TileDownloader.Get: url: " + url);
+#endif
+        
 		tileURLLookedFor = url;
 		if (tileToLoad.Exists(tileURLMatchPredicate))
 		{
 #if DEBUG_LOG
-			Debug.LogWarning("WARNING: TileDownloader.Add: already added url: " + url);
+			Debug.LogWarning("WARNING: TileDownloader.Get: already asked for url: " + url);
 #endif
 			return ;
 		}
@@ -225,20 +246,32 @@ public class TileDownloader : MonoBehaviour
 		if (tileLoading.Exists(tileURLMatchPredicate))
 		{
 #if DEBUG_LOG
-			Debug.LogWarning("WARNING: TileDownloader.Add: already downloading url: " + url);
+			Debug.LogWarning("WARNING: TileDownloader.Get: already downloading url: " + url);
 #endif
 			return ;
 		}
 		
 		TileEntry cachedEntry = tiles.Find(tileURLMatchPredicate);
 		if (cachedEntry == null)
+        {
+#if DEBUG_LOG
+            Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list");
+#endif
 			tileToLoad.Add(new TileEntry(url, material));
+        }
 		else
 		{
+#if DEBUG_LOG
+            Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list (cached)");
+#endif
 			cachedEntry.cached = true;
 			cachedEntry.material = material;
 			tileToLoad.Add(cachedEntry);
 		}
+
+#if DEBUG_LOG
+        Debug.Log("DEBUG: TileDownloader.Get: ended");
+#endif
 	}
 	
 	// <summary>
@@ -263,6 +296,7 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_LOG
 			Debug.Log("DEBUG: TileDownloader.Cancel: stop downloading: " + url);
 #endif
+            tileLoading.Remove(entry);
 			entry.StopDownload();
 			return ;
 		}
@@ -287,12 +321,21 @@ public class TileDownloader : MonoBehaviour
 		{
 			if (entry.error && entry.cached)
 			{
+                if (entry.cached)
+                {
 #if DEBUG_LOG
-				Debug.Log("DEBUG: TileDownloader.JobTerminationEvent: loading cached tile failed, trying to download it: " + entry.url);
+				    Debug.Log("DEBUG: TileDownloader.JobTerminationEvent: loading cached tile failed, trying to download it: " + entry.url);
 #endif
-				// try downloading the tile again
-				entry.cached = false;
-				tiles.Remove(entry);
+    				// try downloading the tile again
+    				entry.cached = false;
+    				tiles.Remove(entry);
+                }
+                else
+                {
+#if DEBUG_LOG
+                     Debug.Log("DEBUG: TileDownloader.JobTerminationEvent: downloading tile failed, trying to download it again: " + entry.url);
+#endif
+                }
 				
 				Get(entry.url, entry.material);
 				
@@ -325,10 +368,8 @@ public class TileDownloader : MonoBehaviour
 #endif
 					return ;
 				}
-				
-				cacheSize -= entryToErase.size;
-				File.Delete(Application.temporaryCachePath + "/" + entryToErase.guid + ".png");
-				tiles.Remove(entryToErase);
+
+                DeleteCachedTile(entryToErase);
 #if DEBUG_LOG
 				Debug.Log("DEBUG: TileDownloader.JobTerminationEvent: erased from cache: " + entryToErase.url + " [" + entryToErase.guid + "]");
 #endif
@@ -339,7 +380,12 @@ public class TileDownloader : MonoBehaviour
 	#endregion
 	
 	#region Private methods
-
+ 
+    private void Start()
+    {
+        TextureBogusExtensions.Init(this);
+    }
+    
 	private void Update()
 	{
 		while (tileToLoad.Count > 0
@@ -347,6 +393,30 @@ public class TileDownloader : MonoBehaviour
 		{
 			DownloadNextTile();
 		}
+        
+#if DEBUG_LOG
+        if (tileLoading.Count >= MaxSimultaneousDownloads)
+        {
+            Debug.Log("DEBUG: TileDownload.Update: tileLoading.Count (" + tileLoading.Count + ") > MaxSimultaneousDownloads (" + MaxSimultaneousDownloads + ")");
+            string dbg = "DEBUG: tileLoading entries:\n";
+            foreach (TileEntry entry in tileLoading)
+            {
+                dbg += entry.url + "\n";
+            }
+            Debug.Log(dbg);
+        }
+  
+        /*
+        {
+            string dbg = "DEBUG: tileToLoad entries:\n";
+            foreach (TileEntry entry in tileToLoad)
+            {
+                dbg += entry.url + "\n";
+            }
+            Debug.Log(dbg);
+        }
+        */
+#endif
 	}
 	
 	private void DownloadNextTile()
@@ -355,18 +425,34 @@ public class TileDownloader : MonoBehaviour
 		tileToLoad.RemoveAt(0);
 		tileLoading.Add(entry);
 		
+#if DEBUG_LOG
+        Debug.Log("DEBUG: TileDownloader.DownloadNextTile: entry.url: " + entry.url);
+#endif
+        
 		entry.StartDownload();		
 	}
-	
+	   
 	private void OnDestroy()
 	{
-		foreach (TileEntry entry in tileLoading)
-		{
-			entry.job.Kill();
-		}
-		
+        KillAll();		
 		SaveTiles();
+		instance = null;
 	}
+    
+    private void KillAll()
+    {
+        foreach (TileEntry entry in tileLoading)
+        {
+            entry.job.Kill();
+        }
+    }
+    
+    private void DeleteCachedTile(TileEntry t)
+    {
+        cacheSize -= t.size;
+        File.Delete(Application.temporaryCachePath + "/" + t.guid + ".png");
+        tiles.Remove(t);
+    }
 
 	// <summary>
 	// Saves the tile informations to an XML file stored in Application.temporaryCachePath.
@@ -396,7 +482,7 @@ public class TileDownloader : MonoBehaviour
 		if (File.Exists(filepath) == false)
 		{
 #if DEBUG_LOG
-			Debug.Log("DEBUG: TileDownloader.LoadTiles: file (doesn't exist): " + filepath);
+			Debug.Log("DEBUG: TileDownloader.LoadTiles: file doesn't exist: " + filepath);
 #endif
 			return ;
 		}

@@ -120,7 +120,12 @@ public class Map : MonoBehaviour
 	private Map()
 	{
 	}
-	
+
+    private void OnDestroy()
+    {
+        instance = null;
+    }
+
 	private void OnApplicationQuit()
 	{
 		DestroyImmediate(this.gameObject);
@@ -152,8 +157,19 @@ public class Map : MonoBehaviour
 				return ;
 			}
 			
+			double[] newCenterESPG900913 = Tile.WGS84ToMeters(value[0], value[1]);
+			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - newCenterESPG900913[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - newCenterESPG900913[1]) * roundedScaleMultiplier);
+			Vector3 rootPosition = this.gameObject.transform.position;
+			this.gameObject.transform.position = new Vector3(
+				rootPosition.x + displacement.x,
+				rootPosition.y + displacement.y,
+				rootPosition.z + displacement.z);			
+
 			centerWGS84 = value;
-			centerEPSG900913 = Tile.WGS84ToMeters(centerWGS84[0], centerWGS84[1]);
+			centerEPSG900913 = newCenterESPG900913;
+            
+            //UpdateInternals();
+            
 			needsToUpdate = true;
 		}
 	}
@@ -178,8 +194,16 @@ public class Map : MonoBehaviour
 				return ;
 			}
 			
+			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - value[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - value[1]) * roundedScaleMultiplier);
+			Vector3 rootPosition = this.gameObject.transform.position;
+			this.gameObject.transform.position = new Vector3(
+				rootPosition.x + displacement.x,
+				rootPosition.y + displacement.y,
+				rootPosition.z + displacement.z);
+			
 			centerEPSG900913 = value;
 			centerWGS84 = Tile.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
+            
 			needsToUpdate = true;
 		}
 	}
@@ -188,7 +212,7 @@ public class Map : MonoBehaviour
 	// Is used to constraint the map panning.
 	// </summary>
 	// TODO: implement the constraint
-	private double[]						size = new double[2];
+    //private double[]						size = new double[2];
 	
 	private float							currentZoom = 15.0f;
 	public float							CurrentZoom
@@ -207,22 +231,8 @@ public class Map : MonoBehaviour
 			
 			currentZoom = value;
 			roundedZoom = (int)Mathf.Floor(currentZoom);
-			
-			// FIXME: the half map scale is a value used throughout the implementation to rule the camera elevation
-			// and the size/scale of the tiles, it depends on fixed tile size and resolution (here 256 and 72) so I am not
-			// sure it would work for a tile layer with different values...
-			// maybe there is a way to take the values out of the calculations and reintroduce them on Layer level...
-			// FIXME: the 'division by 20000' helps the values to be kept in range for the Unity3D engine, not sure
-			// this is the right approach either, feels kinda voodooish...
-			halfMapScale = Tile.OsmZoomLevelToMapScale(currentZoom, (float)centerWGS84[1], 256.0f, 72) / 20000.0f;
-			roundedHalfMapScale = Tile.OsmZoomLevelToMapScale(roundedZoom, (float)centerWGS84[1], 256.0f, 72) / 20000.0f;
-			
-			metersPerPixel = Tile.MetersPerPixel(0.0f, (float)currentZoom);
-			roundedMetersPerPixel = Tile.MetersPerPixel(0.0f, (float)roundedZoom);
-			
-			// FIXME: another voodoish value to help converting meters (EPSG 900913) to Unity3D world coordinates
-			scaleMultiplier = halfMapScale / (metersPerPixel * 256.0f);
-			roundedScaleMultiplier = roundedHalfMapScale / (roundedMetersPerPixel * 256.0f);
+
+            UpdateInternals();
 		}
 	}
 	
@@ -395,14 +405,28 @@ public class Map : MonoBehaviour
 			}
 		}
 	}
+
+    private List<Marker> markers = new List<Marker>();
+    public List<Marker> Markers { get { return markers; } }
+    
+    /// <summary>
+    /// Enables/disables showing GUI controls.
+    /// </summary>
+    public bool                             ShowGUIControls = false;
+    /// <summary>
+    /// Enables/disables of the platform specific controls.
+    /// TODO: implement inputs in a user oriented customizable way
+    /// </summary>
+    public bool                             InputsEnabled = false;
+    
+	private LocationMarker					locationMarker;
 	
 	private List<Layer>						layers = new List<Layer>();
-	private List<Marker>					markers = new List<Marker>();
 	
 	private bool							mapMoved = false;
 	private Vector3							lastHitPosition = Vector3.zero;
 	private float							lastZoomFactor = 0.0f;
-	
+    
 	// FIXME: tests of the ProjNet Dll: http://projnet.codeplex.com/
 	// seemed promising but encountered limitations and positioning errors with EPSG 900913
 	// such a library will be necessary to enable support of arbitrary coordinate systems
@@ -426,218 +450,374 @@ public class Map : MonoBehaviour
 	*/
 	
 	#endregion
+    
+    #region Private methods
+    
+    private void UpdateInternals()
+    {
+        // FIXME: the half map scale is a value used throughout the implementation to rule the camera elevation
+        // and the size/scale of the tiles, it depends on fixed tile size and resolution (here 256 and 72) so I am not
+        // sure it would work for a tile layer with different values...
+        // maybe there is a way to take the values out of the calculations and reintroduce them on Layer level...
+        // FIXME: the 'division by 20000' helps the values to be kept in range for the Unity3D engine, not sure
+        // this is the right approach either, feels kinda voodooish...
+        halfMapScale = Tile.OsmZoomLevelToMapScale(currentZoom, /*(float)centerWGS84[1]*/0.0f, 256.0f, 72) / 20000.0f;
+        roundedHalfMapScale = Tile.OsmZoomLevelToMapScale(roundedZoom, (float)/*(float)centerWGS84[1]*/0.0f, 256.0f, 72) / 20000.0f;
+        
+        metersPerPixel = Tile.MetersPerPixel(0.0f, (float)currentZoom);
+        roundedMetersPerPixel = Tile.MetersPerPixel(0.0f, (float)roundedZoom);
+        
+        // FIXME: another voodoish value to help converting meters (EPSG 900913) to Unity3D world coordinates
+        scaleMultiplier = halfMapScale / (metersPerPixel * 256.0f);
+        roundedScaleMultiplier = roundedHalfMapScale / (roundedMetersPerPixel * 256.0f);
+    }
+    
+    #endregion
 	
 	#region MonoBehaviour implementation
 	
-	void Awake()
+	private void Awake()
 	{
 		// initialize the zoom variables
 		CurrentZoom = currentZoom;
 	}
 	
-	// Use this for initialization
-	void Start ()
+	private void Start ()
 	{
 		// initialize the camera elevation
 		Camera.main.transform.position = new Vector3(
 			Camera.main.transform.position.x,
-			Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
+            //Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
+            Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 20000.0f,
 			Camera.main.transform.position.z);
 		
-		// trigger a first update
-		needsToUpdate = true;
+        // set the update flag to tell the behaviour the user is manipulating the map
+        mapMoved = true;
+        needsToUpdate = true;
 	}
 	
-	void OnGUI()
+	private void OnGUI()
 	{
-		// TODO: add a boolean property to control the display of a more complete GUI (zoom, translation, ...)
-		GUI.Label(new Rect(0, 0, 100, 100), "Zoom: " + currentZoom);
-		
-		if (GUI.RepeatButton(new Rect(Screen.width - 100, 100, 100, 100), "+"))
-		{
-			Zoom(1.0f);
-		}
-		if (GUI.RepeatButton(new Rect(Screen.width - 100, 200, 100, 100), "-"))
-		{
-			Zoom(-1.0f);
-		}
-	}
-	
-	// Update is called once per frame
-	void Update ()
-	{
-		// handle inputs on touch devices and desktop
-		// the map is told to update its layers and markers once a movement is complete
-		// when panning the map, the map's root GameObject is moved ; once the panning is done, all the children are offseted and the root's position is reset
-		// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS
-		bool panning = false;
-		bool panningStopped = false;
-		Vector3 screenPosition = Vector3.zero;
-
-		bool zooming = false;
-		bool zoomingStopped = false;
-		float zoomFactor = 0.0f;
-		
-		if (Application.platform == RuntimePlatform.IPhonePlayer
-			|| Application.platform == RuntimePlatform.Android)
-		{
-			if (Input.touchCount > 0)
-			{
-				// movements
-				panning = true;
-				panningStopped = true;
-				foreach (Touch touch in Input.touches)
-				{
-					screenPosition += new Vector3(touch.position.x, touch.position.y);
-					if (touch.phase != TouchPhase.Ended)
-						panningStopped = false;
-					
-					// reset the last hit position to avoid a sudden jump when a finger is added or removed
-					if (touch.phase == TouchPhase.Began
-						|| touch.phase == TouchPhase.Ended)
-						lastHitPosition = Vector3.zero;
-				}
-				screenPosition /= Input.touchCount;
-				
-				if (panningStopped)
-					panning = false;
-				
-				// zoom
-				zooming = true;
-				zoomingStopped = true;
-				bool newFingerSetup = false;
-				foreach (Touch touch in Input.touches)
-				{
-					zoomFactor += Vector3.Distance(screenPosition, new Vector3(touch.position.x, touch.position.y));
-					if (touch.phase != TouchPhase.Ended)
-						zoomingStopped = false;
-					
-					// reset the last zoom factor to avoid a sudden jump when a finger is added or removed
-					if (touch.phase == TouchPhase.Began
-						|| touch.phase == TouchPhase.Ended)
-						newFingerSetup = true;
-				}
-				zoomFactor /= Input.touchCount * 10.0f;
-				
-				if (newFingerSetup)
-					lastZoomFactor = zoomFactor;
-				if (zoomingStopped)
-					zooming = false;
-			}
-		}
-		else
-		{
-			// movements
-			if (Input.GetMouseButton(0))
-			{
-				panning = true;
-				screenPosition = Input.mousePosition;
-			}
-			else if (Input.GetMouseButtonUp(0))
-			{
-				panningStopped = true;
-			}
-			
-			// zoom
-			if (Input.GetKey(KeyCode.Z))
-			{
-				zooming = true;
-				zoomFactor = 1.0f;
-				lastZoomFactor = 0.0f;
-			}
-			else if (Input.GetKeyUp(KeyCode.Z))
-			{
-				zoomingStopped = true;
-			}
-			if (Input.GetKey(KeyCode.S))
-			{
-				zooming = true;
-				zoomFactor = -1.0f;
-				lastZoomFactor = 0.0f;
-			}
-			else if (Input.GetKeyUp(KeyCode.S))
-			{
-				zoomingStopped = true;
-			}
-		}
-		
-		if (panning)
-		{
-			// disable the centerWGS84 update with the last location
-			needsToUpdateCenterWithLocation = false;
-			
-			// apply the movements
-			Ray ray = Camera.main.ScreenPointToRay(screenPosition);
-			RaycastHit hitInfo;
-			if (Physics.Raycast(ray, out hitInfo))
-			{
-				//Debug.Log("DEBUG: last hit: " + lastHitPosition + ", hit: " + hitInfo.point);
-				Vector3 displacement = Vector3.zero;
-				if (lastHitPosition != Vector3.zero)
-				{
-					displacement = hitInfo.point - lastHitPosition;
-					//Debug.Log("DEBUG: hit: " + displacement);
-					Vector3 rootPosition = this.gameObject.transform.position;
-					this.gameObject.transform.position = new Vector3(
-						rootPosition.x + displacement.x,
-						rootPosition.y + displacement.y,
-						rootPosition.z + displacement.z);
-				}
-
-				lastHitPosition = new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z);
-				//Debug.Log("DEBUG: last hit: " + lastHitPosition + ", hit: " + hitInfo.point);
-				
-				if (displacement != Vector3.zero)
-				{
-					// update the centerWGS84 property to the new centerWGS84 wgs84 coordinates of the map
-					double[] displacementMeters = new double[2] { displacement.x / roundedScaleMultiplier, displacement.z / roundedScaleMultiplier };
-					double[] centerMeters = centerEPSG900913;
-					centerMeters[0] -= displacementMeters[0];
-					centerMeters[1] -= displacementMeters[1];
-					CenterEPSG900913 = centerMeters;
-					
-#if DEBUG_LOG
-					Debug.Log("DEBUG: Map.Update: new centerWGS84 wgs84: " + centerWGS84[0] + ", " + centerWGS84[1]);
+#if UNITY_EDITOR
+		// TODO: more complete GUI (zoom, translation, ...), customization
+        if (ShowGUIControls)
+        {
+    		GUI.Label(new Rect(0, Screen.height - 100, 100, 100), "Zoom: " + currentZoom);
+    		
+    		if (GUI.RepeatButton(new Rect(Screen.width - 100, 100, 100, 100), "+"))
+    		{
+    			Zoom(1.0f);
+    		}
+    		if (GUI.RepeatButton(new Rect(Screen.width - 100, 200, 100, 100), "-"))
+    		{
+    			Zoom(-1.0f);
+    		}
+        }
 #endif
-				}
+        
+        /*
+        GUILayout.BeginArea(new Rect(Screen.width - 300, 300, 300, 200));
+        int touchIndex = 0;
+        foreach (Touch t in Input.touches)
+        {
+            GUILayout.Label("#" + touchIndex + ": " + t.position + ": " + t.phase);
+            touchIndex++;
+        }
+        int touchCount = Input.touchCount;
+        Vector3 screenPosition = Vector3.zero;
+        foreach (Touch touch in Input.touches)
+        {
+            if (touch.phase != TouchPhase.Ended)
+            {
+                screenPosition += new Vector3(touch.position.x, touch.position.y);
+            }
+            else
+            {
+                --touchCount;
+            }
+         
+         // reset the last hit position to avoid a sudden jump when a finger is added or removed
+         if (touch.phase == TouchPhase.Began
+            || touch.phase == TouchPhase.Ended)
+             lastHitPosition = Vector3.zero;
+        }
+        
+        if (touchCount != 0)
+            screenPosition /= touchCount;
+        else
+        {
+            screenPosition = Vector3.zero;
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.Label("sp: " + screenPosition);
+        GUILayout.EndArea();
+        */
+	}
+	
+	private void Update ()
+	{
+        if (InputsEnabled)
+        {
+    		// handle inputs on touch devices and desktop
+    		// the map is told to update its layers and markers once a movement is complete
+    		// when panning the map, the map's root GameObject is moved ; once the panning is done, all the children are offseted and the root's position is reset
+    		// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS
+    		bool panning = false;
+    		bool panningStopped = false;
+    		Vector3 screenPosition = Vector3.zero;
+    
+    		bool zooming = false;
+    		bool zoomingStopped = false;
+    		float zoomFactor = 0.0f;
+    		
+    		if (Application.platform == RuntimePlatform.IPhonePlayer
+    			|| Application.platform == RuntimePlatform.Android)
+    		{
+                int touchCount = Input.touchCount;
+    			if (Input.touchCount > 0)
+    			{
+    				// movements
+    				panning = true;
+    				panningStopped = true;
+                    
+                    int validTouchCount = touchCount;
+    				foreach (Touch touch in Input.touches)
+    				{
+    					if (touch.phase != TouchPhase.Ended)
+                        {
+    	                    screenPosition += new Vector3(touch.position.x, touch.position.y);
+        					panningStopped = false;
+                        }
+                        else
+                        {
+                            --validTouchCount;
+                        }
+    					
+    					// reset the last hit position to avoid a sudden jump when a finger is added or removed
+    					if (touch.phase == TouchPhase.Began
+                            || touch.phase == TouchPhase.Ended)
+    						lastHitPosition = Vector3.zero;
+    				}
+    				
+                    if (validTouchCount != 0)
+                        screenPosition /= validTouchCount;
+                    else
+                    {
+                        screenPosition = Vector3.zero;
+                        panningStopped = true;
+                    }
+                    
+                    //Debug.Log("DEBUG: panning: touch count: " + touchCount + ", screen pos: (" + screenPosition.x + " " + screenPosition.y + " " + screenPosition.z + "), panning stopped: " + panningStopped);
+                    
+    				if (panningStopped)
+    					panning = false;
+                }
+                
+                if (touchCount > 1)
+                {
+    				// zoom
+    				zooming = true;
+    				zoomingStopped = true;
+    				bool newFingerSetup = false;
 
-				mapMoved = true;
-			}
-		}
-		else if (panningStopped)
-		{
-			// reset the last hit position
-			lastHitPosition = Vector3.zero;
-			
-			// trigger a tile update
-			needsToUpdate = true;
-		}
-
-		// apply the zoom
-		if (zooming)
-		{			
-			//if (lastZoomFactor != 0.0f)// && zoomFactor != 0.0f)
-				Zoom(zoomFactor - lastZoomFactor);
-			lastZoomFactor = zoomFactor;
-		}
-		else if (zoomingStopped)
-		{
-			lastZoomFactor = 0.0f;
-		}
+                    int validTouchCount = touchCount;
+                    for (int i = 0; i < touchCount; ++i)
+    				{
+                        Touch touch = Input.GetTouch(i);
+                        
+    					if (touch.phase != TouchPhase.Ended)
+                        {
+                            zoomFactor += Vector3.Distance(screenPosition, new Vector3(touch.position.x, touch.position.y));
+    						zoomingStopped = false;
+                        }
+                        else
+                        {
+                            --validTouchCount;
+                        }
+    					
+    					// reset the last zoom factor to avoid a sudden jump when a finger is added or removed
+    					if (touch.phase == TouchPhase.Began
+    						|| touch.phase == TouchPhase.Ended)
+    						newFingerSetup = true;
+    				}
+                    
+                    if (validTouchCount != 0)
+    				    zoomFactor /= validTouchCount * 10.0f;
+                    else
+                    {
+                        zoomFactor = 0.0f;
+                        zoomingStopped = true;
+                    }
+                    
+                    /*
+                    Debug.Log("DEBUG: zooming: touch count: " + validTouchCount + ", factor: " + zoomFactor + ", zooming stopped: " + zoomingStopped + ", new finger setup: " + newFingerSetup);
+                    string dbg = "DEBUG: touches:\n";
+                    for (int i = 0; i < touchCount; ++i)
+                    {
+                        Touch touch = Input.GetTouch(i);
+                        dbg += touch.phase + "\n";
+                    }
+                    Debug.Log(dbg);
+                    */
+    				
+    				if (newFingerSetup)
+    					lastZoomFactor = zoomFactor;
+    				if (zoomingStopped)
+    					zooming = false;
+    			}
+    		}
+    		else
+    		{
+    			// movements
+    			if (Input.GetMouseButton(0))
+    			{
+    				panning = true;
+    				screenPosition = Input.mousePosition;
+    			}
+    			else if (Input.GetMouseButtonUp(0))
+    			{
+    				panningStopped = true;
+    			}
+    			
+    			// zoom
+    			if (Input.GetKey(KeyCode.Z))
+    			{
+    				zooming = true;
+    				zoomFactor = 1.0f;
+    				lastZoomFactor = 0.0f;
+    			}
+    			else if (Input.GetKeyUp(KeyCode.Z))
+    			{
+    				zoomingStopped = true;
+    			}
+    			if (Input.GetKey(KeyCode.S))
+    			{
+    				zooming = true;
+    				zoomFactor = -1.0f;
+    				lastZoomFactor = 0.0f;
+    			}
+    			else if (Input.GetKeyUp(KeyCode.S))
+    			{
+    				zoomingStopped = true;
+    			}
+    		}
+    		
+    		if (panning)
+    		{
+    			// disable the centerWGS84 update with the last location
+    			needsToUpdateCenterWithLocation = false;
+    			
+    			// apply the movements
+    			Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+    			RaycastHit hitInfo;
+    			if (Physics.Raycast(ray, out hitInfo))
+    			{
+    				//Debug.Log("DEBUG: last hit: " + lastHitPosition + ", hit: " + hitInfo.point);
+    				Vector3 displacement = Vector3.zero;
+    				if (lastHitPosition != Vector3.zero)
+    				{
+    					displacement = hitInfo.point - lastHitPosition;
+    					/*
+    					Vector3 rootPosition = this.gameObject.transform.position;
+    					this.gameObject.transform.position = new Vector3(
+    						rootPosition.x + displacement.x,
+    						rootPosition.y + displacement.y,
+    						rootPosition.z + displacement.z);
+    						*/
+    				}
+    				lastHitPosition = new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z);
+    				//Debug.Log("DEBUG: last hit: " + lastHitPosition + ", hit: " + hitInfo.point);
+    				
+    				if (displacement != Vector3.zero)
+    				{
+    					// update the centerWGS84 property to the new centerWGS84 wgs84 coordinates of the map
+    					double[] displacementMeters = new double[2] { displacement.x / roundedScaleMultiplier, displacement.z / roundedScaleMultiplier };
+    					double[] centerMeters = new double[2] { centerEPSG900913[0], centerEPSG900913[1] };
+    					centerMeters[0] -= displacementMeters[0];
+    					centerMeters[1] -= displacementMeters[1];
+    					CenterEPSG900913 = centerMeters;
+    					
+    #if DEBUG_LOG
+    					Debug.Log("DEBUG: Map.Update: new centerWGS84 wgs84: " + centerWGS84[0] + ", " + centerWGS84[1]);
+    #endif
+    				}
+    
+    				mapMoved = true;
+    			}
+    		}
+    		else if (panningStopped)
+    		{
+    			// reset the last hit position
+    			lastHitPosition = Vector3.zero;
+    			
+    			// trigger a tile update
+    			needsToUpdate = true;
+    		}
+    
+    		// apply the zoom
+    		if (zooming)
+    		{			
+    			//if (lastZoomFactor != 0.0f)// && zoomFactor != 0.0f)
+    				Zoom(zoomFactor - lastZoomFactor);
+    			lastZoomFactor = zoomFactor;
+    		}
+    		else if (zoomingStopped)
+    		{
+    			lastZoomFactor = 0.0f;
+    		}
+        }
 		
 		// update the centerWGS84 with the last location if enabled
 		if (useLocation
-			&& Input.location.status == LocationServiceStatus.Running
-			&& needsToUpdateCenterWithLocation)
+			&& Input.location.status == LocationServiceStatus.Running)
 		{
-			centerWGS84[0] = Input.location.lastData.longitude;
-			centerWGS84[1] = Input.location.lastData.latitude;
+			if (needsToUpdateCenterWithLocation)
+			{
+				CenterWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+			}
+			
+			if (locationMarker != null)
+			{
+				if (locationMarker.gameObject.active == false)
+					locationMarker.gameObject.SetActiveRecursively(true);
+				locationMarker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+			}
+		}
+		
+		// update the orientation of the location marker
+		if (useOrientation
+			&& locationMarker != null
+			&& locationMarker.OrientationMarker != null)
+		{
+            float heading = 0.0f;
+            switch (Screen.orientation)
+            {
+            case ScreenOrientation.LandscapeLeft:
+                //heading = -Input.compass.trueHeading; // test for device up
+                heading = Input.compass.trueHeading;
+                /*
+                if (heading > 360.0f) {
+                    heading -= 360.0f;
+                }
+                */
+                // TODO: handle all device orientations
+                break ;
+            case ScreenOrientation.Portrait: // FIME: not tested, likely wrong, legacy code
+                heading = -Input.compass.trueHeading;
+                break ;
+            }
+            //Debug.Log("DEBUG: " + heading);
+			locationMarker.OrientationMarker.rotation = Quaternion.AngleAxis(heading, Vector3.up);
 		}
 		
 		// update the tiles if needed
 		if (needsToUpdate == true && mapMoved == false)
 		{
 			needsToUpdate = false;
+			
+			if (locationMarker != null
+				&& locationMarker.gameObject.active == true)
+				locationMarker.UpdateMarker();
 			
 			foreach (Layer layer in layers)
 			{
@@ -665,13 +845,60 @@ public class Map : MonoBehaviour
 	
 	#region Map methods
 	
+	public void CenterOnLocation()
+    {
+        needsToUpdateCenterWithLocation = true;
+    }
+	
+	// <summary>
+	// Sets the the marker for the device's location and orientation using a GameObject for display.
+	// </summary>
+	public T SetLocationMarker<T>(GameObject locationGo) where T : LocationMarker
+	{
+		return SetLocationMarker<T>(locationGo, null);
+	}
+	
+	public T SetLocationMarker<T>(GameObject locationGo, GameObject orientationGo) where T : LocationMarker
+	{
+		// create a GameObject and add the templated Marker component to it
+        GameObject markerObject = new GameObject("[location marker]");
+		markerObject.transform.parent = this.gameObject.transform;
+		
+		T marker = markerObject.AddComponent<T>();
+		
+		locationGo.transform.parent = markerObject.transform;
+		locationGo.transform.localPosition = Vector3.zero;
+		
+		if (orientationGo != null)
+		{
+			marker.OrientationMarker = orientationGo.transform;
+		}
+		
+		// setup the marker
+		marker.Map = this;
+		if (useLocation
+			&& Input.location.status == LocationServiceStatus.Running)
+			marker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+		else
+			markerObject.SetActiveRecursively(false);
+		
+		// set the location marker
+		locationMarker = marker;
+		
+		// tell the map to update
+		needsToUpdate = true;
+		
+		return marker;
+	}
+
+	
 	// <summary>
 	// Creates a new named layer.
 	// </summary>
 	public T CreateLayer<T>(string name) where T : Layer
 	{
 		// create a GameObject as the root of the layer and add the templated Layer component to it
-		GameObject layerRoot = new GameObject(name);
+        GameObject layerRoot = new GameObject(name);
 		layerRoot.transform.parent = this.gameObject.transform;
 		T layer = layerRoot.AddComponent<T>();
 		
@@ -693,10 +920,10 @@ public class Map : MonoBehaviour
 	public T CreateMarker<T>(string name, double[] coordinatesWGS84, GameObject go) where T : Marker
 	{
 		// create a GameObject and add the templated Marker component to it
-		GameObject markerObject = new GameObject(name);
+        GameObject markerObject = new GameObject(name);
 		markerObject.transform.parent = this.gameObject.transform;
 		
-		go.name = "go - " + this.name;
+		//go.name = "go - " + name;
 		go.transform.parent = markerObject.gameObject.transform;
 		go.transform.localPosition = Vector3.zero;
 		
@@ -714,6 +941,32 @@ public class Map : MonoBehaviour
 		
 		return marker;
 	}
+    
+    /// <summary>
+    /// Removes the marker.
+    /// </summary>
+    /// <param name='m'>
+    /// The marker.
+    /// </param>
+    /// <exception cref='ArgumentNullException'>
+    /// Is thrown when an argument passed to a method is invalid because it is <see langword="null" /> .
+    /// </exception>
+    /// <exception cref='ArgumentOutOfRangeException'>
+    /// Is thrown when an argument passed to a method is invalid because it is outside the allowable range of values as
+    /// specified by the method.
+    /// </exception>
+    public void RemoveMarker(Marker m)
+    {
+        if (m == null)
+            throw new ArgumentNullException("m");
+        
+        if (markers.Contains(m) == false)
+            throw new ArgumentOutOfRangeException("m");
+        
+        markers.Remove(m);
+        
+        DestroyImmediate(m.gameObject);
+    }
 	
 	// <summary>
 	// Zooms the map.
@@ -727,7 +980,8 @@ public class Map : MonoBehaviour
 		Transform cameraTransform = Camera.main.transform;
 		cameraTransform.position = new Vector3(
 			cameraTransform.position.x,
-			Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
+            //Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
+            Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 20000.0f,
 			cameraTransform.position.z);
 		
 		// set the update flag to tell the behaviour the user is manipulating the map
