@@ -14,7 +14,7 @@ Current status
 
 UnitySlippyMap is in early alpha stage and currently supports tiles from OpenStreetMap.
 
-It is regularly tested in Unity3D Editor and on iOS.
+It is tested in Unity3D Editor, and on iOS and Android devices.
 
 See the [TODO list](/jderrough/UnitySlippyMap#todo) if you want to contribute and don't know where to start.
 
