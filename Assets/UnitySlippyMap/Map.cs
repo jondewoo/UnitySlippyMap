@@ -485,13 +485,14 @@ public class Map : MonoBehaviour
 	
 	private void Start ()
 	{
-		// initialize the camera elevation
+		// initialize the camera position and rotation
 		Camera.main.transform.position = new Vector3(
-			Camera.main.transform.position.x,
+			0,
             //Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
             Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 20000.0f,
-			Camera.main.transform.position.z);
-		
+			0);
+        Camera.main.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+
         // set the update flag to tell the behaviour the user is manipulating the map
         mapMoved = true;
         needsToUpdate = true;
@@ -515,44 +516,6 @@ public class Map : MonoBehaviour
     		}
         }
 #endif
-        
-        /*
-        GUILayout.BeginArea(new Rect(Screen.width - 300, 300, 300, 200));
-        int touchIndex = 0;
-        foreach (Touch t in Input.touches)
-        {
-            GUILayout.Label("#" + touchIndex + ": " + t.position + ": " + t.phase);
-            touchIndex++;
-        }
-        int touchCount = Input.touchCount;
-        Vector3 screenPosition = Vector3.zero;
-        foreach (Touch touch in Input.touches)
-        {
-            if (touch.phase != TouchPhase.Ended)
-            {
-                screenPosition += new Vector3(touch.position.x, touch.position.y);
-            }
-            else
-            {
-                --touchCount;
-            }
-         
-         // reset the last hit position to avoid a sudden jump when a finger is added or removed
-         if (touch.phase == TouchPhase.Began
-            || touch.phase == TouchPhase.Ended)
-             lastHitPosition = Vector3.zero;
-        }
-        
-        if (touchCount != 0)
-            screenPosition /= touchCount;
-        else
-        {
-            screenPosition = Vector3.zero;
-        }
-        GUILayout.FlexibleSpace();
-        GUILayout.Label("sp: " + screenPosition);
-        GUILayout.EndArea();
-        */
 	}
 	
 	private void Update ()
