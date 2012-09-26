@@ -33,7 +33,7 @@ using System.Collections.Generic;
 // </summary>
 public class TileDownloader : MonoBehaviour
 {
-	#region Singleton stuff
+	#region Singleton implementation
 	
 	private static TileDownloader instance = null;
 	public static TileDownloader Instance
