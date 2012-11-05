@@ -30,6 +30,7 @@ using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
 
 using UnitySlippyMap;
+using UnitySlippyMap.GUI;
 
 // <summary>
 // The Map class is a singleton handling layers and markers.
@@ -139,7 +140,12 @@ public class Map : MonoBehaviour
 	// <summary>
 	// Should be set to true to tell the map to update its layers and markers.
 	// </summary>
-	private bool							needsToUpdate = false;
+	private bool							isDirty = false;
+	public bool								IsDirty
+	{
+		get { return isDirty; }
+		set { isDirty = value; }
+	}
 	
 	// <summary>
 	// Holds the center coordinates of the map in WGS84.
@@ -171,7 +177,7 @@ public class Map : MonoBehaviour
             
             //UpdateInternals();
             
-			needsToUpdate = true;
+			isDirty = true;
 		}
 	}
 	
@@ -205,7 +211,7 @@ public class Map : MonoBehaviour
 			centerEPSG900913 = value;
 			centerWGS84 = Tile.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
             
-			needsToUpdate = true;
+			isDirty = true;
 		}
 	}
 	
@@ -354,7 +360,6 @@ public class Map : MonoBehaviour
 	// <summary>
 	// Is set to false is the map is manipulated by the user.
 	// </summary>
-	// TODO: should be set back to true after manipulation on user input
 	private bool							needsToUpdateCenterWithLocation = true;
 	
 	// <summary>
@@ -406,7 +411,23 @@ public class Map : MonoBehaviour
 			}
 		}
 	}
-
+	
+	/// <summary>
+	/// Enables/disables the camera to follow the compass orientation.
+	/// </summary>
+	private bool							cameraFollowsOrientation = false;
+	public bool								CameraFollowsOrientation
+	{
+		get { return cameraFollowsOrientation; }
+		set 
+		{
+			cameraFollowsOrientation = value;
+			lastCameraOrientation = 0.0f;
+		}
+	}
+	
+	private float							lastCameraOrientation = 0.0f;
+	
     private List<Marker> markers = new List<Marker>();
     public List<Marker> Markers { get { return markers; } }
     
@@ -424,10 +445,30 @@ public class Map : MonoBehaviour
 	
 	private List<Layer>						layers = new List<Layer>();
 	
-	private bool							mapMoved = false;
+	/// <summary>
+	/// Tells the map if it is being manipulated. The map will not update when it is true and will set it to false at the end of its Update.
+	/// </summary>
+	private bool							hasMoved = false;
+	public bool								HasMoved
+	{
+		get { return hasMoved; }
+		set { hasMoved = value; }
+	}
+	
 	private Vector3							lastHitPosition = Vector3.zero;
 	private float							lastZoomFactor = 0.0f;
     
+	private GUIDelegate						guiDelegate;
+	public GUIDelegate						GUIDelegate
+	{
+		get { return guiDelegate; }
+		set { guiDelegate = value; }
+	}
+	
+	private bool							wasInputInterceptedByGUI;
+	
+	
+	
 	// FIXME: tests of the ProjNet Dll: http://projnet.codeplex.com/
 	// seemed promising but encountered limitations and positioning errors with EPSG 900913
 	// such a library will be necessary to enable support of arbitrary coordinate systems
@@ -486,46 +527,40 @@ public class Map : MonoBehaviour
 	private void Start ()
 	{
 		// initialize the camera position and rotation
+		/*
 		Camera.main.transform.position = new Vector3(
 			0,
             //Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
             Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 20000.0f,
 			0);
+			*/
         Camera.main.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+		Zoom(0.0f);
 
         // set the update flag to tell the behaviour the user is manipulating the map
-        mapMoved = true;
-        needsToUpdate = true;
+        hasMoved = true;
+        isDirty = true;
 	}
 	
 	private void OnGUI()
 	{
-#if UNITY_EDITOR
-		// TODO: more complete GUI (zoom, translation, ...), customization
-        if (ShowGUIControls)
+    	// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS, precision ???
+		// TODO: optimise, use one mesh for the tiles and combine textures in a big one (might resolve the gap bug above)
+		
+		// process the user defined GUI
+        if (ShowGUIControls && guiDelegate != null)
         {
-    		GUI.Label(new Rect(0, Screen.height - 100, 100, 100), "Zoom: " + currentZoom);
-    		
-    		if (GUI.RepeatButton(new Rect(Screen.width - 100, 100, 100, 100), "+"))
-    		{
-    			Zoom(1.0f);
-    		}
-    		if (GUI.RepeatButton(new Rect(Screen.width - 100, 200, 100, 100), "-"))
-    		{
-    			Zoom(-1.0f);
-    		}
+			wasInputInterceptedByGUI = guiDelegate(this);
         }
-#endif
-	}
-	
-	private void Update ()
-	{
+		
+		if (Event.current.type != EventType.Repaint)
+			return ;
+		
         if (InputsEnabled)
         {
     		// handle inputs on touch devices and desktop
     		// the map is told to update its layers and markers once a movement is complete
     		// when panning the map, the map's root GameObject is moved ; once the panning is done, all the children are offseted and the root's position is reset
-    		// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS
     		bool panning = false;
     		bool panningStopped = false;
     		Vector3 screenPosition = Vector3.zero;
@@ -533,12 +568,14 @@ public class Map : MonoBehaviour
     		bool zooming = false;
     		bool zoomingStopped = false;
     		float zoomFactor = 0.0f;
-    		
-    		if (Application.platform == RuntimePlatform.IPhonePlayer
-    			|| Application.platform == RuntimePlatform.Android)
+
+			if (Application.platform == RuntimePlatform.IPhonePlayer
+	    		|| Application.platform == RuntimePlatform.Android)
     		{
+				if (wasInputInterceptedByGUI == false)
+				{
                 int touchCount = Input.touchCount;
-    			if (Input.touchCount > 0)
+    			if (touchCount > 0)
     			{
     				// movements
     				panning = true;
@@ -629,43 +666,52 @@ public class Map : MonoBehaviour
     				if (zoomingStopped)
     					zooming = false;
     			}
+				}
     		}
     		else
     		{
-    			// movements
-    			if (Input.GetMouseButton(0))
-    			{
-    				panning = true;
-    				screenPosition = Input.mousePosition;
-    			}
-    			else if (Input.GetMouseButtonUp(0))
-    			{
-    				panningStopped = true;
-    			}
-    			
-    			// zoom
-    			if (Input.GetKey(KeyCode.Z))
-    			{
-    				zooming = true;
-    				zoomFactor = 1.0f;
-    				lastZoomFactor = 0.0f;
-    			}
-    			else if (Input.GetKeyUp(KeyCode.Z))
-    			{
-    				zoomingStopped = true;
-    			}
-    			if (Input.GetKey(KeyCode.S))
-    			{
-    				zooming = true;
-    				zoomFactor = -1.0f;
-    				lastZoomFactor = 0.0f;
-    			}
-    			else if (Input.GetKeyUp(KeyCode.S))
-    			{
-    				zoomingStopped = true;
-    			}
+				if (wasInputInterceptedByGUI == false)
+				{
+	    			// movements
+	    			//if (Input.GetMouseButton(0))
+					if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag)
+						&& Event.current.button == 0)
+	    			{
+	    				panning = true;
+	    				//screenPosition = Input.mousePosition;
+						screenPosition = new Vector2(Event.current.mousePosition.x, Screen.height - Event.current.mousePosition.y);
+	    			}
+	    			//else if (Input.GetMouseButtonUp(0))
+					else if (Event.current.type == EventType.MouseUp
+						&& Event.current.button == 0)
+	    			{
+	    				panningStopped = true;
+	    			}
+	    			
+	    			// zoom
+	    			if (Input.GetKey(KeyCode.Z))
+	    			{
+	    				zooming = true;
+	    				zoomFactor = 1.0f;
+	    				lastZoomFactor = 0.0f;
+	    			}
+	    			else if (Input.GetKeyUp(KeyCode.Z))
+	    			{
+	    				zoomingStopped = true;
+	    			}
+	    			if (Input.GetKey(KeyCode.S))
+	    			{
+	    				zooming = true;
+	    				zoomFactor = -1.0f;
+	    				lastZoomFactor = 0.0f;
+	    			}
+	    			else if (Input.GetKeyUp(KeyCode.S))
+	    			{
+	    				zoomingStopped = true;
+	    			}
+				}
     		}
-    		
+			
     		if (panning)
     		{
     			// disable the centerWGS84 update with the last location
@@ -706,16 +752,17 @@ public class Map : MonoBehaviour
     #endif
     				}
     
-    				mapMoved = true;
+    				hasMoved = true;
     			}
     		}
     		else if (panningStopped)
     		{
+				Debug.Log("panning stopped");
     			// reset the last hit position
     			lastHitPosition = Vector3.zero;
     			
     			// trigger a tile update
-    			needsToUpdate = true;
+    			isDirty = true;
     		}
     
     		// apply the zoom
@@ -731,6 +778,10 @@ public class Map : MonoBehaviour
     		}
         }
 		
+	}
+	
+	private void Update()
+	{
 		// update the centerWGS84 with the last location if enabled
 		if (useLocation
 			&& Input.location.status == LocationServiceStatus.Running)
@@ -749,35 +800,68 @@ public class Map : MonoBehaviour
 		}
 		
 		// update the orientation of the location marker
-		if (useOrientation
-			&& locationMarker != null
-			&& locationMarker.OrientationMarker != null)
+		if (useOrientation)
 		{
             float heading = 0.0f;
+            // TODO: handle all device orientations
             switch (Screen.orientation)
             {
             case ScreenOrientation.LandscapeLeft:
-                //heading = -Input.compass.trueHeading; // test for device up
                 heading = Input.compass.trueHeading;
-                /*
-                if (heading > 360.0f) {
-                    heading -= 360.0f;
-                }
-                */
-                // TODO: handle all device orientations
                 break ;
-            case ScreenOrientation.Portrait: // FIME: not tested, likely wrong, legacy code
+            case ScreenOrientation.Portrait: // FIXME: not tested, likely wrong, legacy code
                 heading = -Input.compass.trueHeading;
                 break ;
             }
-            //Debug.Log("DEBUG: " + heading);
-			locationMarker.OrientationMarker.rotation = Quaternion.AngleAxis(heading, Vector3.up);
+
+			if (cameraFollowsOrientation)
+			{
+				if (lastCameraOrientation == 0.0f)
+				{
+					Camera.main.transform.RotateAround(Vector3.zero, Vector3.up, heading);
+
+					lastCameraOrientation = heading;
+				}
+				else
+				{
+					float cameraRotationSpeed = 1.0f;
+					float relativeAngle = (heading - lastCameraOrientation) * cameraRotationSpeed * Time.deltaTime;
+					if (relativeAngle > 0.01f)
+					{
+						Camera.main.transform.RotateAround(Vector3.zero, Vector3.up, relativeAngle);
+	
+						//Debug.Log("DEBUG: cam: " + lastCameraOrientation + ", heading: " + heading +  ", rel angle: " + relativeAngle);
+						lastCameraOrientation += relativeAngle;
+					}
+					else
+					{
+						Camera.main.transform.RotateAround(Vector3.zero, Vector3.up, heading - lastCameraOrientation);
+	
+						//Debug.Log("DEBUG: cam: " + lastCameraOrientation + ", heading: " + heading +  ", rel angle: " + relativeAngle);
+						lastCameraOrientation = heading;
+					}
+				}
+					
+				isDirty = true;
+			}
+				
+			if (locationMarker != null
+				&& locationMarker.OrientationMarker != null)
+			{
+	            //Debug.Log("DEBUG: " + heading);
+				locationMarker.OrientationMarker.rotation = Quaternion.AngleAxis(heading, Vector3.up);
+			}
+		}
+				
+		if (hasMoved)
+		{
+			CurrentZoom = Tile.MapScaleToOsmZoomLevel(Camera.main.transform.position.y * 20000.0f, 0.0f, 256.0f, 72.0f); 
 		}
 		
 		// update the tiles if needed
-		if (needsToUpdate == true && mapMoved == false)
+		if (isDirty == true && hasMoved == false)
 		{
-			needsToUpdate = false;
+			isDirty = false;
 			
 			if (locationMarker != null
 				&& locationMarker.gameObject.active == true)
@@ -785,12 +869,16 @@ public class Map : MonoBehaviour
 			
 			foreach (Layer layer in layers)
 			{
-				layer.UpdateContent();
+				if (layer.gameObject.active == true
+					&& layer.enabled == true)
+					layer.UpdateContent();
 			}
 			
 			foreach (Marker marker in markers)
 			{
-				marker.UpdateMarker();
+				if (marker.gameObject.active == true
+					&& marker.enabled == true)
+					marker.UpdateMarker();
 			}
 			
 			if (this.gameObject.transform.position != Vector3.zero)
@@ -802,15 +890,21 @@ public class Map : MonoBehaviour
 		}
 		
 		// reset the deferred update flag
-		mapMoved = false;
+		hasMoved = false;
 	}
 	
 	#endregion
 	
 	#region Map methods
 	
+	/// <summary>
+	/// Centers the map on the location of the device.
+	/// </summary>
 	public void CenterOnLocation()
     {
+		if (locationMarker != null
+			&& locationMarker.gameObject.active == true)
+			CenterWGS84 = locationMarker.CoordinatesWGS84;
         needsToUpdateCenterWithLocation = true;
     }
 	
@@ -850,7 +944,7 @@ public class Map : MonoBehaviour
 		locationMarker = marker;
 		
 		// tell the map to update
-		needsToUpdate = true;
+		isDirty = true;
 		
 		return marker;
 	}
@@ -873,7 +967,7 @@ public class Map : MonoBehaviour
 		layers.Add(layer);
 		
 		// tell the map to update
-		needsToUpdate = true;
+		isDirty = true;
 		
 		return layer;
 	}
@@ -901,7 +995,7 @@ public class Map : MonoBehaviour
 		markers.Add(marker);
 		
 		// tell the map to update
-		needsToUpdate = true;
+		isDirty = true;
 		
 		return marker;
 	}
@@ -939,18 +1033,21 @@ public class Map : MonoBehaviour
 	{
 		// apply the zoom
 		CurrentZoom += zoomSpeed * Time.deltaTime;
-		
+
 		// move the camera
+		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
 		Transform cameraTransform = Camera.main.transform;
+        //float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
+		float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 20000.0f;
+		float t = y / cameraTransform.forward.y;
 		cameraTransform.position = new Vector3(
-			cameraTransform.position.x,
-            //Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 10000.0f,
-            Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, 256.0f, 72) / 20000.0f,
-			cameraTransform.position.z);
+			t * cameraTransform.forward.x,
+			y,
+			t * cameraTransform.forward.z);
 		
 		// set the update flag to tell the behaviour the user is manipulating the map
-		mapMoved = true;
-		needsToUpdate = true;
+		hasMoved = true;
+		isDirty = true;
 	}
 	
 	#endregion

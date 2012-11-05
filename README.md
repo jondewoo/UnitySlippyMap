@@ -31,10 +31,14 @@ Here is a short list of what could be fixed or added to UnitySlippyMap:
 * Fix the voodooish way I implemented the camera elevation and tile positioning (see the comments in Map.cs)
 * Fix the 'panning while zooming': gaps appear between tiles
 * Fix the map's behaviour when zoom nears 1 on iOS (something seems to be wrong with the markers' and tiles' positions)
+* Optimise, use one mesh for the tiles and combine textures in a big one (might resolve the gap bug above)
+* Handle device orientations properly when using the compass
 * Add support for well known tile providers (derive from TileLayer.cs)
 * Add new map objects (polygons, lines, ...)
+* Add support for marker billboarding
 * Add support for orthographic cameras
-* Better zoom rounding (>80%, <20%?)
-* Constraint the map to a given 'size', bounce on limits
-* Movements inertia
+* Add a better zoom rounding (>80%, <20%?)
+* Add a map constraint to a given 'size', bounce on limits
+* Add movements inertia
+* Implement inputs in a user oriented customizable way
 * Pop new tiles with transparency	

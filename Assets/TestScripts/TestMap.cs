@@ -29,6 +29,7 @@ public class TestMap : MonoBehaviour
 {
 	private Map		map;
 	
+	public Texture	LocationTexture;
 	public Texture	MarkerTexture;
 	
 	void Start()
@@ -46,9 +47,11 @@ public class TestMap : MonoBehaviour
 		layer.URLFormat = "http://a.tile.openstreetmap.org/{0}/{1}/{2}.png";
 		
 		// create some test 2D markers
-		GameObject go = Tile.CreateTileTemplate();
+		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter);
 		go.renderer.material.mainTexture = MarkerTexture;
-		go.renderer.material.renderQueue = 4000;
+		go.renderer.material.renderQueue = 4001;
+		go.transform.localScale = new Vector3(0.70588235294118f, 1.0f, 1.0f);
+		go.transform.localScale /= 7.0f;
 		
 		GameObject markerGO;
 		markerGO = Instantiate(go) as GameObject;
@@ -59,6 +62,17 @@ public class TestMap : MonoBehaviour
 		
 		markerGO = Instantiate(go) as GameObject;
 		map.CreateMarker<Marker>("test marker - 1 place St Nizier, Lyon", new double[2] { 4.83295, 45.76468 }, markerGO);
+
+		DestroyImmediate(go);
+		
+		// create the location marker
+		go = Tile.CreateTileTemplate();
+		go.renderer.material.mainTexture = LocationTexture;
+		go.renderer.material.renderQueue = 4000;
+		go.transform.localScale /= 27.0f;
+		
+		markerGO = Instantiate(go) as GameObject;
+		map.SetLocationMarker<LocationMarker>(markerGO);
 
 		DestroyImmediate(go);
 	}

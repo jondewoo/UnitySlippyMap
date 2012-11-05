@@ -203,7 +203,7 @@ public abstract class TileLayer : Layer
 					tileCache.Remove(tile);
 					tile.transform.position = tileTemplate.transform.position;
 					tile.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
-					tile.active = true;
+					tile.active = this.gameObject.active;
 				}
 				else
 				{

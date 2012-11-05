@@ -173,14 +173,35 @@ namespace UnitySlippyMap
 		    return (float) ((realLengthInMeters * ppi) / zoomLevelExp / tileSize / MetersPerInch);
 		}
 		
+		public enum AnchorPoint
+		{
+			TopLeft,
+			TopCenter,
+			TopRight,
+			MiddleLeft,
+			MiddleCenter,
+			MiddleRight,
+			BottomLeft,
+			BottomCenter,
+			BottomRight
+		}
+		
 		// <summary>
 		// Returns a tile template GameObject.
 		// </summary>
 		public static GameObject CreateTileTemplate()
 		{
-			return CreateTileTemplate("[Tile Template]");
+			return CreateTileTemplate("[Tile Template]", AnchorPoint.MiddleCenter);
 		}
-		public static GameObject CreateTileTemplate(string tileName)
+		public static GameObject CreateTileTemplate(string name)
+		{
+			return CreateTileTemplate(name, AnchorPoint.MiddleCenter);
+		}
+		public static GameObject CreateTileTemplate(AnchorPoint anchorPoint)
+		{
+			return CreateTileTemplate("[Tile Template]", anchorPoint);
+		}
+		public static GameObject CreateTileTemplate(string tileName, AnchorPoint anchorPoint)
 		{
 			GameObject tileTemplate = new GameObject(tileName);
 			MeshFilter meshFilter = tileTemplate.AddComponent<MeshFilter>();
@@ -189,12 +210,81 @@ namespace UnitySlippyMap
 			
 			// add the geometry
 			Mesh mesh = meshFilter.mesh;
-			mesh.vertices = new Vector3[] {
-				new Vector3(0.5f, 0.0f, 0.5f),
-				new Vector3(0.5f, 0.0f, -0.5f),
-				new Vector3(-0.5f, 0.0f, -0.5f),
-				new Vector3(-0.5f, 0.0f, 0.5f)
-			};
+			switch (anchorPoint)
+			{
+			case AnchorPoint.TopLeft:
+				mesh.vertices = new Vector3[] {
+					new Vector3(1.0f, 0.0f, 0.0f),
+					new Vector3(1.0f, 0.0f, -1.0f),
+					new Vector3(0.0f, 0.0f, -1.0f),
+					new Vector3(0.0f, 0.0f, 0.0f)
+				};
+				break;
+			case AnchorPoint.TopCenter:
+				mesh.vertices = new Vector3[] {
+					new Vector3(0.5f, 0.0f, 0.0f),
+					new Vector3(0.5f, 0.0f, -1.0f),
+					new Vector3(-0.5f, 0.0f, -1.0f),
+					new Vector3(-0.5f, 0.0f, 0.0f)
+				};
+				break;
+			case AnchorPoint.TopRight:
+				mesh.vertices = new Vector3[] {
+					new Vector3(0.0f, 0.0f, 0.0f),
+					new Vector3(0.0f, 0.0f, -1.0f),
+					new Vector3(-1.0f, 0.0f, -1.0f),
+					new Vector3(-1.0f, 0.0f, 0.0f)
+				};
+				break;
+			case AnchorPoint.MiddleLeft:
+				mesh.vertices = new Vector3[] {
+					new Vector3(1.0f, 0.0f, 0.5f),
+					new Vector3(1.0f, 0.0f, -0.5f),
+					new Vector3(0.0f, 0.0f, -0.5f),
+					new Vector3(0.0f, 0.0f, 0.5f)
+				};
+				break;
+			case AnchorPoint.MiddleRight:
+				mesh.vertices = new Vector3[] {
+					new Vector3(0.0f, 0.0f, 0.5f),
+					new Vector3(0.0f, 0.0f, -0.5f),
+					new Vector3(-1.0f, 0.0f, -0.5f),
+					new Vector3(-1.0f, 0.0f, 0.5f)
+				};
+				break;
+			case AnchorPoint.BottomLeft:
+				mesh.vertices = new Vector3[] {
+					new Vector3(1.0f, 0.0f, 1.0f),
+					new Vector3(1.0f, 0.0f, 0.0f),
+					new Vector3(0.0f, 0.0f, 0.0f),
+					new Vector3(0.0f, 0.0f, 1.0f)
+				};
+				break;
+			case AnchorPoint.BottomCenter:
+				mesh.vertices = new Vector3[] {
+					new Vector3(0.5f, 0.0f, 1.0f),
+					new Vector3(0.5f, 0.0f, 0.0f),
+					new Vector3(-0.5f, 0.0f, 0.0f),
+					new Vector3(-0.5f, 0.0f, 1.0f)
+				};
+				break;
+			case AnchorPoint.BottomRight:
+				mesh.vertices = new Vector3[] {
+					new Vector3(0.0f, 0.0f, 1.0f),
+					new Vector3(0.0f, 0.0f, 0.0f),
+					new Vector3(-1.0f, 0.0f, 0.0f),
+					new Vector3(-1.0f, 0.0f, 1.0f)
+				};
+				break;
+			default: // MiddleCenter
+				mesh.vertices = new Vector3[] {
+					new Vector3(0.5f, 0.0f, 0.5f),
+					new Vector3(0.5f, 0.0f, -0.5f),
+					new Vector3(-0.5f, 0.0f, -0.5f),
+					new Vector3(-0.5f, 0.0f, 0.5f)
+				};
+				break;
+			}
 			mesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
 		
 			// add normals
