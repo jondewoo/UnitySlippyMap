@@ -133,7 +133,7 @@ public class TileDownloader : MonoBehaviour
 		{
 			WWW www = null;
 			if (cached)
-				www = new WWW("file://" + Application.temporaryCachePath + "/" + this.guid + ".png");
+				www = new WWW("file://" + Application.persistentDataPath + "/" + this.guid + ".png");
 			else
 				www = new WWW(url);
 				
@@ -169,7 +169,7 @@ public class TileDownloader : MonoBehaviour
     					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
     					this.guid = Guid.NewGuid().ToString();
     					
-    					FileStream fs = new FileStream(Application.temporaryCachePath + "/" + this.guid + ".png", FileMode.Create);
+    					FileStream fs = new FileStream(Application.persistentDataPath + "/" + this.guid + ".png", FileMode.Create);
     					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), this);
     				
 #if DEBUG_LOG
@@ -450,16 +450,16 @@ public class TileDownloader : MonoBehaviour
     private void DeleteCachedTile(TileEntry t)
     {
         cacheSize -= t.size;
-        File.Delete(Application.temporaryCachePath + "/" + t.guid + ".png");
+        File.Delete(Application.persistentDataPath + "/" + t.guid + ".png");
         tiles.Remove(t);
     }
 
 	// <summary>
-	// Saves the tile informations to an XML file stored in Application.temporaryCachePath.
+	// Saves the tile informations to an XML file stored in Application.persistentDataPath.
 	// </summary>
 	private void SaveTiles()
 	{
-		string filepath = Application.temporaryCachePath + "/" + "tile_downloader.xml";
+		string filepath = Application.persistentDataPath + "/" + "tile_downloader.xml";
 		
 #if DEBUG_LOG
 		Debug.Log("DEBUG: TileDownloader.SaveTiles: file: " + filepath);
@@ -473,11 +473,11 @@ public class TileDownloader : MonoBehaviour
 	}
 	
 	// <summary>
-	// Loads the tile informations from an XML file stored in Application.temporaryCachePath.
+	// Loads the tile informations from an XML file stored in Application.persistentDataPath.
 	// </summary>
 	private void LoadTiles()
 	{
-		string filepath = Application.temporaryCachePath + "/" + "tile_downloader.xml";
+		string filepath = Application.persistentDataPath + "/" + "tile_downloader.xml";
 		
 		if (File.Exists(filepath) == false)
 		{
