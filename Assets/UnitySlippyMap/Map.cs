@@ -673,17 +673,21 @@ public class Map : MonoBehaviour
 				if (wasInputInterceptedByGUI == false)
 				{
 	    			// movements
-	    			//if (Input.GetMouseButton(0))
+	    			if (Input.GetMouseButton(0))
+                    /*
 					if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag)
 						&& Event.current.button == 0)
+                     */
 	    			{
-	    				panning = true;
-	    				//screenPosition = Input.mousePosition;
-						screenPosition = new Vector2(Event.current.mousePosition.x, Screen.height - Event.current.mousePosition.y);
+                        panning = true;
+	    				screenPosition = Input.mousePosition;
+						//screenPosition = new Vector2(Event.current.mousePosition.x, Screen.height - Event.current.mousePosition.y);
 	    			}
-	    			//else if (Input.GetMouseButtonUp(0))
+	    			else if (Input.GetMouseButtonUp(0))
+                        /*
 					else if (Event.current.type == EventType.MouseUp
 						&& Event.current.button == 0)
+                         */
 	    			{
 	    				panningStopped = true;
 	    			}
