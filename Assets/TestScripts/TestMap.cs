@@ -58,6 +58,12 @@ public class TestMap : MonoBehaviour
 			map.Zoom(1.0f);
 			pressed = true;
 		}
+        if (Event.current.type == EventType.Repaint)
+        {
+            Rect rect = GUILayoutUtility.GetLastRect();
+            if (rect.Contains(Event.current.mousePosition))
+                pressed = true;
+        }
 		
 		if (GUILayout.Button("2D/3D"))
 		{
@@ -74,11 +80,23 @@ public class TestMap : MonoBehaviour
 			
 			isPerspectiveView = !isPerspectiveView;
 		}
+        if (Event.current.type == EventType.Repaint)
+        {
+            Rect rect = GUILayoutUtility.GetLastRect();
+            if (rect.Contains(Event.current.mousePosition))
+                pressed = true;
+        }
 		
 		if (GUILayout.Button("Center"))
 		{
 			map.CenterOnLocation();
 		}
+        if (Event.current.type == EventType.Repaint)
+        {
+            Rect rect = GUILayoutUtility.GetLastRect();
+            if (rect.Contains(Event.current.mousePosition))
+                pressed = true;
+        }
 
 		/*
 		if (GUILayout.Button("Street/Aerial"))
@@ -93,7 +111,13 @@ public class TestMap : MonoBehaviour
 		{
 			map.Zoom(-1.0f);
 			pressed = true;
-		}		
+		}
+        if (Event.current.type == EventType.Repaint)
+        {
+            Rect rect = GUILayoutUtility.GetLastRect();
+            if (rect.Contains(Event.current.mousePosition))
+                pressed = true;
+        }
 		
 		GUILayout.EndHorizontal();
 					
