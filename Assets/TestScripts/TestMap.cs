@@ -53,7 +53,7 @@ public class TestMap : MonoBehaviour
 		//GUILayout.Label("Zoom: " + map.CurrentZoom);
 		
 		bool pressed = false;
-		if (GUILayout.RepeatButton("+"))
+        if (GUILayout.RepeatButton("+", GUILayout.ExpandHeight(true)))
 		{
 			map.Zoom(1.0f);
 			pressed = true;
@@ -64,8 +64,8 @@ public class TestMap : MonoBehaviour
             if (rect.Contains(Event.current.mousePosition))
                 pressed = true;
         }
-		
-		if (GUILayout.Button("2D/3D"))
+
+        if (GUILayout.Button("2D/3D", GUILayout.ExpandHeight(true)))
 		{
 			if (isPerspectiveView)
 			{
@@ -86,8 +86,8 @@ public class TestMap : MonoBehaviour
             if (rect.Contains(Event.current.mousePosition))
                 pressed = true;
         }
-		
-		if (GUILayout.Button("Center"))
+
+        if (GUILayout.Button("Center", GUILayout.ExpandHeight(true)))
 		{
 			map.CenterOnLocation();
 		}
@@ -98,16 +98,16 @@ public class TestMap : MonoBehaviour
                 pressed = true;
         }
 
-		/*
-		if (GUILayout.Button("Street/Aerial"))
-		{
-			mqOSMLayer.gameObject.SetActiveRecursively(!mqOSMLayer.gameObject.active);
-			mqSatLayer.gameObject.SetActiveRecursively(!mqSatLayer.gameObject.active);
-			map.IsDirty = true;
-		}
-		*/
-		
-		if (GUILayout.RepeatButton("-"))
+        /*
+        if (GUILayout.Button("Street/Aerial", GUILayout.ExpandHeight(true)))
+        {
+            mqOSMLayer.gameObject.SetActiveRecursively(!mqOSMLayer.gameObject.active);
+            mqSatLayer.gameObject.SetActiveRecursively(!mqSatLayer.gameObject.active);
+            map.IsDirty = true;
+        }
+        */
+
+        if (GUILayout.RepeatButton("-", GUILayout.ExpandHeight(true)))
 		{
 			map.Zoom(-1.0f);
 			pressed = true;
@@ -131,7 +131,7 @@ public class TestMap : MonoBehaviour
 		// setup the gui scale according to the screen resolution
         guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
 		// setup the gui area
-		guiRect = new Rect(16.0f * guiScale, 16.0f * guiScale, Screen.width / guiScale - 32.0f * guiScale, 128.0f * guiScale);
+		guiRect = new Rect(16.0f * guiScale, 16.0f * guiScale, Screen.width / guiScale - 32.0f * guiScale, 32.0f * guiScale);
 		// FIXME: make it customizable and screen orientation independent
 
 		// create the map singleton
