@@ -50,7 +50,7 @@ public class Marker : MonoBehaviour
 			}
 			
 			coordinatesWGS84 = value;
-			coordinatesEPSG900913 = Tile.WGS84ToMeters(coordinatesWGS84[0], coordinatesWGS84[1]);
+			coordinatesEPSG900913 = GeoHelpers.WGS84ToMeters(coordinatesWGS84[0], coordinatesWGS84[1]);
 
 			Reposition();
 		}
@@ -74,7 +74,7 @@ public class Marker : MonoBehaviour
 			}
 			
 			coordinatesEPSG900913 = value;
-			coordinatesWGS84 = Tile.MetersToWGS84(coordinatesEPSG900913[0], coordinatesEPSG900913[1]);
+			coordinatesWGS84 = GeoHelpers.MetersToWGS84(coordinatesEPSG900913[0], coordinatesEPSG900913[1]);
 
 			Reposition();
 		}

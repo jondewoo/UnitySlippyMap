@@ -39,9 +39,9 @@ public class OSMTileLayer : TileLayer
 	
 	protected override void GetCenterTile(out int tileX, out int tileY, out float offsetX, out float offsetZ)
 	{
-		int[] tileCoordinates = Tile.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
-		double[] centerTile = Tile.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
-		double[] centerTileMeters = Tile.WGS84ToMeters(centerTile[0], centerTile[1]);
+		int[] tileCoordinates = GeoHelpers.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
+		double[] centerTile = GeoHelpers.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
+		double[] centerTileMeters = GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
 
 		tileX = tileCoordinates[0];
 		tileY = tileCoordinates[1];

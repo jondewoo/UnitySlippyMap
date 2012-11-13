@@ -150,7 +150,7 @@ public class TestMap : MonoBehaviour
 		layer.URLFormat = "http://a.tile.openstreetmap.org/{0}/{1}/{2}.png";
 		
 		// create some test 2D markers
-		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter);
+		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
 		go.renderer.material.mainTexture = MarkerTexture;
 		go.renderer.material.renderQueue = 4001;
 		go.transform.localScale = new Vector3(0.70588235294118f, 1.0f, 1.0f);
@@ -169,7 +169,7 @@ public class TestMap : MonoBehaviour
 		DestroyImmediate(go);
 		
 		// create the location marker
-		go = Tile.CreateTileTemplate();
+		go = Tile.CreateTileTemplate().gameObject;
 		go.renderer.material.mainTexture = LocationTexture;
 		go.renderer.material.renderQueue = 4000;
 		go.transform.localScale /= 27.0f;

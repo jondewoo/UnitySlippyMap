@@ -87,9 +87,11 @@ public class TileDownloader : MonoBehaviour
 		
 		[XmlAttribute("url")]
 		public string	url;
-		[XmlIgnore]
-		public Material	material;
-		[XmlIgnore]
+        [XmlIgnore]
+        public Tile     tile;
+        [XmlIgnore]
+        public Texture2D texture;
+        [XmlIgnore]
 		public bool		cached = false;
 		[XmlIgnore]
 		public bool		error = false;
@@ -98,16 +100,18 @@ public class TileDownloader : MonoBehaviour
 		public Job		job;
         [XmlIgnore]
         public Job.JobCompleteHandler jobCompleteHandler;
-		
+
 		public TileEntry()
 		{
             this.jobCompleteHandler = new Job.JobCompleteHandler(TileDownloader.Instance.JobTerminationEvent);
 		}
 		
-		public TileEntry(string url, Material material)
+		public TileEntry(string url, Tile tile)
 		{
 			this.url = url;
-			this.material = material;
+            if (tile == null)
+                throw new ArgumentNullException("tile");
+            this.tile = tile;
             this.jobCompleteHandler = new Job.JobCompleteHandler(TileDownloader.Instance.JobTerminationEvent);
 		}
 		
@@ -132,7 +136,7 @@ public class TileDownloader : MonoBehaviour
 		private IEnumerator DownloadCoroutine()
 		{
 			WWW www = null;
-			if (cached)
+			if (cached && File.Exists("file://" + Application.persistentDataPath + "/" + this.guid + ".png"))
 				www = new WWW("file://" + Application.persistentDataPath + "/" + this.guid + ".png");
 			else
 				www = new WWW(url);
@@ -156,14 +160,36 @@ public class TileDownloader : MonoBehaviour
                 }
                 else
                 {
-                    material.mainTexture = www.texture;
+                    Texture2D texture = www.texture;
+
+                    tile.TextureId = TextureAtlasManager.Instance.AddTexture(texture);
+                    TextureAtlas.TextureInfo textureInfo = TextureAtlasManager.Instance.GetTextureInfo(tile.TextureId);
+                    Material sharedMaterial = SharedMaterialManager.Instance.GetSharedMaterial(textureInfo.Texture.name, "Somian/Unlit/Transparent");
+                    GameObject gameObject = tile.gameObject;
+                    gameObject.renderer.sharedMaterial = sharedMaterial;
+                    if (sharedMaterial.mainTexture == null)
+                    {
+                        sharedMaterial.mainTexture = textureInfo.Texture;
+                        sharedMaterial.mainTexture.wrapMode = TextureWrapMode.Clamp;
+                        sharedMaterial.mainTexture.filterMode = FilterMode.Trilinear;
+                    }
+
+                    gameObject.GetComponent<MeshFilter>().mesh.uv = new Vector2[4] {
+                        new Vector2(textureInfo.Rect.xMax / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height),
+                        new Vector2(textureInfo.Rect.xMax / textureInfo.Texture.width, textureInfo.Rect.yMin / textureInfo.Texture.height),
+                        new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMin / textureInfo.Texture.height),
+                        new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height),
+                    };
+                    /*
+                    material.mainTexture = textureInfo.Texture; //www.texture;
                     material.mainTexture.wrapMode = TextureWrapMode.Clamp;
-                    material.mainTexture.filterMode = FilterMode.Trilinear;             
+                    material.mainTexture.filterMode = FilterMode.Trilinear;
+                     */
     
                     if (this.cached == false)
     				{
     					// write the png asynchroneously
-    					byte[] bytes = (material.mainTexture as Texture2D).EncodeToPNG();
+                        byte[] bytes = texture.EncodeToPNG();
     					
     					this.size = bytes.Length;
     					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
@@ -228,7 +254,7 @@ public class TileDownloader : MonoBehaviour
 	// <summary>
 	// Gets a tile by its URL, the main texture of the material is assigned if successful.
 	// </summary>
-	public void Get(string url, Material material)
+	public void Get(string url, Tile tile)
 	{
 #if DEBUG_LOG
         Debug.Log("DEBUG: TileDownloader.Get: url: " + url);
@@ -252,12 +278,13 @@ public class TileDownloader : MonoBehaviour
 		}
 		
 		TileEntry cachedEntry = tiles.Find(tileURLMatchPredicate);
+
 		if (cachedEntry == null)
         {
 #if DEBUG_LOG
             Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list");
 #endif
-			tileToLoad.Add(new TileEntry(url, material));
+            tileToLoad.Add(new TileEntry(url, tile));
         }
 		else
 		{
@@ -265,7 +292,8 @@ public class TileDownloader : MonoBehaviour
             Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list (cached)");
 #endif
 			cachedEntry.cached = true;
-			cachedEntry.material = material;
+            cachedEntry.tile = tile;
+			//cachedEntry.Complete = material;
 			tileToLoad.Add(cachedEntry);
 		}
 
@@ -336,8 +364,8 @@ public class TileDownloader : MonoBehaviour
                      Debug.Log("DEBUG: TileDownloader.JobTerminationEvent: downloading tile failed, trying to download it again: " + entry.url);
 #endif
                 }
-				
-				Get(entry.url, entry.material);
+
+				Get(entry.url, entry.tile);
 				
 				return ;
 			}

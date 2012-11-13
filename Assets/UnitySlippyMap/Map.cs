@@ -164,7 +164,7 @@ public class Map : MonoBehaviour
 				return ;
 			}
 			
-			double[] newCenterESPG900913 = Tile.WGS84ToMeters(value[0], value[1]);
+			double[] newCenterESPG900913 = GeoHelpers.WGS84ToMeters(value[0], value[1]);
 			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - newCenterESPG900913[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - newCenterESPG900913[1]) * roundedScaleMultiplier);
 			Vector3 rootPosition = this.gameObject.transform.position;
 			this.gameObject.transform.position = new Vector3(
@@ -209,7 +209,7 @@ public class Map : MonoBehaviour
 				rootPosition.z + displacement.z);
 			
 			centerEPSG900913 = value;
-			centerWGS84 = Tile.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
+			centerWGS84 = GeoHelpers.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
             
 			isDirty = true;
 		}
@@ -316,7 +316,7 @@ public class Map : MonoBehaviour
 	private float							scaleMultiplier = 0.0f;
 	public float							ScaleMultiplier { get { return scaleMultiplier; } }
 
-    private float                           scaleDivider = 20000.0f;
+    private float                           scaleDivider = 2000.0f;
 
     private float                           tileResolution = 256.0f;
     public float                            TileResolution { get { return tileResolution; } }
@@ -510,11 +510,11 @@ public class Map : MonoBehaviour
         // maybe there is a way to take the values out of the calculations and reintroduce them on Layer level...
         // FIXME: the 'division by 20000' helps the values to be kept in range for the Unity3D engine, not sure
         // this is the right approach either, feels kinda voodooish...
-        halfMapScale = Tile.OsmZoomLevelToMapScale(currentZoom, /*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
-        roundedHalfMapScale = Tile.OsmZoomLevelToMapScale(roundedZoom, (float)/*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
+        halfMapScale = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, /*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
+        roundedHalfMapScale = GeoHelpers.OsmZoomLevelToMapScale(roundedZoom, (float)/*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
         
-        metersPerPixel = Tile.MetersPerPixel(0.0f, (float)currentZoom);
-        roundedMetersPerPixel = Tile.MetersPerPixel(0.0f, (float)roundedZoom);
+        metersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)currentZoom);
+        roundedMetersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)roundedZoom);
         
         // FIXME: another voodoish value to help converting meters (EPSG 900913) to Unity3D world coordinates
         scaleMultiplier = halfMapScale / (metersPerPixel * tileResolution);
@@ -544,8 +544,8 @@ public class Map : MonoBehaviour
 		/*
 		Camera.main.transform.position = new Vector3(
 			0,
-            //Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-            Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider,
+            //GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
+            GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider,
 			0);
 			*/
         Camera.main.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
@@ -1061,8 +1061,8 @@ public class Map : MonoBehaviour
 		// move the camera
 		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
 		Transform cameraTransform = Camera.main.transform;
-        //float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-		float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
+        //float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
+		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
 		float t = y / cameraTransform.forward.y;
 		cameraTransform.position = new Vector3(
 			t * cameraTransform.forward.x,

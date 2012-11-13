@@ -46,10 +46,15 @@
   <ItemGroup>
      <Compile Include="Assets\TestScripts\TestMap.cs" />
      <Compile Include="Assets\UnitySlippyMap\GUI\GUI.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\GeoHelpers.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\Job.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\JobManager.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\MaxRectsBinPack.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\Profiler.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\SRIDReader.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SharedMaterialManager.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\TextureAtlasManager\TextureAtlas.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\TextureAtlasManager\TextureAtlasManager.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\TextureBogusExtension.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\Tile.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\TileDownloader.cs" />

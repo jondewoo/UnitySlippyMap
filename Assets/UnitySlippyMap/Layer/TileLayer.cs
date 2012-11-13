@@ -37,12 +37,12 @@ public abstract class TileLayer : Layer
 	public int									TileSize = 256;
 	
 	// shared tile template
-	protected static GameObject					tileTemplate;
+	protected static Tile   					tileTemplate;
 	// tile template "ref counter"
 	protected static int						tileTemplateUseCount = 0;
 	
-	protected Dictionary<string, GameObject>	tiles = new Dictionary<string, GameObject>();
-	protected List<GameObject>					tileCache = new List<GameObject>();
+	protected Dictionary<string, Tile>      	tiles = new Dictionary<string, Tile>();
+    protected List<Tile>                        tileCache = new List<Tile>();
 	protected List<string>						visitedTiles = new List<string>();
 	
 	protected enum NeighbourTileDirection 
@@ -111,7 +111,7 @@ public abstract class TileLayer : Layer
 		Vector3 displacement = Map.gameObject.transform.position;
 		if (displacement != Vector3.zero)
 		{
-			foreach (KeyValuePair<string, GameObject> tile in tiles)
+			foreach (KeyValuePair<string, Tile> tile in tiles)
 			{
 				tile.Value.transform.position += displacement;
 			}
@@ -140,7 +140,7 @@ public abstract class TileLayer : Layer
 	private void CleanUpTiles(Plane[] frustum, int roundedZoom)
 	{
 		List<string> tilesToRemove = new List<string>();
-		foreach (KeyValuePair<string, GameObject> pair in tiles)
+		foreach (KeyValuePair<string, Tile> pair in tiles)
 		{
 			if (GeometryUtility.TestPlanesAABB(frustum, pair.Value.collider.bounds) == false
 				|| pair.Key.StartsWith(roundedZoom + "_") == false)
@@ -152,10 +152,11 @@ public abstract class TileLayer : Layer
 				Renderer renderer = pair.Value.renderer;
 				if (renderer != null)
 				{
-					GameObject.DestroyImmediate(renderer.material.mainTexture);
+					//GameObject.DestroyImmediate(renderer.material.mainTexture);
+                    TextureAtlasManager.Instance.RemoveTexture(pair.Value.TextureId);
 					renderer.material.mainTexture = null;
 				}
-				pair.Value.active = false;
+				pair.Value.gameObject.active = false;
 				
 #if DEBUG_LOG
 				Debug.Log("DEBUG: remove tile: " + pair.Key);
@@ -164,7 +165,7 @@ public abstract class TileLayer : Layer
 		}
 		foreach (string tileAddress in tilesToRemove)
 		{
-			GameObject tile = tiles[tileAddress];
+			Tile tile = tiles[tileAddress];
 			tiles.Remove(tileAddress);
 			tileCache.Add(tile);
 		}
@@ -196,18 +197,18 @@ public abstract class TileLayer : Layer
 			//Debug.Log("DEBUG: tile address: " + tileAddress);
 			if (tiles.ContainsKey(tileAddress) == false)
 			{
-				GameObject tile = null;
+				Tile tile = null;
 				if (tileCache.Count > 0)
 				{
 					tile = tileCache[0];
 					tileCache.Remove(tile);
 					tile.transform.position = tileTemplate.transform.position;
 					tile.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
-					tile.active = this.gameObject.active;
+					tile.gameObject.active = this.gameObject.active;
 				}
 				else
 				{
-					tile = GameObject.Instantiate(tileTemplate) as GameObject;
+					tile = (GameObject.Instantiate(tileTemplate.gameObject) as GameObject).GetComponent<Tile>();
 					tile.transform.parent = this.gameObject.transform;
 				}
 				
@@ -216,7 +217,8 @@ public abstract class TileLayer : Layer
 				MeshRenderer tileMeshRenderer = tile.GetComponent<MeshRenderer>();
 				tileMeshRenderer.enabled = true;
 				
-				TileDownloader.Instance.Get(String.Format(URLFormat, Map.RoundedZoom, tileX, tileY), tileMeshRenderer.material);
+                // new Get method taking a delegate to be executed when it is done (assign the sharedMaterial there)
+				TileDownloader.Instance.Get(String.Format(URLFormat, Map.RoundedZoom, tileX, tileY), tile);
 			}
 			
 			tileAddressLookedFor = tileAddress;
