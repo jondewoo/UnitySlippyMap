@@ -320,6 +320,8 @@ public class Map : MonoBehaviour
 
     private float                           tileResolution = 256.0f;
     public float                            TileResolution { get { return tileResolution; } }
+
+    private float                           screenScale = 1.0f;
 	
 	// <summary>
 	// Enables/disables the use of the device's location service.
@@ -531,7 +533,14 @@ public class Map : MonoBehaviour
 	
 	private void Start ()
 	{
-		// initialize the camera position and rotation
+        // setup the gui scale according to the screen resolution
+        if (Application.platform == RuntimePlatform.Android
+            || Application.platform == RuntimePlatform.IPhonePlayer)
+            screenScale = Screen.width / 480.0f;
+        else
+            screenScale = 2.0f;
+
+        // initialize the camera position and rotation
 		/*
 		Camera.main.transform.position = new Vector3(
 			0,
@@ -1053,7 +1062,7 @@ public class Map : MonoBehaviour
 		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
 		Transform cameraTransform = Camera.main.transform;
         //float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-		float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * 2.0f;
+		float y = Tile.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
 		float t = y / cameraTransform.forward.y;
 		cameraTransform.position = new Vector3(
 			t * cameraTransform.forward.x,
