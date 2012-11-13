@@ -129,9 +129,9 @@ public class TestMap : MonoBehaviour
 	void Start()
 	{
 		// setup the gui scale according to the screen resolution
-		guiScale = Screen.width / 480.0f;
+        guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
 		// setup the gui area
-		guiRect = new Rect(16.0f * guiScale, 16.0f * guiScale, Screen.width / guiScale - 32.0f * guiScale, 64.0f * guiScale);
+		guiRect = new Rect(16.0f * guiScale, 16.0f * guiScale, Screen.width / guiScale - 32.0f * guiScale, 128.0f * guiScale);
 		// FIXME: make it customizable and screen orientation independent
 
 		// create the map singleton
