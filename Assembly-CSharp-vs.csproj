@@ -46,6 +46,7 @@
   <ItemGroup>
      <Compile Include="Assets\TestScripts\TestMap.cs" />
      <Compile Include="Assets\UnitySlippyMap\GUI\GUI.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\CameraFacingBillboard.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\GeoHelpers.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\Job.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\JobManager.cs" />

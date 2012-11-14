@@ -155,11 +155,12 @@ public class TestMap : MonoBehaviour
 		go.renderer.material.renderQueue = 4001;
 		go.transform.localScale = new Vector3(0.70588235294118f, 1.0f, 1.0f);
 		go.transform.localScale /= 7.0f;
+        go.AddComponent<CameraFacingBillboard>().Axis = Vector3.up;
 		
 		GameObject markerGO;
 		markerGO = Instantiate(go) as GameObject;
 		map.CreateMarker<Marker>("test marker - 9 rue Gentil, Lyon", new double[2] { 4.83527, 45.76487 }, markerGO);
-		
+
 		markerGO = Instantiate(go) as GameObject;
 		map.CreateMarker<Marker>("test marker - 31 rue de la Bourse, Lyon", new double[2] { 4.83699, 45.76535 }, markerGO);
 		
