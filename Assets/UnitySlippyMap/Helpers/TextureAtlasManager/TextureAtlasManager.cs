@@ -77,7 +77,10 @@ public class TextureAtlasManager : MonoBehaviour
 
     private Dictionary<int, TextureAtlas>           atlases;
     private Dictionary<int, KeyValuePair<int, int>> textureAtlasMap;
-    private int                                     atlasSize = 2048;
+    private int                                     atlasSize = 512;
+	
+	private float									lastTimeTextureWasApplied = 0.0f;
+	private float									applyDelay = 1.0f;
 
     #endregion
 
@@ -89,7 +92,20 @@ public class TextureAtlasManager : MonoBehaviour
 
     private void Update()
     {
-
+		/*
+		if (lastTimeTextureWasApplied == 0.0f
+			|| (lastTimeTextureWasApplied - Time.time) > applyDelay)
+		{
+			foreach (KeyValuePair<int, TextureAtlas> entry in atlases)
+			{
+				if (entry.Value.IsDirty)
+				{
+					entry.Value.Apply();
+					break ;
+				}
+			}
+		}
+		*/
     }
 
     private void OnDestroy()
@@ -173,7 +189,9 @@ public class TextureAtlasManager : MonoBehaviour
 
     public void RemoveTexture(int textureId)
     {
-        Debug.Log("DEBUG: textureId: " + textureId);
+        Debug.Log("DEBUG: TextureAtlasManager.RemoveTexture: textureId: " + textureId);
+		if (textureAtlasMap.ContainsKey(textureId) == false)
+			return ;
         KeyValuePair<int, int> entry = textureAtlasMap[textureId];
         atlases[entry.Key].RemoveTexture(entry.Value);
         textureAtlasMap.Remove(textureId);

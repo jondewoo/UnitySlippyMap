@@ -36,7 +36,7 @@ public class TestMap : MonoBehaviour
 	private Rect	guiRect;
 	
 	private bool 	isPerspectiveView = false;
-	private float	perspectiveAngle = 45.0f;
+	private float	perspectiveAngle = 30.0f;
 	private float	destinationAngle = 0.0f;
 	private float	currentAngle = 0.0f;
 	private float	animationDuration = 0.5f;

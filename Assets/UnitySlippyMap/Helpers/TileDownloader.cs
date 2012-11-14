@@ -161,8 +161,9 @@ public class TileDownloader : MonoBehaviour
                 else
                 {
                     Texture2D texture = www.texture;
-
-                    tile.TextureId = TextureAtlasManager.Instance.AddTexture(texture);
+					
+					/*
+					tile.TextureId = TextureAtlasManager.Instance.AddTexture(texture);
                     TextureAtlas.TextureInfo textureInfo = TextureAtlasManager.Instance.GetTextureInfo(tile.TextureId);
                     Material sharedMaterial = SharedMaterialManager.Instance.GetSharedMaterial(textureInfo.Texture.name, "Somian/Unlit/Transparent");
                     GameObject gameObject = tile.gameObject;
@@ -178,14 +179,15 @@ public class TileDownloader : MonoBehaviour
                         new Vector2(textureInfo.Rect.xMax / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height),
                         new Vector2(textureInfo.Rect.xMax / textureInfo.Texture.width, textureInfo.Rect.yMin / textureInfo.Texture.height),
                         new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMin / textureInfo.Texture.height),
-                        new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height),
+                        new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height)
                     };
-                    /*
-                    material.mainTexture = textureInfo.Texture; //www.texture;
+                    */
+                    
+					Material material = tile.gameObject.renderer.material;
+                    material.mainTexture = texture;
                     material.mainTexture.wrapMode = TextureWrapMode.Clamp;
                     material.mainTexture.filterMode = FilterMode.Trilinear;
-                     */
-    
+                    
                     if (this.cached == false)
     				{
     					// write the png asynchroneously
@@ -403,6 +405,22 @@ public class TileDownloader : MonoBehaviour
 #endif
 			}
 		}
+	}
+
+	public void PauseAll()
+	{
+        foreach (TileEntry entry in tileLoading)
+        {
+            entry.job.Pause();
+        }
+	}
+
+	public void UnpauseAll()
+	{
+        foreach (TileEntry entry in tileLoading)
+        {
+            entry.job.Unpause();
+        }
 	}
 	
 	#endregion

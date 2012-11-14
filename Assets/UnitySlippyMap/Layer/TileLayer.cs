@@ -152,8 +152,8 @@ public abstract class TileLayer : Layer
 				Renderer renderer = pair.Value.renderer;
 				if (renderer != null)
 				{
-					//GameObject.DestroyImmediate(renderer.material.mainTexture);
-                    TextureAtlasManager.Instance.RemoveTexture(pair.Value.TextureId);
+					GameObject.DestroyImmediate(renderer.material.mainTexture);
+                    //TextureAtlasManager.Instance.RemoveTexture(pair.Value.TextureId);
 					renderer.material.mainTexture = null;
 				}
 				pair.Value.gameObject.active = false;

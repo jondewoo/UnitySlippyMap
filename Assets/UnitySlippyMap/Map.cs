@@ -882,6 +882,16 @@ public class Map : MonoBehaviour
 			//CurrentZoom = Tile.MapScaleToOsmZoomLevel(Camera.main.transform.position.y * scaleDivider, 0.0f, tileResolution, 72.0f); 
 		}
 		
+		// pause the loading operations when moving
+		if (hasMoved == true)
+		{
+			TileDownloader.Instance.PauseAll();
+		}
+		else
+		{
+			TileDownloader.Instance.UnpauseAll();
+		}
+			
 		// update the tiles if needed
 		if (isDirty == true && hasMoved == false)
 		{
@@ -912,6 +922,8 @@ public class Map : MonoBehaviour
 			Debug.Log("DEBUG: Map.Update: updated layers");
 #endif
 		}
+		
+		// TODO: pause the TileDownloader when moving
 		
 		// reset the deferred update flag
 		hasMoved = false;
@@ -1062,7 +1074,7 @@ public class Map : MonoBehaviour
 		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
 		Transform cameraTransform = Camera.main.transform;
         //float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
+		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * (screenScale * 0.75f);
 		float t = y / cameraTransform.forward.y;
 		cameraTransform.position = new Vector3(
 			t * cameraTransform.forward.x,

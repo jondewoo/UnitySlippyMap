@@ -24,6 +24,8 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
+using System.Diagnostics;
+
 public class TextureAtlas
 {
     public class TextureInfo
@@ -31,7 +33,7 @@ public class TextureAtlas
         private Rect        rect;
         public Rect         Rect { get { return rect; } }
         private Texture2D   texture;
-        public Texture2D    Texture { get { return texture; } }
+		public Texture2D 	Texture { get { return texture; } }
 
         public TextureInfo(Rect rect, Texture2D texture)
         {
@@ -42,10 +44,12 @@ public class TextureAtlas
 
     #region Private members & properties
 
-    private int                         size;
     private Texture2D                   texture;
+	//public Texture2D 					Texture { get { return texture; } }
     private MaxRectsBinPack             pack;
     private Dictionary<int, Rect>       rects;
+	private bool						isDirty = false;
+	public bool							IsDirty { get { return isDirty; } }
 
     #endregion
 
@@ -56,7 +60,6 @@ public class TextureAtlas
 
     public TextureAtlas(int size, string name = null)
     {
-        this.size = size;
         texture = new Texture2D(size, size);
         if (name != null)
             texture.name = name;
@@ -64,7 +67,6 @@ public class TextureAtlas
             texture.name = Guid.NewGuid().ToString();
         pack = new MaxRectsBinPack(size, size, false);
         rects = new Dictionary<int, Rect>();
-        Debug.Log("DEBUG: new atlas: " + size);
     }
 
     /// <summary>
@@ -78,6 +80,20 @@ public class TextureAtlas
     {
         return pack.Occupancy();
     }
+	
+	public void Apply()
+	{
+		isDirty = false;
+		Stopwatch watch = new Stopwatch();
+		watch.Start();
+		texture.Apply();
+		watch.Stop();
+		
+		TimeSpan ts = watch.Elapsed;
+        UnityEngine.Debug.Log(String.Format("DEBUG: applied in: {0:00}:{1:00}:{2:00}.{3:00}", 
+                    ts.Hours, ts.Minutes, ts.Seconds, 
+                    ts.Milliseconds/10));
+	}
 
     /// <summary>
     /// Add a texture to the atlas.
@@ -97,12 +113,65 @@ public class TextureAtlas
         }
 
         rects.Add(newIndex, rect);
+		
+		int x = Mathf.RoundToInt(rect.x);
+		int y = Mathf.RoundToInt(rect.y);
+		int width = Mathf.RoundToInt(rect.width);
+		int height = Mathf.RoundToInt(rect.height);
+		
+		Stopwatch watch = new Stopwatch();
+			
+		watch.Start();
+		this.texture.SetPixels(x, y, width, height, texture.GetPixels());
+		this.texture.Apply();
+		//this.isDirty = true;
+		watch.Stop();
+		
+		TimeSpan ts = watch.Elapsed;
+        UnityEngine.Debug.Log(String.Format("DEBUG: set pixel done in: {0:00}:{1:00}:{2:00}.{3:00}", 
+                    ts.Hours, ts.Minutes, ts.Seconds, 
+                    ts.Milliseconds/10));
 
-        this.texture.SetPixels(Mathf.RoundToInt(rect.x), Mathf.RoundToInt(rect.y), Mathf.RoundToInt(rect.width), Mathf.RoundToInt(rect.height), texture.GetPixels());
-        this.texture.Apply();
+		/*
+		UnityThreadHelper.TaskDistributor.Dispatch(() => {
+			Stopwatch watch = new Stopwatch();
+			
+			watch.Start();
+			
+			// essayer d'écrire block par block en parallèle avec des synchros
+			int blockSize = 128;
+			int length = (width - 1) * (height - 1);
+			for (int i = 0; i < length; i += blockSize)
+			{
+				UnityThreadHelper.Dispatcher.Dispatch(() => {
+					//UnityEngine.Debug.Log("DEBUG: name: " + texture.name + " x: " + (i % texture.width) + " y: " + Mathf.RoundToInt((float)i / (float)texture.width) + " (" + i + "/" + texture.width + ") block size: " + blockSize + " length: " + length);
+	        		this.texture.SetPixels(x + (i % width), y + Mathf.RoundToInt((float)i / (float)width), blockSize, 1, texture.GetPixels(i % texture.width, Mathf.RoundToInt((float)i / (float)texture.width), blockSize, 1));
+				});
+			}
+			this.isDirty = true;
+			
+			watch.Stop();
+			
+			TimeSpan ts = watch.Elapsed;
+	        UnityEngine.Debug.Log(String.Format("DEBUG: set pixel done in: {0:00}:{1:00}:{2:00}.{3:00}", 
+	                    ts.Hours, ts.Minutes, ts.Seconds, 
+	                    ts.Milliseconds/10));
+		});
+		*/
+		
+		/*
+		watch.Reset();
+		watch.Start();
 
-        Debug.Log("DEBUG: " + this.texture.width + " " + this.texture.height);
-        Debug.Log("DEBUG: new rect in atlas: " + Mathf.RoundToInt(rect.x) + " " + Mathf.RoundToInt(rect.y) + " " + Mathf.RoundToInt(rect.width) + " " + Mathf.RoundToInt(rect.height) + " size: " + (rect.width * rect.height) + " texture size: " + texture.GetPixels().Length);
+		this.texture.Apply();
+		
+		watch.Stop();
+		
+		ts = watch.Elapsed;
+        UnityEngine.Debug.Log(String.Format("DEBUG: applied in: {0:00}:{1:00}:{2:00}.{3:00}", 
+                    ts.Hours, ts.Minutes, ts.Seconds, 
+                    ts.Milliseconds/10));
+                    */
 
         return newIndex;
     }
@@ -114,9 +183,6 @@ public class TextureAtlas
     public void RemoveTexture(int id)
     {
         pack.Remove(rects[id]);
-
-        Debug.Log("DEBUG: removed rect in atlas: " + rects[id]);
-
         rects.Remove(id);
     }
 
