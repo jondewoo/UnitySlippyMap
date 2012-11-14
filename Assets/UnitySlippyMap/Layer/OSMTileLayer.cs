@@ -45,13 +45,13 @@ public class OSMTileLayer : TileLayer
 
 		tileX = tileCoordinates[0];
 		tileY = tileCoordinates[1];
-		offsetX = Map.RoundedHalfMapScale / 2.0f - (float)(Map.CenterEPSG900913[0] - centerTileMeters[0]) * Map.RoundedScaleMultiplier;
-		offsetZ = -Map.RoundedHalfMapScale / 2.0f - (float)(Map.CenterEPSG900913[1] - centerTileMeters[1]) * Map.RoundedScaleMultiplier;
-	}
+        offsetX = Map.RoundedHalfMapScale / 2.0f - (float)(Map.CenterEPSG900913[0] - centerTileMeters[0]) * Map.RoundedScaleMultiplier;
+        offsetZ = -Map.RoundedHalfMapScale / 2.0f - (float)(Map.CenterEPSG900913[1] - centerTileMeters[1]) * Map.RoundedScaleMultiplier;
+    }
 	
 	protected override bool GetNeighbourTile(int tileX, int tileY, float offsetX, float offsetZ, int tileCountOnX, int tileCountOnY, NeighbourTileDirection dir, out int nTileX, out int nTileY, out float nOffsetX, out float nOffsetZ)
 	{
-		bool ret = false;
+        bool ret = false;
 		nTileX = 0;
 		nTileY = 0;
 		nOffsetX = 0.0f;
@@ -76,8 +76,8 @@ public class OSMTileLayer : TileLayer
 	 			nTileX = tileX;
 				nTileY = tileY - 1;
 				nOffsetX = offsetX;
-				nOffsetZ = offsetZ + Map.RoundedHalfMapScale;
-				ret = true;
+                nOffsetZ = offsetZ + Map.RoundedHalfMapScale;
+                ret = true;
 			}
 			break ;
 			
@@ -86,8 +86,8 @@ public class OSMTileLayer : TileLayer
 			{
 	 			nTileX = tileX + 1;
 				nTileY = tileY;
-				nOffsetX = offsetX + Map.RoundedHalfMapScale;
-				nOffsetZ = offsetZ;
+                nOffsetX = offsetX + Map.RoundedHalfMapScale;
+                nOffsetZ = offsetZ;
 				ret = true;
 			}
 			break ;
@@ -97,8 +97,8 @@ public class OSMTileLayer : TileLayer
 			{
 	 			nTileX = tileX - 1;
 				nTileY = tileY;
-				nOffsetX = offsetX - Map.RoundedHalfMapScale;
-				nOffsetZ = offsetZ;
+                nOffsetX = offsetX - Map.RoundedHalfMapScale;
+                nOffsetZ = offsetZ;
 				ret = true;
 			}
 			break ;

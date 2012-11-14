@@ -316,7 +316,7 @@ public class Map : MonoBehaviour
 	private float							scaleMultiplier = 0.0f;
 	public float							ScaleMultiplier { get { return scaleMultiplier; } }
 
-    private float                           scaleDivider = 2000.0f;
+    private float                           scaleDivider = 20000.0f;
 
     private float                           tileResolution = 256.0f;
     public float                            TileResolution { get { return tileResolution; } }
@@ -993,7 +993,10 @@ public class Map : MonoBehaviour
 	{
 		// create a GameObject as the root of the layer and add the templated Layer component to it
         GameObject layerRoot = new GameObject(name);
-		layerRoot.transform.parent = this.gameObject.transform;
+        Transform layerRootTransform = layerRoot.transform;
+        Debug.Log("DEBUG: layer root: " + layerRootTransform.position + " this position: " + this.gameObject.transform.position);
+		layerRootTransform.parent = this.gameObject.transform;
+        layerRootTransform.localPosition = Vector3.zero;
 		T layer = layerRoot.AddComponent<T>();
 		
 		// setup the layer

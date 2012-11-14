@@ -88,9 +88,9 @@ public class TestMap : MonoBehaviour
         }
 
         if (GUILayout.Button("Center", GUILayout.ExpandHeight(true)))
-		{
-			map.CenterOnLocation();
-		}
+        {
+            map.CenterOnLocation();
+        }
         if (Event.current.type == EventType.Repaint)
         {
             Rect rect = GUILayoutUtility.GetLastRect();
