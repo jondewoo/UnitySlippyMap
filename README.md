@@ -12,7 +12,7 @@ Map objects (tiles, markers, ...) are placed in 3D space along X and Z axis. The
 Current status
 --------------
 
-UnitySlippyMap is in early alpha stage and currently supports tiles from [OpenStreetMap](http://www.openstreetmap.org/) or [CloudMade](http://cloudmade.com/) (it should work with any provider using [OSM tilenames](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames)).
+UnitySlippyMap is in early alpha stage and currently supports [OSM tiles](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) from providers such as [OpenStreetMap](http://www.openstreetmap.org/), [MapQuest](http://www.mapquest.com/) or [CloudMade](http://cloudmade.com/).
 
 It is tested in Unity3D Editor, and on iOS and Android devices.
 
