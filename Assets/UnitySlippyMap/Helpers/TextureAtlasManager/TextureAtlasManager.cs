@@ -101,6 +101,7 @@ public class TextureAtlasManager : MonoBehaviour
 				if (entry.Value.IsDirty)
 				{
 					entry.Value.Apply();
+					lastTimeTextureWasApplied = Time.time;
 					break ;
 				}
 			}

@@ -28,8 +28,8 @@ public class Tile : MonoBehaviour
 {
     #region Private members & properties
 
-    private int textureId;
-    public int TextureId
+    private int			textureId;
+    public int			TextureId
     {
         get
         {
@@ -40,9 +40,43 @@ public class Tile : MonoBehaviour
             textureId = value;
         }
     }
+	
+	private Material	material;
+	private float		apparitionDuration = 0.5f;
+	private float		apparitionStartTime = 0.0f;
+	private bool		show = false;
 
     #endregion
+	
+	#region MonoBehaviour implementation
 
+	private void Start()
+	{
+		material = renderer.material;
+	}
+	
+	private void Update()
+	{
+		if (show)
+		{
+			float delta = Time.time - apparitionStartTime;
+			float a = 1.0f;
+			if (delta <= apparitionDuration)
+			{
+				a = delta / apparitionDuration;
+			}
+			else
+			{
+				show = false;
+			}
+			Color color = material.color;
+			color.a = a;
+			material.color = color;
+		}
+	}
+	
+	#endregion
+	
     #region Public enums
 
     public enum AnchorPoint
@@ -61,6 +95,15 @@ public class Tile : MonoBehaviour
     #endregion 
 
     #region Public methods
+	
+	public void Show()
+	{
+		show = true;
+		Color color = material.color;
+		color.a = 0.0f;
+		material.color = color;
+		apparitionStartTime = Time.time;
+	}
 
     // <summary>
 	// Returns a tile template GameObject.

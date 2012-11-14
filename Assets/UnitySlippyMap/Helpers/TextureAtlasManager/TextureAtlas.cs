@@ -22,6 +22,7 @@
 using UnityEngine;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using System.Diagnostics;
@@ -102,7 +103,7 @@ public class TextureAtlas
     /// <returns>A unique id for the texture.</returns>
     public int AddTexture(Texture2D texture)
     {
-        Rect rect = pack.Insert(texture.width, texture.height, MaxRectsBinPack.FreeRectChoiceHeuristic.RectBestAreaFit);
+		Rect rect = pack.Insert(texture.width, texture.height, MaxRectsBinPack.FreeRectChoiceHeuristic.RectBestAreaFit);
         if (rect == new Rect())
             return -1;
 
@@ -113,7 +114,8 @@ public class TextureAtlas
         }
 
         rects.Add(newIndex, rect);
-		
+
+		/*
 		int x = Mathf.RoundToInt(rect.x);
 		int y = Mathf.RoundToInt(rect.y);
 		int width = Mathf.RoundToInt(rect.width);
@@ -131,33 +133,18 @@ public class TextureAtlas
         UnityEngine.Debug.Log(String.Format("DEBUG: set pixel done in: {0:00}:{1:00}:{2:00}.{3:00}", 
                     ts.Hours, ts.Minutes, ts.Seconds, 
                     ts.Milliseconds/10));
-
+		 */
+		
 		/*
 		UnityThreadHelper.TaskDistributor.Dispatch(() => {
-			Stopwatch watch = new Stopwatch();
-			
-			watch.Start();
-			
-			// essayer d'écrire block par block en parallèle avec des synchros
-			int blockSize = 128;
-			int length = (width - 1) * (height - 1);
-			for (int i = 0; i < length; i += blockSize)
-			{
-				UnityThreadHelper.Dispatcher.Dispatch(() => {
-					//UnityEngine.Debug.Log("DEBUG: name: " + texture.name + " x: " + (i % texture.width) + " y: " + Mathf.RoundToInt((float)i / (float)texture.width) + " (" + i + "/" + texture.width + ") block size: " + blockSize + " length: " + length);
-	        		this.texture.SetPixels(x + (i % width), y + Mathf.RoundToInt((float)i / (float)width), blockSize, 1, texture.GetPixels(i % texture.width, Mathf.RoundToInt((float)i / (float)texture.width), blockSize, 1));
-				});
-			}
-			this.isDirty = true;
-			
-			watch.Stop();
-			
-			TimeSpan ts = watch.Elapsed;
-	        UnityEngine.Debug.Log(String.Format("DEBUG: set pixel done in: {0:00}:{1:00}:{2:00}.{3:00}", 
-	                    ts.Hours, ts.Minutes, ts.Seconds, 
-	                    ts.Milliseconds/10));
+			pixelsWorker(texture, rect);
 		});
 		*/
+		
+		new Job(pixelsWorker(texture, rect), this, true);
+		
+		//UnityThreadHelper.CreateThread(() => { pixelsWorker(texture, rect); });
+		//pixelsWorker(texture, rect);
 		
 		/*
 		watch.Reset();
@@ -175,6 +162,62 @@ public class TextureAtlas
 
         return newIndex;
     }
+	
+	private IEnumerator pixelsWorker(Texture2D texture, Rect rect)
+	{
+		int x = Mathf.RoundToInt(rect.x);
+		int y = Mathf.RoundToInt(rect.y);
+		int width = Mathf.RoundToInt(rect.width);
+		int height = Mathf.RoundToInt(rect.height);
+		
+		/*
+		Stopwatch watch = new Stopwatch();
+		
+		watch.Start();
+		*/
+		
+		// essayer d'écrire block par block en parallèle avec des synchros
+		/*
+		int blockSize = 256;
+		int length = width * height;
+		for (int i = 0, j = 0; j <= length - blockSize; j += blockSize)
+		{
+			//UnityEngine.Debug.Log(String.Format("DEBUG: dispatch"));
+			//UnityThreadHelper.Dispatcher.Dispatch(() => {
+				//UnityEngine.Debug.Log("DEBUG: i: " + i);
+				//UnityEngine.Debug.Log("DEBUG: get pixels: name: " + texture + " x: " + (i % texture.width) + " y: " + Mathf.FloorToInt((float)i / (float)texture.width) + " (" + i + "/" + texture.width + ") block size: " + blockSize + " length: " + length);
+				Color[] pixels = texture.GetPixels(i % texture.width, Mathf.FloorToInt((float)i / (float)texture.width), blockSize, 1);
+				//UnityEngine.Debug.Log("DEBUG: set pixels: name: " + this.texture + " x: " + (x + (i % width)) + " y: " + (y + Mathf.FloorToInt((float)i / (float)width)) + " (" + y + " + " + i + "/" + width + ")");
+        		this.texture.SetPixels(x + (i % width), y + Mathf.FloorToInt((float)i / (float)width), blockSize, 1, pixels);
+				i += blockSize;
+			this.texture.Apply();
+			//});
+			//UnityEngine.Debug.Log(String.Format("DEBUG: done"));
+			yield return new WaitForFixedUpdate();
+		}
+		 */
+		
+		Color[] pixels = texture.GetPixels();
+		yield return new WaitForFixedUpdate();
+		this.texture.SetPixels(x, y, width, height, pixels);
+		yield return new WaitForFixedUpdate();
+		this.texture.Apply();
+
+		//UnityThreadHelper.Dispatcher.Dispatch(() => {
+			//this.texture.Apply();
+		//});
+
+		this.isDirty = true;
+		
+		/*
+		watch.Stop();
+		
+		TimeSpan ts = watch.Elapsed;
+        UnityEngine.Debug.Log(String.Format("DEBUG: set pixel done in: {0:00}:{1:00}:{2:00}.{3:00}", 
+                    ts.Hours, ts.Minutes, ts.Seconds, 
+                    ts.Milliseconds/10));
+                    */
+	}
 
     /// <summary>
     /// Removes a texture from the atlas.
