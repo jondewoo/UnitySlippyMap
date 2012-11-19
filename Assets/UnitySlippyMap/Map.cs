@@ -994,7 +994,7 @@ public class Map : MonoBehaviour
 		// create a GameObject as the root of the layer and add the templated Layer component to it
         GameObject layerRoot = new GameObject(name);
         Transform layerRootTransform = layerRoot.transform;
-        Debug.Log("DEBUG: layer root: " + layerRootTransform.position + " this position: " + this.gameObject.transform.position);
+        //Debug.Log("DEBUG: layer root: " + layerRootTransform.position + " this position: " + this.gameObject.transform.position);
 		layerRootTransform.parent = this.gameObject.transform;
         layerRootTransform.localPosition = Vector3.zero;
 		T layer = layerRoot.AddComponent<T>();

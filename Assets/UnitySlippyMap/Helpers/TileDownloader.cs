@@ -71,7 +71,22 @@ public class TileDownloader : MonoBehaviour
 	}
 	
 	#endregion
-	
+
+    private class AsyncInfo
+    {
+        private TileEntry entry;
+        public TileEntry Entry { get { return entry;  } }
+
+        private FileStream fs;
+        public FileStream FS { get { return fs; } }
+
+        public AsyncInfo(TileEntry entry, FileStream fs)
+        {
+            this.entry = entry;
+            this.fs = fs;
+        }
+    }
+
 	// <summary>
 	// The TileEntry class holds the information necessary to the TileDownloader to manage the tiles.
 	// It also handles the (down)loading/caching of the concerned tile, taking advantage of Prime31's JobManager
@@ -136,15 +151,21 @@ public class TileDownloader : MonoBehaviour
 		private IEnumerator DownloadCoroutine()
 		{
 			WWW www = null;
-			if (cached && File.Exists("file://" + Application.persistentDataPath + "/" + this.guid + ".png"))
-				www = new WWW("file://" + Application.persistentDataPath + "/" + this.guid + ".png");
-			else
-				www = new WWW(url);
-				
+            if (cached && File.Exists(Application.persistentDataPath + "/" + this.guid + ".png"))
+            {
+                www = new WWW("file:///" + Application.persistentDataPath + "/" + this.guid + ".png");
 #if DEBUG_LOG
-			Debug.Log("DEBUG: TileEntry.DownloadCoroutine: (down)loading from tile url: " + www.url);
+                Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from cache: url: " + www.url);
 #endif
-			
+            }
+            else
+            {
+                www = new WWW(url);
+#if DEBUG_LOG
+                Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from provider: url: " + www.url + "(cached: " + cached + ")");
+#endif
+            }
+				
 			yield return www;
 			
 			if (www.error == null && www.text.Contains("404 Not Found") == false)
@@ -199,11 +220,11 @@ public class TileDownloader : MonoBehaviour
     					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
     					this.guid = Guid.NewGuid().ToString();
     					
-    					FileStream fs = new FileStream(Application.persistentDataPath + "/" + this.guid + ".png", FileMode.Create);
-    					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), this);
+    					FileStream fs = new FileStream(Application.persistentDataPath + "/" + this.guid + ".png", FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+    					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), new AsyncInfo(this, fs));
     				
 #if DEBUG_LOG
-    					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done downloading: " + www.url + ", writing to cache: " + fs.Name);
+    					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading: " + www.url + ", writing to cache: " + fs.Name);
 #endif
     				}
     				else
@@ -218,15 +239,20 @@ public class TileDownloader : MonoBehaviour
 			{
 				error = true;
 #if DEBUG_LOG
-				Debug.LogError("ERROR: TileEntry.DownloadCoroutine: done downloading: " + www.url + " with error: " + www.error + " (" + www.text + ")");
+				Debug.LogError("ERROR: TileEntry.DownloadCoroutine: done downloading: " + www.url + " with error: " + www.error);
 #endif
 			}
 		}
 		
 		private static void EndWriteCallback(IAsyncResult result)
 		{
-			TileEntry entry = result.AsyncState as TileEntry;
-			entry.cached = true;
+			AsyncInfo info = result.AsyncState as AsyncInfo;
+			info.Entry.cached = true;
+
+            info.FS.EndWrite(result);
+            info.FS.Flush();
+
+            info.FS.Close();
 
 #if DEBUG_LOG
 			Debug.Log("DEBUG: TileEntry.EndWriteCallback: done writing: " + entry.url + " [" + entry.guid + "]");
@@ -248,6 +274,8 @@ public class TileDownloader : MonoBehaviour
 	private List<TileEntry>	tileToLoad = new List<TileEntry>();
 	private List<TileEntry>	tileLoading = new List<TileEntry>();
 	private List<TileEntry>	tiles = new List<TileEntry>();
+
+    private string          tilePath = Application.persistentDataPath;
 	
 	public int				MaxSimultaneousDownloads = 2;
 	public int				MaxCacheSize = 20000000; // 20 Mo
@@ -379,10 +407,10 @@ public class TileDownloader : MonoBehaviour
 			
 			// if the cache is full, erase the oldest entry
 			// FIXME: find a better way to handle the cache (cf. iPhone Maps app)
-			// FIXME: one apsect might be to erase tiles in batch, 10 or 20 at a time, a significant number anyway
+			// FIXME: one aspect might be to erase tiles in batch, 10 or 20 at a time, a significant number anyway
 			if (cacheSize > MaxCacheSize)
 			{
-				// beware the year 3000 bug :)
+                // beware the year 3000 bug :)
 				double oldestTimestamp = (new DateTime(3000, 1, 1) - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
 				TileEntry entryToErase = null;
 				foreach (TileEntry tile in tiles)
@@ -498,21 +526,21 @@ public class TileDownloader : MonoBehaviour
     private void DeleteCachedTile(TileEntry t)
     {
         cacheSize -= t.size;
-        File.Delete(Application.persistentDataPath + "/" + t.guid + ".png");
+        File.Delete(tilePath + "/" + t.guid + ".png");
         tiles.Remove(t);
     }
 
 	// <summary>
-	// Saves the tile informations to an XML file stored in Application.persistentDataPath.
+    // Saves the tile informations to an XML file stored in tilePath.
 	// </summary>
 	private void SaveTiles()
 	{
-		string filepath = Application.persistentDataPath + "/" + "tile_downloader.xml";
+        string filepath = tilePath + "/" + "tile_downloader.xml";
 		
 #if DEBUG_LOG
 		Debug.Log("DEBUG: TileDownloader.SaveTiles: file: " + filepath);
 #endif
-		
+
 		XmlSerializer xs = new XmlSerializer(tiles.GetType());
 		using (StreamWriter sw = new StreamWriter(filepath))
     	{
@@ -521,11 +549,11 @@ public class TileDownloader : MonoBehaviour
 	}
 	
 	// <summary>
-	// Loads the tile informations from an XML file stored in Application.persistentDataPath.
+    // Loads the tile informations from an XML file stored in tilePath.
 	// </summary>
 	private void LoadTiles()
 	{
-		string filepath = Application.persistentDataPath + "/" + "tile_downloader.xml";
+        string filepath = tilePath + "/" + "tile_downloader.xml";
 		
 		if (File.Exists(filepath) == false)
 		{
