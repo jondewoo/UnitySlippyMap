@@ -24,12 +24,16 @@ using System;
 using UnityEngine;
 
 using UnitySlippyMap;
+using System.IO;
 
 // <summary>
 // A class representing an Open Street Map tile layer.
 // </summary>
 public class OSMTileLayer : TileLayer
 {
+	public string		URLParametersFormat = "{0}/{1}/{2}";
+	public string		TileImageExtension = ".png";
+		
 	#region TileLayer implementation
 	
 	protected override void GetTileCountPerAxis(out int tileCountOnX, out int tileCountOnY)
@@ -106,6 +110,11 @@ public class OSMTileLayer : TileLayer
 		
 
 		return ret;
+	}
+	
+	protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
+	{
+		 return String.Format(Path.Combine(BaseURL, URLParametersFormat) + TileImageExtension, roundedZoom, tileX, tileY);
 	}
 
 	#endregion

@@ -1077,7 +1077,7 @@ public class Map : MonoBehaviour
 		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
 		Transform cameraTransform = Camera.main.transform;
         //float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * (screenScale * 0.75f);
+		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * (screenScale);// * 0.75f);
 		float t = y / cameraTransform.forward.y;
 		cameraTransform.position = new Vector3(
 			t * cameraTransform.forward.x,

@@ -19,6 +19,8 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#define DEBUG_LOG
+
 using UnityEngine;
 
 using System;
@@ -255,7 +257,7 @@ public class TileDownloader : MonoBehaviour
             info.FS.Close();
 
 #if DEBUG_LOG
-			Debug.Log("DEBUG: TileEntry.EndWriteCallback: done writing: " + entry.url + " [" + entry.guid + "]");
+			Debug.Log("DEBUG: TileEntry.EndWriteCallback: done writing: " + info.Entry.url + " [" + info.Entry.guid + "]");
 #endif
 		}
 	}

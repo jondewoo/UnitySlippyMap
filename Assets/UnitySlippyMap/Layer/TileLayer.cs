@@ -32,7 +32,8 @@ using UnitySlippyMap;
 // </summary>
 public abstract class TileLayer : Layer
 {
-	public string								URLFormat;
+	protected string							baseURL;
+	public string								BaseURL { get { return baseURL; } set { baseURL = value; } }
 	public int									TileCacheSizeLimit = 100;
 	public int									TileSize = 256;
 	
@@ -146,7 +147,7 @@ public abstract class TileLayer : Layer
 				|| pair.Key.StartsWith(roundedZoom + "_") == false)
 			{
 				string[] tileAddressTokens = pair.Key.Split(new char[] { '_' });
-				TileDownloader.Instance.Cancel(String.Format(URLFormat, tileAddressTokens[0], tileAddressTokens[1], tileAddressTokens[2]));
+				TileDownloader.Instance.Cancel(GetTileURL(Int32.Parse(tileAddressTokens[0]), Int32.Parse(tileAddressTokens[1]), Int32.Parse(tileAddressTokens[2])));
 				tilesToRemove.Add(pair.Key);
 				
 				Renderer renderer = pair.Value.renderer;
@@ -218,7 +219,8 @@ public abstract class TileLayer : Layer
 				tileMeshRenderer.enabled = true;
 				
                 // new Get method taking a delegate to be executed when it is done (assign the sharedMaterial there)
-				TileDownloader.Instance.Get(String.Format(URLFormat, Map.RoundedZoom, tileX, tileY), tile);
+				// FIXME: to be url format independent, get the url for the file from the tile layer implementation
+				TileDownloader.Instance.Get(GetTileURL(tileX, tileY, Map.RoundedZoom), tile);
 			}
 			
 			tileAddressLookedFor = tileAddress;
@@ -263,6 +265,23 @@ public abstract class TileLayer : Layer
 	// Writes the tile coordinates and offsets to the origin for the neighbour tile in the specified direction.
 	// </summary>
 	protected abstract bool GetNeighbourTile(int tileX, int tileY, float offsetX, float offsetY, int tileCountOnX, int tileCountOnY, NeighbourTileDirection dir, out int nTileX, out int nTileY, out float nOffsetX, out float nOffsetZ);
+	
+	/// <summary>
+	/// Gets the tile URL.
+	/// </summary>
+	/// <returns>
+	/// The tile URL.
+	/// </returns>
+	/// <param name='tileX'>
+	/// Tile x.
+	/// </param>
+	/// <param name='tileY'>
+	/// Tile y.
+	/// </param>
+	/// <param name='roundedZoom'>
+	/// Rounded zoom.
+	/// </param>
+	protected abstract string GetTileURL(int tileX, int tileY, int roundedZoom);
 	
 	#endregion
 	
