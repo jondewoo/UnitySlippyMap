@@ -210,7 +210,7 @@ public class TileDownloader : MonoBehaviour
                     material.mainTexture = texture;
                     material.mainTexture.wrapMode = TextureWrapMode.Clamp;
                     material.mainTexture.filterMode = FilterMode.Trilinear;
-                    tile.gameObject.active = true;
+					tile.renderer.enabled = true;
 					tile.Show();
 					
                     if (this.cached == false)

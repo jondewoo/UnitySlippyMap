@@ -876,11 +876,13 @@ public class Map : MonoBehaviour
 				locationMarker.OrientationMarker.rotation = Quaternion.AngleAxis(heading, Vector3.up);
 			}
 		}
-				
+	
+		/*
 		if (hasMoved)
 		{
-			//CurrentZoom = Tile.MapScaleToOsmZoomLevel(Camera.main.transform.position.y * scaleDivider, 0.0f, tileResolution, 72.0f); 
+			CurrentZoom = Tile.MapScaleToOsmZoomLevel(Camera.main.transform.position.y * scaleDivider, 0.0f, tileResolution, 72.0f); 
 		}
+		*/
 		
 		// pause the loading operations when moving
 		if (hasMoved == true)

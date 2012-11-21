@@ -147,7 +147,7 @@ public abstract class TileLayer : Layer
 				|| pair.Key.StartsWith(roundedZoom + "_") == false)
 			{
 				string[] tileAddressTokens = pair.Key.Split(new char[] { '_' });
-				TileDownloader.Instance.Cancel(GetTileURL(Int32.Parse(tileAddressTokens[0]), Int32.Parse(tileAddressTokens[1]), Int32.Parse(tileAddressTokens[2])));
+				TileDownloader.Instance.Cancel(GetTileURL(Int32.Parse(tileAddressTokens[1]), Int32.Parse(tileAddressTokens[2]), Int32.Parse(tileAddressTokens[0])));
 				tilesToRemove.Add(pair.Key);
 				
 				Renderer renderer = pair.Value.renderer;
@@ -157,7 +157,7 @@ public abstract class TileLayer : Layer
                     //TextureAtlasManager.Instance.RemoveTexture(pair.Value.TextureId);
 					renderer.material.mainTexture = null;
 				}
-				pair.Value.gameObject.active = false;
+				pair.Value.renderer.enabled = false;
 				
 #if DEBUG_LOG
 				Debug.Log("DEBUG: remove tile: " + pair.Key);
@@ -215,8 +215,8 @@ public abstract class TileLayer : Layer
 				
 				tile.name = "tile_" + tileAddress;
 				tiles.Add(tileAddress, tile);
-				MeshRenderer tileMeshRenderer = tile.GetComponent<MeshRenderer>();
-				tileMeshRenderer.enabled = true;
+				//MeshRenderer tileMeshRenderer = tile.GetComponent<MeshRenderer>();
+				//tileMeshRenderer.enabled = true;
 				
                 // new Get method taking a delegate to be executed when it is done (assign the sharedMaterial there)
 				// FIXME: to be url format independent, get the url for the file from the tile layer implementation
