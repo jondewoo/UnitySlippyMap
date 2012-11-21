@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_LOG
+//#define DEBUG_LOG
 
 using UnityEngine;
 
@@ -390,6 +390,7 @@ public class TileDownloader : MonoBehaviour
 #endif
     				// try downloading the tile again
     				entry.cached = false;
+					cacheSize -= entry.size;
     				tiles.Remove(entry);
                 }
                 else
