@@ -14,7 +14,7 @@ Current status
 
 UnitySlippyMap is in early alpha stage and currently supports [OSM tiles](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) from providers such as [OpenStreetMap](http://www.openstreetmap.org/), [MapQuest](http://www.mapquest.com/) or [CloudMade](http://cloudmade.com/).
 
-It is tested in Unity3D Editor, and on iOS and Android devices.
+It is tested in Unity3D Editor 3.5.6f4 & 4.0.0, and on iOS (beware the [Unity 4 GPS bug](http://forum.unity3d.com/threads/159257-Unity-4.0-iOS-GPS-Fix)) and Android devices.
 
 See the [TODO list](/jderrough/UnitySlippyMap#todo) if you want to contribute and don't know where to start.
 
@@ -32,7 +32,6 @@ Here is a short list of what could be fixed or added to UnitySlippyMap:
 * Handle device orientations properly when using the compass
 * Add support for well known tile providers (derive from TileLayer.cs)
 * Add new map objects (polygons, lines, ...)
-* Add support for marker billboarding
 * Add support for orthographic cameras
 * Add a better zoom rounding (>80%, <20%?)
 * Add a map constraint to a given 'size', bounce on limits

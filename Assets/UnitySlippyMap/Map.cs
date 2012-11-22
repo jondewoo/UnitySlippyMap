@@ -812,14 +812,45 @@ public class Map : MonoBehaviour
 		{
 			if (needsToUpdateCenterWithLocation)
 			{
-				CenterWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+				if (Input.location.lastData.longitude <= 180.0f
+					&& Input.location.lastData.longitude >= -180.0f
+					&& Input.location.lastData.latitude <= 90.0f
+					&& Input.location.lastData.latitude >= -90.0f)
+				{				
+					CenterWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+					
+					//Debug.Log("DEBUG: Map.Update: new location: " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);					
+				}
+				else
+				{
+//#if DEBUG_LOG
+					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);
+//#endif
+				}
 			}
 			
 			if (locationMarker != null)
 			{
+#if UNITY_4_0
+				if (locationMarker.gameObject.activeSelf == false)
+					locationMarker.gameObject.SetActive(true);
+#else
 				if (locationMarker.gameObject.active == false)
 					locationMarker.gameObject.SetActiveRecursively(true);
-				locationMarker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+#endif
+				if (Input.location.lastData.longitude <= 180.0f
+					&& Input.location.lastData.longitude >= -180.0f
+					&& Input.location.lastData.latitude <= 90.0f
+					&& Input.location.lastData.latitude >= -90.0f)
+				{
+					locationMarker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+				}
+				else
+				{
+//#if DEBUG_LOG
+					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);
+//#endif
+				}
 			}
 		}
 		
@@ -900,19 +931,31 @@ public class Map : MonoBehaviour
 			isDirty = false;
 			
 			if (locationMarker != null
+#if UNITY_4_0
+				&& locationMarker.gameObject.activeSelf == true)
+#else
 				&& locationMarker.gameObject.active == true)
+#endif
 				locationMarker.UpdateMarker();
 			
 			foreach (Layer layer in layers)
 			{
+#if UNITY_4_0
+				if (layer.gameObject.activeSelf == true
+#else
 				if (layer.gameObject.active == true
+#endif
 					&& layer.enabled == true)
 					layer.UpdateContent();
 			}
 			
 			foreach (Marker marker in markers)
 			{
+#if UNITY_4_0
+				if (marker.gameObject.activeSelf == true
+#else
 				if (marker.gameObject.active == true
+#endif
 					&& marker.enabled == true)
 					marker.UpdateMarker();
 			}
@@ -941,7 +984,11 @@ public class Map : MonoBehaviour
 	public void CenterOnLocation()
     {
 		if (locationMarker != null
+#if UNITY_4_0
+			&& locationMarker.gameObject.activeSelf == true)
+#else
 			&& locationMarker.gameObject.active == true)
+#endif
 			CenterWGS84 = locationMarker.CoordinatesWGS84;
         needsToUpdateCenterWithLocation = true;
     }
@@ -976,7 +1023,11 @@ public class Map : MonoBehaviour
 			&& Input.location.status == LocationServiceStatus.Running)
 			marker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
 		else
+#if UNITY_4_0
+			markerObject.SetActive(false);
+#else
 			markerObject.SetActiveRecursively(false);
+#endif
 		
 		// set the location marker
 		locationMarker = marker;

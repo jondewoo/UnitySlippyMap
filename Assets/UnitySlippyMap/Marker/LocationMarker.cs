@@ -41,7 +41,11 @@ public class LocationMarker : Marker
             {
                 orientationMarker.parent = this.transform;
                 orientationMarker.localPosition = Vector3.zero;
+#if UNITY_4_0
+                orientationMarker.gameObject.SetActive(this.gameObject.activeSelf);
+#else
                 orientationMarker.gameObject.SetActiveRecursively(this.gameObject.active);
+#endif
             }
         }
     }
