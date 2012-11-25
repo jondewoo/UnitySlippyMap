@@ -146,14 +146,15 @@ public class TestMap : MonoBehaviour
 		map.GUIDelegate += Toolbar;
 				
 		// create a test layer
+        /*
 		OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test tile layer");
 		layer.BaseURL = "http://a.tile.openstreetmap.org/";
+         */
 
-		/*
-		WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("test WMS tile layer");
-		wmsLayer.BaseURL = "http://wms.geosignal.fr/metropole?";
-		wmsLayer.Layers.Add("Monde");
-		*/
+        // http://www.osm-wms.de
+        WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("test WMS tile layer");
+        wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?";
+        wmsLayer.Layers = "osm_auto:all";
 		
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;

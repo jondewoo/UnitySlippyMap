@@ -39,34 +39,11 @@ public class WMSTileLayer : TileLayer
 
 	public new string		BaseURL { get { return baseURL; } set { baseURLChanged = true; baseURL = value; } }
 
-	private List<string>	layers = new List<string>();
-	public List<string>		Layers
-	{
-		get { return layers; }
-		set
-		{
-			layers = value;
-			
-			layersString = String.Empty;
-			if (layers != null)
-			{
-				for (int i = 0; i < layers.Count; ++i)
-				{
-					if (layers[i] != null && layers[i].Length != 0)
-					{
-						if (layersString.Length != 0)
-							layersString += ",";
-						layersString += layers[i];
-					}
-				}
-			}
-		}
-	}
+	private string	        layers = String.Empty;
+    public string           Layers { get { return layers; } set { layers = value; if (layers == null) layers = String.Empty; } }
 	
-	private string			layersString = String.Empty;
-	
-	private string			crs = "EPSG:4326";
-	public string			CRS { get { return crs; } } // FIXME: test conversions again to enable wide crs support
+	private string			srs = "EPSG:4326";
+	public string			SRS { get { return srs; } } // FIXME: test conversions again to enable wide crs support
 	
 	private string			format = "image/png";
 	public string			Format { get { return format; } set { format = value; } }
@@ -223,12 +200,15 @@ public class WMSTileLayer : TileLayer
 	protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
 	{
 		double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
-		float halfTileSize = Map.RoundedHalfMapScale / 2.0f;
-		double xmin = tile[0] - halfTileSize;
-		double ymin = tile[1] - halfTileSize;
-		double xmax = tile[0] + halfTileSize;
-		double ymax = tile[1] + halfTileSize;
-		return baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=" + layersString + "&STYLES=&CRS=" + crs + "&BBOX=" + xmin + "," + ymin + "," + xmax + "," + ymax + "&WIDTH=" + Map.TileResolution + "&HEIGHT=" + Map.TileResolution + "&FORMAT=" + format;
+        double[] tileMeters = GeoHelpers.WGS84ToMeters(tile[0], tile[1]);
+		float halfTileSize = Map.TileResolution * GeoHelpers.MetersPerPixel(0.0f, Map.CurrentZoom) / 2.0f;
+        double xmin = tileMeters[0] - halfTileSize;
+        double ymin = tileMeters[1] - halfTileSize;
+        double xmax = tileMeters[0] + halfTileSize;
+        double ymax = tileMeters[1] + halfTileSize;
+        double[] min = GeoHelpers.MetersToWGS84(xmin, ymin);
+        double[] max = GeoHelpers.MetersToWGS84(xmax, ymax);
+        return baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=" + layers + "&STYLES=&SRS=" + srs + "&BBOX=" + min[0] + "," + min[1] + "," + max[0] + "," + max[1] + "&WIDTH=" + Map.TileResolution + "&HEIGHT=" + Map.TileResolution + "&FORMAT=" + format;
 	}
 	#endregion
 }
