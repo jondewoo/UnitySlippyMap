@@ -35,7 +35,7 @@ public abstract class TileLayer : Layer
 	protected string							baseURL;
 	public string								BaseURL { get { return baseURL; } set { baseURL = value; } }
 	public int									TileCacheSizeLimit = 100;
-	public int									TileSize = 256;
+	//public int									TileSize = 256;
 	
 	// shared tile template
 	protected static Tile   					tileTemplate;
@@ -53,6 +53,9 @@ public abstract class TileLayer : Layer
 		East,
 		West
 	}
+
+    protected bool                              isReadyToBeQueried = false;
+    protected bool                              needsToBeUpdatedWhenReady = false;
 	
 	#region MonoBehaviour implementation
 	
@@ -96,17 +99,19 @@ public abstract class TileLayer : Layer
 	{
 		if (tileTemplate.transform.localScale.x != Map.RoundedHalfMapScale)
 			tileTemplate.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
-		
-        if (Camera.main != null)
+
+        if (Camera.main != null && isReadyToBeQueried)
         {
-    		Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-    		
-    		CleanUpTiles(frustum, Map.RoundedZoom);
-    		
-    		visitedTiles.Clear();
-    
-    		UpdateTiles(frustum);
+            Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+
+            CleanUpTiles(frustum, Map.RoundedZoom);
+
+            visitedTiles.Clear();
+
+            UpdateTiles(frustum);
         }
+        else
+            needsToBeUpdatedWhenReady = true;
 		
 		// move the tiles by the map's root translation
 		Vector3 displacement = Map.gameObject.transform.position;

@@ -33,10 +33,19 @@ public class OSMTileLayer : TileLayer
 {
 	public string		URLParametersFormat = "{0}/{1}/{2}";
 	public string		TileImageExtension = ".png";
-		
-	#region TileLayer implementation
-	
-	protected override void GetTileCountPerAxis(out int tileCountOnX, out int tileCountOnY)
+
+    #region OSMTileLayer implementation
+
+    public OSMTileLayer()
+    {
+        isReadyToBeQueried = true;
+    }
+
+    #endregion
+
+    #region TileLayer implementation
+
+    protected override void GetTileCountPerAxis(out int tileCountOnX, out int tileCountOnY)
 	{
 		tileCountOnX = tileCountOnY = (int)Mathf.Pow(2, Map.RoundedZoom);
 	}
@@ -114,7 +123,10 @@ public class OSMTileLayer : TileLayer
 	
 	protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
 	{
-		 return String.Format(Path.Combine(BaseURL, URLParametersFormat) + TileImageExtension, roundedZoom, tileX, tileY);
+        double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
+        Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
+
+        return String.Format(Path.Combine(BaseURL, URLParametersFormat) + TileImageExtension, roundedZoom, tileX, tileY);
 	}
 
 	#endregion

@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_LOG
+//#define DEBUG_LOG
 
 using System;
 using System.IO;
@@ -29,6 +29,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using UnitySlippyMap;
+
+using ProjNet;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
+using ProjNet.Converters.WellKnownText;
 
 // <summary>
 // A class representing a Web Mapping Service tile layer.
@@ -50,19 +55,34 @@ public class WMSTileLayer : TileLayer
 	
 	private bool			baseURLChanged = false;
 	private WWW				loader;
-	
-	#endregion
-	
-	#region MonoBehaviour implementation
-	
-	private void Update()
+
+    private bool            isParsingGetCapabilities = false;
+
+    #endregion
+
+    #region WMSTileLayer
+
+    public WMSTileLayer()
+    {
+    }
+
+    #endregion
+
+    #region MonoBehaviour implementation
+
+    private void Update()
 	{
 		if (baseURLChanged && loader == null)
 		{
-			if (baseURL != null && baseURL != String.Empty)
+#if DEBUG_LOG
+            Debug.Log("DEBUG: WMSTileLayer.Update: launching GetCapabilities on: " + baseURL);
+#endif
+
+            if (baseURL != null && baseURL != String.Empty)
 				loader = new WWW(baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.1.1");
 			else
 				loader = null;
+
 			baseURLChanged = false;
 		}
 		else if (loader != null && loader.isDone)
@@ -77,42 +97,71 @@ public class WMSTileLayer : TileLayer
 			}
 			else
 			{
+                if (isParsingGetCapabilities == false)
+                {
 #if DEBUG_LOG
-				Debug.Log("DEBUG: get capabilities:\n" + loader.text);
+                    Debug.Log("DEBUG: WMSTileLayer.Update: GetCapabilities response:\n" + loader.text);
 #endif
-				XmlSerializer xs = new XmlSerializer(typeof (UnitySlippyMap.WMS.WMT_MS_Capabilities));
-				UnitySlippyMap.WMS.WMT_MS_Capabilities capabilities = xs.Deserialize(new MemoryStream(loader.bytes)) as UnitySlippyMap.WMS.WMT_MS_Capabilities;
-				
-				Debug.Log(String.Format(
-					"DEBUG: capabilities:\nversion: {0}\n" +
-					"\tService:\n\t\tName: {1}\n\t\tTitle: {2}\n\t\tAbstract: {3}\n\t\tOnlineResource: {4}\n" + 
-					"\t\tContactInformation:\n" +
-					"\t\t\tContactAddress:\n\t\t\t\tAddressType: {5}\n\t\t\t\tAddress: {6}\n\t\t\t\tCity: {7}\n\t\t\t\tStateOrProvince: {8}\n\t\t\t\tPostCode: {9}\n\t\t\t\tCountry: {10}\n" +
-					"\t\t\tContactElectronicMailAddress: {11}\n" +
-					"\t\tFees: {12}\n",
-					capabilities.version,
-					capabilities.Service.Name,
-					capabilities.Service.Title,
-					capabilities.Service.Abstract,
-					capabilities.Service.OnlineResource.href,
-					capabilities.Service.ContactInformation.ContactAddress.AddressType,
-					capabilities.Service.ContactInformation.ContactAddress.Address,
-					capabilities.Service.ContactInformation.ContactAddress.City,
-					capabilities.Service.ContactInformation.ContactAddress.StateOrProvince,
-					capabilities.Service.ContactInformation.ContactAddress.PostCode,
-					capabilities.Service.ContactInformation.ContactAddress.Country,
-					capabilities.Service.ContactInformation.ContactElectronicMailAddress,
-					capabilities.Service.Fees
-					));
 
-				string layers = String.Empty;
-				foreach (UnitySlippyMap.WMS.Layer layer in capabilities.Capability.Layer.Layers)
-				{
-					layers += layer.Name + " " + layer.Abstract + "\n";
-				}
-				Debug.Log("DEBUG: layers: " + capabilities.Capability.Layer.Layers.Count + "\n" + layers);
-				
-				loader = null;
+                    byte[] bytes = loader.bytes;
+
+                    isParsingGetCapabilities = true;
+
+                    UnityThreadHelper.TaskDistributor.Dispatch(() =>
+                    {
+                        XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
+                        UnitySlippyMap.WMS.WMT_MS_Capabilities capabilities = xs.Deserialize(new MemoryStream(bytes)) as UnitySlippyMap.WMS.WMT_MS_Capabilities;
+
+                        /*
+                        Debug.Log(String.Format(
+                            "DEBUG: capabilities:\nversion: {0}\n" +
+                            "\tService:\n\t\tName: {1}\n\t\tTitle: {2}\n\t\tAbstract: {3}\n\t\tOnlineResource: {4}\n" + 
+                            "\t\tContactInformation:\n" +
+                            "\t\t\tContactAddress:\n\t\t\t\tAddressType: {5}\n\t\t\t\tAddress: {6}\n\t\t\t\tCity: {7}\n\t\t\t\tStateOrProvince: {8}\n\t\t\t\tPostCode: {9}\n\t\t\t\tCountry: {10}\n" +
+                            "\t\t\tContactElectronicMailAddress: {11}\n" +
+                            "\t\tFees: {12}\n",
+                            capabilities.version,
+                            capabilities.Service.Name,
+                            capabilities.Service.Title,
+                            capabilities.Service.Abstract,
+                            capabilities.Service.OnlineResource.href,
+                            capabilities.Service.ContactInformation.ContactAddress.AddressType,
+                            capabilities.Service.ContactInformation.ContactAddress.Address,
+                            capabilities.Service.ContactInformation.ContactAddress.City,
+                            capabilities.Service.ContactInformation.ContactAddress.StateOrProvince,
+                            capabilities.Service.ContactInformation.ContactAddress.PostCode,
+                            capabilities.Service.ContactInformation.ContactAddress.Country,
+                            capabilities.Service.ContactInformation.ContactElectronicMailAddress,
+                            capabilities.Service.Fees
+                            ));
+                        */
+
+                        isReadyToBeQueried = true;
+
+                        loader = null;
+
+                        isParsingGetCapabilities = false;
+
+                        UnityThreadHelper.Dispatcher.Dispatch(() =>
+                        {
+#if DEBUG_LOG
+                            string layers = String.Empty;
+                            foreach (UnitySlippyMap.WMS.Layer layer in capabilities.Capability.Layer.Layers)
+                            {
+                                layers += layer.Name + " " + layer.Abstract + "\n";
+                            }
+
+                            Debug.Log("DEBUG: WMSTileLayer.Update: layers: " + capabilities.Capability.Layer.Layers.Count + "\n" + layers);
+#endif
+
+                            if (needsToBeUpdatedWhenReady)
+                            {
+                                UpdateContent();
+                                needsToBeUpdatedWhenReady = false;
+                            }
+                        });
+                    });
+                }
 			}
 		}
 	}
@@ -130,7 +179,7 @@ public class WMSTileLayer : TileLayer
 	{
 		int[] tileCoordinates = GeoHelpers.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
 		double[] centerTile = GeoHelpers.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
-		double[] centerTileMeters = GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
+        double[] centerTileMeters = GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
 
 		tileX = tileCoordinates[0];
 		tileY = tileCoordinates[1];
@@ -201,11 +250,12 @@ public class WMSTileLayer : TileLayer
 	{
 		double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
         double[] tileMeters = GeoHelpers.WGS84ToMeters(tile[0], tile[1]);
-		float halfTileSize = Map.TileResolution * GeoHelpers.MetersPerPixel(0.0f, Map.CurrentZoom) / 2.0f;
-        double xmin = tileMeters[0] - halfTileSize;
-        double ymin = tileMeters[1] - halfTileSize;
-        double xmax = tileMeters[0] + halfTileSize;
-        double ymax = tileMeters[1] + halfTileSize;
+        float tileSize = Map.TileResolution * Map.RoundedMetersPerPixel;
+        float halfTileSize = tileSize / 2.0f;
+        double xmin = tileMeters[0];
+        double ymin = tileMeters[1] - tileSize;
+        double xmax = tileMeters[0] + tileSize;
+        double ymax = tileMeters[1];
         double[] min = GeoHelpers.MetersToWGS84(xmin, ymin);
         double[] max = GeoHelpers.MetersToWGS84(xmax, ymax);
         return baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=" + layers + "&STYLES=&SRS=" + srs + "&BBOX=" + min[0] + "," + min[1] + "," + max[0] + "," + max[1] + "&WIDTH=" + Map.TileResolution + "&HEIGHT=" + Map.TileResolution + "&FORMAT=" + format;

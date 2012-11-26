@@ -153,9 +153,13 @@ public class TestMap : MonoBehaviour
 
         // http://www.osm-wms.de
         WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("test WMS tile layer");
-        wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?";
+        /*
+        wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // seems to be of very limited use
         wmsLayer.Layers = "osm_auto:all";
-		
+         */
+        wmsLayer.BaseURL = "http://labs.metacarta.com/wms/vmap0";
+        wmsLayer.Layers = "basic";
+
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
 		go.renderer.material.mainTexture = MarkerTexture;
