@@ -24,6 +24,9 @@ using UnityEngine;
 using System;
 
 using UnitySlippyMap;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
+using ProjNet.Converters.WellKnownText;
 
 public class TestMap : MonoBehaviour
 {
@@ -144,7 +147,7 @@ public class TestMap : MonoBehaviour
 		map.ShowGUIControls = true;
 
 		map.GUIDelegate += Toolbar;
-				
+
 		// create a test layer
         /*
 		OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test tile layer");

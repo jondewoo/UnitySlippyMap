@@ -64,6 +64,7 @@ namespace UnitySlippyMap
         // <summary>
         // Converts WGS84 coordinates to EPSG 900913.
         // </summary>
+        /*
         public static double[] WGS84ToMeters(double lon, double lat)
         {
             double[] p = new double[2];
@@ -74,10 +75,12 @@ namespace UnitySlippyMap
 
             return p;
         }
+         */
 
         // <summary>
         // Converts EPSG 900913 coordinates to WGS84.
         // </summary>
+        /*
         public static double[] MetersToWGS84(double x, double y)
         {
             double[] p = new double[2];
@@ -88,6 +91,7 @@ namespace UnitySlippyMap
 
             return p;
         }
+         */
 
         /*
         public static double[] WGS84OffsetToTileUpperLeftCorner(double lon, double lat, int zoom)

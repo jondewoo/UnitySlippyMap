@@ -54,7 +54,7 @@ public class OSMTileLayer : TileLayer
 	{
 		int[] tileCoordinates = GeoHelpers.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
 		double[] centerTile = GeoHelpers.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
-		double[] centerTileMeters = GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
+        double[] centerTileMeters = Map.WGS84ToEPSG900913Transform.Transform(centerTile); //GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
 
 		tileX = tileCoordinates[0];
 		tileY = tileCoordinates[1];

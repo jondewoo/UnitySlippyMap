@@ -42,29 +42,23 @@ public class WMSTileLayer : TileLayer
 {
 	#region Private members & properties
 
-	public new string		BaseURL { get { return baseURL; } set { baseURLChanged = true; baseURL = value; } }
+	public new string		    BaseURL { get { return baseURL; } set { baseURLChanged = true; baseURL = value; } }
 
-	private string	        layers = String.Empty;
-    public string           Layers { get { return layers; } set { layers = value; if (layers == null) layers = String.Empty; } }
+	private string	            layers = String.Empty;
+    public string               Layers { get { return layers; } set { layers = value; if (layers == null) layers = String.Empty; } }
+
+    private ICoordinateSystem   srs = GeographicCoordinateSystem.WGS84;
+    public ICoordinateSystem    SRS { get { return srs; } set { srs = value; srsName = srs.Authority + ":" + srs.AuthorityCode;  } }
+    private string              srsName = "EPSG:4326";
+    public string               SRSName { get { return srsName; } }
+    
+	private string			    format = "image/png";
+	public string			    Format { get { return format; } set { format = value; } }
 	
-	private string			srs = "EPSG:4326";
-	public string			SRS { get { return srs; } } // FIXME: test conversions again to enable wide crs support
-	
-	private string			format = "image/png";
-	public string			Format { get { return format; } set { format = value; } }
-	
-	private bool			baseURLChanged = false;
-	private WWW				loader;
+	private bool			    baseURLChanged = false;
+	private WWW				    loader;
 
-    private bool            isParsingGetCapabilities = false;
-
-    #endregion
-
-    #region WMSTileLayer
-
-    public WMSTileLayer()
-    {
-    }
+    private bool                isParsingGetCapabilities = false;
 
     #endregion
 
@@ -136,12 +130,6 @@ public class WMSTileLayer : TileLayer
                             ));
                         */
 
-                        isReadyToBeQueried = true;
-
-                        loader = null;
-
-                        isParsingGetCapabilities = false;
-
                         UnityThreadHelper.Dispatcher.Dispatch(() =>
                         {
 #if DEBUG_LOG
@@ -153,6 +141,12 @@ public class WMSTileLayer : TileLayer
 
                             Debug.Log("DEBUG: WMSTileLayer.Update: layers: " + capabilities.Capability.Layer.Layers.Count + "\n" + layers);
 #endif
+
+                            isReadyToBeQueried = true;
+
+                            loader = null;
+
+                            isParsingGetCapabilities = false;
 
                             if (needsToBeUpdatedWhenReady)
                             {
@@ -179,7 +173,7 @@ public class WMSTileLayer : TileLayer
 	{
 		int[] tileCoordinates = GeoHelpers.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
 		double[] centerTile = GeoHelpers.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
-        double[] centerTileMeters = GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
+        double[] centerTileMeters = Map.WGS84ToEPSG900913Transform.Transform(centerTile); //GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
 
 		tileX = tileCoordinates[0];
 		tileY = tileCoordinates[1];
@@ -249,16 +243,11 @@ public class WMSTileLayer : TileLayer
 	protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
 	{
 		double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
-        double[] tileMeters = GeoHelpers.WGS84ToMeters(tile[0], tile[1]);
+        double[] tileMeters = Map.WGS84ToEPSG900913Transform.Transform(tile); //GeoHelpers.WGS84ToMeters(tile[0], tile[1]);
         float tileSize = Map.TileResolution * Map.RoundedMetersPerPixel;
-        float halfTileSize = tileSize / 2.0f;
-        double xmin = tileMeters[0];
-        double ymin = tileMeters[1] - tileSize;
-        double xmax = tileMeters[0] + tileSize;
-        double ymax = tileMeters[1];
-        double[] min = GeoHelpers.MetersToWGS84(xmin, ymin);
-        double[] max = GeoHelpers.MetersToWGS84(xmax, ymax);
-        return baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=" + layers + "&STYLES=&SRS=" + srs + "&BBOX=" + min[0] + "," + min[1] + "," + max[0] + "," + max[1] + "&WIDTH=" + Map.TileResolution + "&HEIGHT=" + Map.TileResolution + "&FORMAT=" + format;
+        double[] min = Map.EPSG900913ToWGS84Transform.Transform(new double[2] { tileMeters[0], tileMeters[1] - tileSize }); //GeoHelpers.MetersToWGS84(xmin, ymin);
+        double[] max = Map.EPSG900913ToWGS84Transform.Transform(new double[2] { tileMeters[0] + tileSize, tileMeters[1] }); //GeoHelpers.MetersToWGS84(xmax, ymax);
+        return baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=" + layers + "&STYLES=&SRS=" + srsName + "&BBOX=" + min[0] + "," + min[1] + "," + max[0] + "," + max[1] + "&WIDTH=" + Map.TileResolution + "&HEIGHT=" + Map.TileResolution + "&FORMAT=" + format;
 	}
 	#endregion
 }
