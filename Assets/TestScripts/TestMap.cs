@@ -149,21 +149,23 @@ public class TestMap : MonoBehaviour
 		map.GUIDelegate += Toolbar;
 
 		// create a test layer
-        /*
-		OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test OSM tile layer");
+        OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test OSM tile layer");
 		layer.BaseURL = "http://a.tile.openstreetmap.org/";
-
+		
+		/*
         // http://www.osm-wms.de
         WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("test WMS tile layer");
         //wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // seems to be of very limited use
         //wmsLayer.Layers = "osm_auto:all";
         wmsLayer.BaseURL = "http://labs.metacarta.com/wms/vmap0";
         wmsLayer.Layers = "basic";
-         */
-
+		*/
+		
+		/*
         VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("test VirtualEarth tile layer");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
+		*/
 
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;

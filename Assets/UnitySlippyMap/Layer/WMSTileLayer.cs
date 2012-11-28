@@ -34,6 +34,7 @@ using ProjNet;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
+using System.Xml;
 
 // <summary>
 // A class representing a Web Mapping Service tile layer.
@@ -106,8 +107,32 @@ public class WMSTileLayer : TileLayer
 
                     UnityThreadHelper.TaskDistributor.Dispatch(() =>
                     {
-                        XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
-                        UnitySlippyMap.WMS.WMT_MS_Capabilities capabilities = xs.Deserialize(new MemoryStream(bytes)) as UnitySlippyMap.WMS.WMT_MS_Capabilities;
+						UnitySlippyMap.WMS.WMT_MS_Capabilities capabilities = null;
+						try
+						{
+	                        XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
+							using (XmlReader xr = XmlReader.Create(new MemoryStream(bytes),
+							new XmlReaderSettings {
+								ProhibitDtd = false//,
+								//FIXME: not tested on Android
+#if UNITY_IPHONE
+								, XmlResolver = null
+#endif
+							}))
+							{
+	                        	capabilities = xs.Deserialize(xr/*new MemoryStream(bytes)*/) as UnitySlippyMap.WMS.WMT_MS_Capabilities;
+							}
+						}
+						catch (Exception
+#if DEBUG_LOG
+							e
+#endif
+							)
+						{
+#if DEBUG_LOG
+                            Debug.LogError("ERROR: WMSTileLayer.Update: GetCapabilities deserialization exception:\n" + e.Source + " : " + e.InnerException + "\n" + e.Message + "\n" + e.StackTrace);
+#endif
+						}
 
                         /*
                         Debug.Log(String.Format(
@@ -136,13 +161,16 @@ public class WMSTileLayer : TileLayer
                         UnityThreadHelper.Dispatcher.Dispatch(() =>
                         {
 #if DEBUG_LOG
-                            string layers = String.Empty;
-                            foreach (UnitySlippyMap.WMS.Layer layer in capabilities.Capability.Layer.Layers)
-                            {
-                                layers += layer.Name + " " + layer.Abstract + "\n";
-                            }
-
-                            Debug.Log("DEBUG: WMSTileLayer.Update: layers: " + capabilities.Capability.Layer.Layers.Count + "\n" + layers);
+							if (capabilities != null)
+							{
+	                            string layers = String.Empty;
+	                            foreach (UnitySlippyMap.WMS.Layer layer in capabilities.Capability.Layer.Layers)
+	                            {
+	                                layers += layer.Name + " " + layer.Abstract + "\n";
+	                            }
+	
+	                            Debug.Log("DEBUG: WMSTileLayer.Update: layers: " + capabilities.Capability.Layer.Layers.Count + "\n" + layers);
+							}
 #endif
 
                             isReadyToBeQueried = true;

@@ -113,6 +113,8 @@ public class VirtualEarthTileLayer : TileLayer
                         {
                             XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.VirtualEarth.Metadata), "http://schemas.microsoft.com/search/local/ws/rest/v1");
                             metadata = xs.Deserialize(new MemoryStream(bytes)) as UnitySlippyMap.VirtualEarth.Metadata;
+
+                            baseURL = (metadata.ResourceSets[0].Resources[0] as UnitySlippyMap.VirtualEarth.ImageryMetadata).ImageUrl.Replace("{culture}", CultureInfo.CurrentCulture.ToString());
                         }
                         catch (
                             Exception
@@ -124,7 +126,6 @@ public class VirtualEarthTileLayer : TileLayer
 #if DEBUG_LOG
                             Debug.LogError("ERROR: VirtualEarthTileLayer.Update: metadata deserialization exception:\n" + e.Source + " : " + e.InnerException + "\n" + e.Message + "\n" + e.StackTrace);
 #endif
-                            return;
                         }
 
                         UnityThreadHelper.Dispatcher.Dispatch(() =>
@@ -132,8 +133,6 @@ public class VirtualEarthTileLayer : TileLayer
 #if DEBUG_LOG
                             Debug.Log("DEBUG: VirtualEarthTileLayer.Update: ImageUrl: " + (metadata.ResourceSets[0].Resources[0] as UnitySlippyMap.VirtualEarth.ImageryMetadata).ImageUrl);
 #endif
-
-                            baseURL = (metadata.ResourceSets[0].Resources[0] as UnitySlippyMap.VirtualEarth.ImageryMetadata).ImageUrl.Replace("{culture}", CultureInfo.CurrentCulture.ToString());
 
                             isReadyToBeQueried = true;
 
