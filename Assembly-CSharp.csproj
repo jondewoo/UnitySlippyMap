@@ -64,10 +64,13 @@
      <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\TaskDistributer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Thread.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\UnityThreadHelper.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\Metadata.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\TileSystem.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\WMS\WMS111.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\Layer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\OSMTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\TileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\VirtualEarthTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\WMSTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Map.cs" />
      <Compile Include="Assets\UnitySlippyMap\Marker\LocationMarker.cs" />

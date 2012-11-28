@@ -3,7 +3,8 @@ UnitySlippyMap
 
 A slippy map implementation written in C# for Unity3D.
 
-It aims at helping developpers create 2D/3D maps working with a variety of online tile providers (OpenStreetMap, GoogleMaps, Yahoo! Maps, Bing Maps, ...) and offline sources (DBMap, MBTiles, ...) like [Route-me](https://github.com/route-me/route-me) (iOS) or [Leaflet](http://leaflet.cloudmade.com/) (HTML5), on every platform supported by Unity3D.
+It aims at helping developpers create 2D/3D maps working with a variety of online tile providers (OpenStreetMap, Yahoo! Maps, Bing Maps, ...) and offline sources (DBMap, MBTiles, ...) like [Route-me](https://github.com/route-me/route-me) (iOS) or [Leaflet](http://leaflet.cloudmade.com/) (HTML5), on every platform supported by Unity3D.
+Google Maps won't be supported (see [Google Maps tiles terms of service](https://developers.google.com/maps/faq#tos_tiles))
 
 Hopefully, it will also be compliant with a number of popular [OGC](http://www.opengeospatial.org/) standards like WMS or GML.
 
@@ -12,7 +13,10 @@ Map objects (tiles, markers, ...) are placed in 3D space along X and Z axis. The
 Current status
 --------------
 
-UnitySlippyMap is in early alpha stage and currently supports [OSM tiles](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) from providers such as [OpenStreetMap](http://www.openstreetmap.org/), [MapQuest](http://www.mapquest.com/) or [CloudMade](http://cloudmade.com/).
+UnitySlippyMap is in early alpha stage and currently supports:
+  * [OSM tiles](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) from providers such as [OpenStreetMap](http://www.openstreetmap.org/), [MapQuest](http://www.mapquest.com/) or [CloudMade](http://cloudmade.com/)
+  * [WMS tiles](http://en.wikipedia.org/wiki/Web_Map_Service)
+  * [VirtualEarth/Bing maps tiles](http://www.microsoft.com/maps/)
 
 It is tested in Unity3D Editor 3.5.6f4 & 4.0.0, and on iOS (beware the [Unity 4 GPS bug](http://forum.unity3d.com/threads/159257-Unity-4.0-iOS-GPS-Fix)) and Android devices.
 

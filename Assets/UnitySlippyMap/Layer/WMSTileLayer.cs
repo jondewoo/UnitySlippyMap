@@ -40,6 +40,8 @@ using ProjNet.Converters.WellKnownText;
 // </summary>
 public class WMSTileLayer : TileLayer
 {
+    // TODO: summaries, argument safeguards (null, srs & layer support check against capabilities), support other versions of WMS (used trang to convert dtd to xsd, then Xsd2Code to generate xml serializable classes)
+
 	#region Private members & properties
 
 	public new string		    BaseURL { get { return baseURL; } set { baseURLChanged = true; baseURL = value; } }
@@ -78,7 +80,8 @@ public class WMSTileLayer : TileLayer
 				loader = null;
 
 			baseURLChanged = false;
-		}
+            isReadyToBeQueried = false;
+        }
 		else if (loader != null && loader.isDone)
 		{
 			if (loader.error != null || loader.text.Contains("404 Not Found"))

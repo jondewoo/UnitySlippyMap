@@ -59,7 +59,7 @@ public abstract class TileLayer : Layer
 	
 	#region MonoBehaviour implementation
 	
-	void Awake()
+	protected void Awake()
 	{
 		// create the tile template if needed
 		if (tileTemplate == null)
@@ -72,13 +72,13 @@ public abstract class TileLayer : Layer
 	}
 	
 	// Use this for initialization
-	void Start ()
+	private void Start ()
 	{		
 		if (tileTemplate.transform.localScale.x != Map.RoundedHalfMapScale)
 			tileTemplate.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
 	}
-	
-	void OnDestroy()
+
+    private void OnDestroy()
 	{
 		--tileTemplateUseCount;
 		
@@ -86,8 +86,8 @@ public abstract class TileLayer : Layer
 		if (tileTemplate != null && tileTemplateUseCount == 0)
 			DestroyImmediate(tileTemplate);
 	}
-	
-	void Update()
+
+    private void Update()
 	{
 	}
 	

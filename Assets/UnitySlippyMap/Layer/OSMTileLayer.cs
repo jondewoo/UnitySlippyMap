@@ -123,8 +123,8 @@ public class OSMTileLayer : TileLayer
 	
 	protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
 	{
-        double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
-        Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
+        //double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
+        //Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
 
         return String.Format(Path.Combine(BaseURL, URLParametersFormat) + TileImageExtension, roundedZoom, tileX, tileY);
 	}
