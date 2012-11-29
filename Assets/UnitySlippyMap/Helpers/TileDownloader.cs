@@ -73,7 +73,9 @@ public class TileDownloader : MonoBehaviour
 	}
 	
 	#endregion
-
+	
+	#region Tile download subclasses
+	
     private class AsyncInfo
     {
         private TileEntry entry;
@@ -262,6 +264,10 @@ public class TileDownloader : MonoBehaviour
 		}
 	}
 	
+	#endregion
+	
+	#region Private members & properties
+	
 	// <summary>
 	// Match predicate to find tiles by URL
 	// </summary>
@@ -273,15 +279,21 @@ public class TileDownloader : MonoBehaviour
 		return false;
 	}
 	
-	private List<TileEntry>	tileToLoad = new List<TileEntry>();
-	private List<TileEntry>	tileLoading = new List<TileEntry>();
+	private List<TileEntry>	tilesToLoad = new List<TileEntry>();
+	private List<TileEntry>	tilesLoading = new List<TileEntry>();
 	private List<TileEntry>	tiles = new List<TileEntry>();
 
     private string          tilePath = Application.persistentDataPath;
 	
-	public int				MaxSimultaneousDownloads = 2;
-	public int				MaxCacheSize = 20000000; // 20 Mo
+	private int				maxSimultaneousDownloads = 2;
+	public int				MaxSimultaneousDownloads { get { return maxSimultaneousDownloads; } set { maxSimultaneousDownloads = value; } }
+	
+	private int				maxCacheSize = 20000000; // 20 Mo
+	public int				MaxCacheSize { get { return maxCacheSize; } set { maxCacheSize = value; } }
+	
 	private int				cacheSize = 0;
+	
+	#endregion
 		
 	#region Public methods
 	
@@ -295,7 +307,7 @@ public class TileDownloader : MonoBehaviour
 #endif
         
 		tileURLLookedFor = url;
-		if (tileToLoad.Exists(tileURLMatchPredicate))
+		if (tilesToLoad.Exists(tileURLMatchPredicate))
 		{
 #if DEBUG_LOG
 			Debug.LogWarning("WARNING: TileDownloader.Get: already asked for url: " + url);
@@ -303,7 +315,7 @@ public class TileDownloader : MonoBehaviour
 			return ;
 		}
 		
-		if (tileLoading.Exists(tileURLMatchPredicate))
+		if (tilesLoading.Exists(tileURLMatchPredicate))
 		{
 #if DEBUG_LOG
 			Debug.LogWarning("WARNING: TileDownloader.Get: already downloading url: " + url);
@@ -318,7 +330,7 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_LOG
             Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list");
 #endif
-            tileToLoad.Add(new TileEntry(url, tile));
+            tilesToLoad.Add(new TileEntry(url, tile));
         }
 		else
 		{
@@ -328,7 +340,7 @@ public class TileDownloader : MonoBehaviour
 			cachedEntry.cached = true;
             cachedEntry.tile = tile;
 			//cachedEntry.Complete = material;
-			tileToLoad.Add(cachedEntry);
+			tilesToLoad.Add(cachedEntry);
 		}
 	}
 	
@@ -338,23 +350,23 @@ public class TileDownloader : MonoBehaviour
 	public void Cancel(string url)
 	{
 		tileURLLookedFor = url;
-		TileEntry entry = tileToLoad.Find(tileURLMatchPredicate);
+		TileEntry entry = tilesToLoad.Find(tileURLMatchPredicate);
 		if (entry != null)
 		{
 #if DEBUG_LOG
 			Debug.Log("DEBUG: TileDownloader.Cancel: remove download from schedule: " + url);
 #endif
-			tileToLoad.Remove(entry);
+			tilesToLoad.Remove(entry);
 			return ;
 		}
 		
-		entry = tileLoading.Find(tileURLMatchPredicate);
+		entry = tilesLoading.Find(tileURLMatchPredicate);
 		if (entry != null)
 		{
 #if DEBUG_LOG
 			Debug.Log("DEBUG: TileDownloader.Cancel: stop downloading: " + url);
 #endif
-            tileLoading.Remove(entry);
+            tilesLoading.Remove(entry);
 			entry.StopDownload();
 			return ;
 		}
@@ -373,7 +385,7 @@ public class TileDownloader : MonoBehaviour
 		Debug.Log("DEBUG: TileDownloader.JobTerminationEvent: Tile download complete, but was it murdered? " + e.WasKilled);
 #endif
 		TileEntry entry = e.Owner as TileEntry;
-		tileLoading.Remove(entry);
+		tilesLoading.Remove(entry);
 		
 		if (e.WasKilled == false)
 		{
@@ -401,6 +413,15 @@ public class TileDownloader : MonoBehaviour
 				return ;
 			}
 			
+			tileURLLookedFor = entry.url;
+			TileEntry existingEntry = tiles.Find(tileURLMatchPredicate);
+			if (existingEntry != null)
+			{
+				tiles.Remove(existingEntry);
+				cacheSize -= existingEntry.size;
+			}
+			
+			entry.timestamp = (DateTime.Now.ToLocalTime() - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
 			tiles.Add(entry);
 			cacheSize += entry.size;
 			
@@ -414,7 +435,8 @@ public class TileDownloader : MonoBehaviour
 				TileEntry entryToErase = null;
 				foreach (TileEntry tile in tiles)
 				{
-					if (tile.timestamp < oldestTimestamp)
+					if (tile.timestamp < oldestTimestamp
+						&& tile != entry)
 					{
 						oldestTimestamp = tile.timestamp;
 						entryToErase = tile;
@@ -438,7 +460,7 @@ public class TileDownloader : MonoBehaviour
 
 	public void PauseAll()
 	{
-        foreach (TileEntry entry in tileLoading)
+        foreach (TileEntry entry in tilesLoading)
         {
             entry.job.Pause();
         }
@@ -446,7 +468,7 @@ public class TileDownloader : MonoBehaviour
 
 	public void UnpauseAll()
 	{
-        foreach (TileEntry entry in tileLoading)
+        foreach (TileEntry entry in tilesLoading)
         {
             entry.job.Unpause();
         }
@@ -463,18 +485,18 @@ public class TileDownloader : MonoBehaviour
     
 	private void Update()
 	{
-		while (tileToLoad.Count > 0
-			&& tileLoading.Count < MaxSimultaneousDownloads)
+		while (tilesToLoad.Count > 0
+			&& tilesLoading.Count < MaxSimultaneousDownloads)
 		{
 			DownloadNextTile();
 		}
         
 #if DEBUG_LOG
-        if (tileLoading.Count >= MaxSimultaneousDownloads)
+        if (tilesLoading.Count >= MaxSimultaneousDownloads)
         {
-            Debug.Log("DEBUG: TileDownload.Update: tileLoading.Count (" + tileLoading.Count + ") > MaxSimultaneousDownloads (" + MaxSimultaneousDownloads + ")");
-            string dbg = "DEBUG: tileLoading entries:\n";
-            foreach (TileEntry entry in tileLoading)
+            Debug.Log("DEBUG: TileDownload.Update: tilesLoading.Count (" + tilesLoading.Count + ") > MaxSimultaneousDownloads (" + MaxSimultaneousDownloads + ")");
+            string dbg = "DEBUG: tilesLoading entries:\n";
+            foreach (TileEntry entry in tilesLoading)
             {
                 dbg += entry.url + "\n";
             }
@@ -483,8 +505,8 @@ public class TileDownloader : MonoBehaviour
   
         /*
         {
-            string dbg = "DEBUG: tileToLoad entries:\n";
-            foreach (TileEntry entry in tileToLoad)
+            string dbg = "DEBUG: tilesToLoad entries:\n";
+            foreach (TileEntry entry in tilesToLoad)
             {
                 dbg += entry.url + "\n";
             }
@@ -496,9 +518,9 @@ public class TileDownloader : MonoBehaviour
 	
 	private void DownloadNextTile()
 	{
-		TileEntry entry = tileToLoad[0];
-		tileToLoad.RemoveAt(0);
-		tileLoading.Add(entry);
+		TileEntry entry = tilesToLoad[0];
+		tilesToLoad.RemoveAt(0);
+		tilesLoading.Add(entry);
 		
 #if DEBUG_LOG
         Debug.Log("DEBUG: TileDownloader.DownloadNextTile: entry.url: " + entry.url);
@@ -516,7 +538,7 @@ public class TileDownloader : MonoBehaviour
     
     private void KillAll()
     {
-        foreach (TileEntry entry in tileLoading)
+        foreach (TileEntry entry in tilesLoading)
         {
             entry.job.Kill();
         }

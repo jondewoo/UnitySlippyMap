@@ -40,7 +40,7 @@ public class VirtualEarthTileLayer : TileLayer
     // http://msdn.microsoft.com/en-us/library/ff701712.aspx
     // http://msdn.microsoft.com/en-us/library/ff701716.aspx
 
-    // TODO: summaries, arguments safeguards, subdomain rotations
+    // TODO: summaries, arguments safeguards, subdomain rotations, display logo and copyright (url in metadata)
 
     #region Private members & properties
 

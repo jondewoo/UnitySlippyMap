@@ -166,7 +166,7 @@ public class TestMap : MonoBehaviour
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
 		*/
-
+		
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
 		go.renderer.material.mainTexture = MarkerTexture;

@@ -3,8 +3,10 @@ UnitySlippyMap
 
 A slippy map implementation written in C# for Unity3D.
 
-It aims at helping developpers create 2D/3D maps working with a variety of online tile providers (OpenStreetMap, Yahoo! Maps, Bing Maps, ...) and offline sources (DBMap, MBTiles, ...) like [Route-me](https://github.com/route-me/route-me) (iOS) or [Leaflet](http://leaflet.cloudmade.com/) (HTML5), on every platform supported by Unity3D.
-Google Maps won't be supported (see [Google Maps tiles terms of service](https://developers.google.com/maps/faq#tos_tiles))
+It aims at helping developpers create 2D/3D maps working with a variety of online tile providers (OpenStreetMap, VirtualEarth/Bing Maps, ...) and offline sources (DBMap, MBTiles, ...) like [Route-me](https://github.com/route-me/route-me) (iOS) or [Leaflet](http://leaflet.cloudmade.com/) (HTML5), on every platform supported by Unity3D.
+Google Maps won't be supported (see [Google Maps tiles terms of service](https://developers.google.com/maps/faq#tos_tiles)).
+Yahoo! Maps neither since it was [closed on September 13, 2011](http://developer.yahoo.com/blogs/ydn/posts/2011/06/yahoo-maps-apis-service-closure-announcement-new-maps-offerings-coming-soon/).
+Nokia Maps (now called [Here](http://developer.here.net/)) provides a REST API designed for static maps. They could be used as tiles but would get a 'Nokia' watermark on each one of them. Also Nokia and Microsoft are now [teaming up](http://www.microsoft.com/en-us/news/download/presskits/bing/docs/MSBingMapsFS.docx) so supporting both might be redundant.
 
 Hopefully, it will also be compliant with a number of popular [OGC](http://www.opengeospatial.org/) standards like WMS or GML.
 

@@ -31,8 +31,16 @@ using System.IO;
 // </summary>
 public class OSMTileLayer : TileLayer
 {
-	public string		URLParametersFormat = "{0}/{1}/{2}";
-	public string		TileImageExtension = ".png";
+	// TODO: subdomain rotations
+	
+	#region Private members & properties
+	
+	private string		urlParametersFormat = "{0}/{1}/{2}";
+	public string		URLParametersFormat { get { return urlParametersFormat; } set { urlParametersFormat = value; } }
+	private string		tileImageExtension = ".png";
+	public string		TileImageExtension { get { return tileImageExtension; } set { tileImageExtension = value; } }
+	
+	#endregion
 
     #region OSMTileLayer implementation
 
