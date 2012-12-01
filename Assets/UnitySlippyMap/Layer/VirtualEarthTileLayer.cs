@@ -35,7 +35,7 @@ using Microsoft.MapPoint;
 // <summary>
 // A class representing a VirtualEarth tile layer.
 // </summary>
-public class VirtualEarthTileLayer : TileLayer
+public class VirtualEarthTileLayer : WebTileLayer
 {
     // http://msdn.microsoft.com/en-us/library/ff701712.aspx
     // http://msdn.microsoft.com/en-us/library/ff701716.aspx
@@ -161,7 +161,7 @@ public class VirtualEarthTileLayer : TileLayer
         tileCountOnX = tileCountOnY = (int)Mathf.Pow(2, Map.RoundedZoom);
     }
 
-    protected override void GetCenterTile(out int tileX, out int tileY, out float offsetX, out float offsetZ)
+    protected override void GetCenterTile(int tileCountOnX, int tileCountOnY, out int tileX, out int tileY, out float offsetX, out float offsetZ)
     {
         int[] tileCoordinates = GeoHelpers.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
         double[] centerTile = GeoHelpers.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
@@ -231,12 +231,17 @@ public class VirtualEarthTileLayer : TileLayer
 
         return ret;
     }
-
+	
+	#endregion
+	
+	#region WebTileLayer implementation
+	
     protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
     {
         string quadKey = TileSystem.TileXYToQuadKey(tileX, tileY, roundedZoom);
         return baseURL.Replace("{quadkey}", quadKey).Replace("{subdomain}", "t0");
     }
+	
     #endregion
 }
 

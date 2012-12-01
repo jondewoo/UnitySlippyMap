@@ -29,7 +29,7 @@ using System.IO;
 // <summary>
 // A class representing an Open Street Map tile layer.
 // </summary>
-public class OSMTileLayer : TileLayer
+public class OSMTileLayer : WebTileLayer
 {
 	// TODO: subdomain rotations
 	
@@ -58,7 +58,7 @@ public class OSMTileLayer : TileLayer
 		tileCountOnX = tileCountOnY = (int)Mathf.Pow(2, Map.RoundedZoom);
 	}
 	
-	protected override void GetCenterTile(out int tileX, out int tileY, out float offsetX, out float offsetZ)
+	protected override void GetCenterTile(int tileCountOnX, int tileCountOnY, out int tileX, out int tileY, out float offsetX, out float offsetZ)
 	{
 		int[] tileCoordinates = GeoHelpers.WGS84ToTile(Map.CenterWGS84[0], Map.CenterWGS84[1], Map.RoundedZoom);
 		double[] centerTile = GeoHelpers.TileToWGS84(tileCoordinates[0], tileCoordinates[1], Map.RoundedZoom);
@@ -128,6 +128,10 @@ public class OSMTileLayer : TileLayer
 
 		return ret;
 	}
+
+	#endregion
+
+	#region WebTileLayer implementation
 	
 	protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
 	{

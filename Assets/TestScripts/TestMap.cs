@@ -27,6 +27,8 @@ using UnitySlippyMap;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
+using System.IO;
+using System.Collections;
 
 public class TestMap : MonoBehaviour
 {
@@ -129,7 +131,7 @@ public class TestMap : MonoBehaviour
 		return pressed;
 	}
 	
-	void Start()
+	IEnumerator Start()
 	{
 		// setup the gui scale according to the screen resolution
         guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
@@ -148,24 +150,81 @@ public class TestMap : MonoBehaviour
 
 		map.GUIDelegate += Toolbar;
 
-		// create a test layer
+		// create an OSM tile layer
+		/*
         OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test OSM tile layer");
 		layer.BaseURL = "http://a.tile.openstreetmap.org/";
+		*/
 		
 		/*
-        // http://www.osm-wms.de
+		// create a WMS tile layer
         WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("test WMS tile layer");
-        //wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // seems to be of very limited use
+        //wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
         //wmsLayer.Layers = "osm_auto:all";
         wmsLayer.BaseURL = "http://labs.metacarta.com/wms/vmap0";
         wmsLayer.Layers = "basic";
 		*/
 		
 		/*
+		// create a VirtualEarth tile layer
         VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("test VirtualEarth tile layer");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
 		*/
+
+		// create an MBTiles tile layer
+		bool error = false;
+		// on iOS, you need to add the db file to the Xcode project using a directory reference
+		string mbTilesDir = "MBTiles/";
+		string filename = "UnitySlippyMap_World_0_8.mbtiles";
+		string filepath = null;
+		if (Application.platform == RuntimePlatform.IPhonePlayer)
+			filepath = Application.dataPath + "/Raw/" + mbTilesDir + filename;
+		else if (Application.platform == RuntimePlatform.Android)
+		{
+			// Note: Android is a bit tricky, Unity produces APK files and those are never unzip on the device.
+			// Place your MBTiles file in the StreamingAssets folder (http://docs.unity3d.com/Documentation/Manual/StreamingAssets.html).
+			// Then you need to access the APK on the device with WWW and copy the file to persitentDataPath
+			// to that it can be read by SqliteDatabase as an individual file
+			string newfilepath = Application.persistentDataPath + "/" + filename;
+			if (File.Exists(newfilepath) == false)
+			{
+				Debug.Log("DEBUG: file doesn't exist: " + newfilepath);
+				filepath = "jar:file://" + Application.dataPath + "!/assets/" + mbTilesDir + filename;
+				// TODO: read the file with WWW and write it to persitentDataPath
+				WWW loader = new WWW(filepath);
+				yield return loader;
+				if (loader.error != null)
+				{
+					Debug.LogError("ERROR: " + loader.error);
+					error = true;
+				}
+				else
+				{
+					Debug.Log("DEBUG: will write: '" + filepath + "' to: '" + newfilepath + "'");
+					File.WriteAllBytes(newfilepath, loader.bytes);
+				}
+			}
+			else
+				Debug.Log("DEBUG: exists: " + newfilepath);
+			filepath = newfilepath;
+		}
+		else
+		{
+			filepath = Application.dataPath + "/StreamingAssets/" + mbTilesDir + filename;
+		}
+		
+		if (error == false)
+		{
+			MBTilesLayer mbTilesLayer = map.CreateLayer<MBTilesLayer>("test MBTiles tile layer");
+			mbTilesLayer.Filepath = filepath;
+			Debug.Log("DEBUG: mbtiles file: " + filepath);
+	
+			// the test files contains tiles from zoom 0 to 8
+			map.CurrentZoom = mbTilesLayer.Center.z;
+			map.MinZoom = mbTilesLayer.MinZoom;
+			map.MaxZoom = mbTilesLayer.MaxZoom;
+		}
 		
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;

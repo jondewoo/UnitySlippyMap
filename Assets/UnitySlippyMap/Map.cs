@@ -946,6 +946,7 @@ public class Map : MonoBehaviour
 		// update the tiles if needed
 		if (isDirty == true && hasMoved == false)
 		{
+			Debug.Log("DEBUG: isDirty: " + isDirty + ", hasMoved: " + hasMoved);
 			isDirty = false;
 			
 			if (locationMarker != null

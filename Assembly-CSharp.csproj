@@ -18,7 +18,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_3_5_6;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_IOS;UNITY_IPHONE;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_MICROPHONE;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_6;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_ANDROID;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -52,6 +52,8 @@
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\JobManager.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\MaxRectsBinPack.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\Profiler.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\DataTable.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\SqliteDatabase.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\SRIDReader.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\SharedMaterialManager.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\TextureAtlasManager\TextureAtlas.cs" />
@@ -67,11 +69,14 @@
      <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\Metadata.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\TileSystem.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\WMS\WMS111.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\DBTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\Layer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\MBTilesLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\OSMTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\TileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\VirtualEarthTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\WMSTileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\WebTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Map.cs" />
      <Compile Include="Assets\UnitySlippyMap\Marker\LocationMarker.cs" />
      <Compile Include="Assets\UnitySlippyMap\Marker\Marker.cs" />
