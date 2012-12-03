@@ -44,12 +44,6 @@ public class MBTilesLayer : DBTileLayer
 	private Vector3				center;
 	public Vector3				Center { get { return center; } }
 	
-	private float				minZoom;
-	public float				MinZoom { get { return minZoom; } }
-	
-	private float				maxZoom;
-	public float				MaxZoom { get { return maxZoom; } }
-	
 	private string				_name;
 	public string				Name { get { return _name; } }
 	
@@ -285,15 +279,29 @@ public class MBTilesLayer : DBTileLayer
 		
 		//TileDownloader.Instance.Get(GetTileURL(tileX, tileY, Map.RoundedZoom), tile);
 		
-		if (db == null) // TODO: exception
-			return ;
+		if (db == null)
+		{
+			throw new NullReferenceException("db");
+		}
 		
 		DataTable dt = db.ExecuteQuery("SELECT tile_data FROM tiles WHERE zoom_level=" + roundedZoom + " AND tile_column=" + tileX + " AND tile_row=" + tileY);
+		if (dt.Rows.Count == 0)
+		{
+#if DEBUG_LOG
+			Debug.LogWarning("WARNING: no rows in MBTiles db for tile: " + tileX + "," + tileY + "," + roundedZoom);
+#endif
+			return ;
+		}
+		
 		Texture2D tex = new Texture2D((int)Map.TileResolution, (int)Map.TileResolution);
 		if (tex.LoadImage((byte[])dt.Rows[0]["tile_data"]))
 			tile.SetTexture(tex);
 		else
+		{
+#if DEBUG_LOG
 			Debug.LogError("ERROR: MBTilesLayer.RequestTile: couldn't load image for: " + tileX + "," + tileY + "," + roundedZoom);
+#endif
+		}
 	}
 
 	protected override void CancelTileRequest(int tileX, int tileY, int roundedZoom)

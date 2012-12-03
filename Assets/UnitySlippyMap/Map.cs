@@ -964,7 +964,9 @@ public class Map : MonoBehaviour
 #else
 				if (layer.gameObject.active == true
 #endif
-					&& layer.enabled == true)
+					&& layer.enabled == true
+					&& CurrentZoom >= layer.MinZoom
+					&& CurrentZoom <= layer.MaxZoom)
 					layer.UpdateContent();
 			}
 			
@@ -1073,6 +1075,8 @@ public class Map : MonoBehaviour
 		
 		// setup the layer
 		layer.Map = this;
+		layer.MinZoom = minZoom;
+		layer.MaxZoom = maxZoom;
 		
 		// add the layer to the layers' list
 		layers.Add(layer);
