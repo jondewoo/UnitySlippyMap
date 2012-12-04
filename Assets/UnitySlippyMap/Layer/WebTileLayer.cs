@@ -35,7 +35,16 @@ public abstract class WebTileLayer : TileLayer
 	#region Protected members & properties
 
 	protected string							baseURL;
-	public string								BaseURL { get { return baseURL; } set { baseURL = value; } }
+	public string								BaseURL
+    {
+        get { return baseURL; }
+        set 
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            baseURL = value;
+        }
+    }
 	
 	#endregion
 	

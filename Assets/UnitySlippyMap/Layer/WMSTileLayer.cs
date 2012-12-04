@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//#define DEBUG_LOG
+#define DEBUG_LOG
 
 using System;
 using System.IO;
@@ -35,33 +35,99 @@ using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
 using System.Xml;
+using System.Threading;
 
 // <summary>
 // A class representing a Web Mapping Service tile layer.
 // </summary>
 public class WMSTileLayer : WebTileLayer
 {
-    // TODO: summaries, argument safeguards (null, srs & layer support check against capabilities), support other versions of WMS (used trang to convert dtd to xsd, then Xsd2Code to generate xml serializable classes)
-
 	#region Private members & properties
 
-	public new string		    BaseURL { get { return baseURL; } set { baseURLChanged = true; baseURL = value; } }
+	public new string		    BaseURL
+    {
+        get { return baseURL; }
+        set 
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value == String.Empty)
+                throw new Exception("value cannot be empty");
+            baseURLChanged = true;
+            baseURL = value;
+        }
+    }
 
+    /// <summary>
+    /// The coma separated list of layers to be requested.
+    /// </summary>
 	private string	            layers = String.Empty;
-    public string               Layers { get { return layers; } set { layers = value; if (layers == null) layers = String.Empty; } }
+    public string               Layers
+    {
+        get { return layers; }
+        set
+        {
+            layers = value;
+            if (layers == null)
+                layers = String.Empty;
+            else
+            {
+                CheckLayers();
+            }
+        }
+    }
 
+    /// <summary>
+    /// The Spatial Reference System of the layer.
+    /// </summary>
     private ICoordinateSystem   srs = GeographicCoordinateSystem.WGS84;
-    public ICoordinateSystem    SRS { get { return srs; } set { srs = value; srsName = srs.Authority + ":" + srs.AuthorityCode;  } }
+    public ICoordinateSystem    SRS
+    {
+        get { return srs; }
+        set 
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            srs = value;
+            srsName = srs.Authority + ":" + srs.AuthorityCode;
+            CheckSRS();
+        }
+    }
     private string              srsName = "EPSG:4326";
     public string               SRSName { get { return srsName; } }
     
+    /// <summary>
+    /// The image format to request.
+    /// </summary>
 	private string			    format = "image/png";
-	public string			    Format { get { return format; } set { format = value; } }
+	public string			    Format
+    {
+        get { return format; }
+        set 
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            format = value; 
+        }
+    }
 	
+    /// <summary>
+    /// Set it to true to notify the WMSTileLayer to reload the capabilities.
+    /// </summary>
 	private bool			    baseURLChanged = false;
+
 	private WWW				    loader;
 
+    /// <summary>
+    /// Set to true when the WMSTileLayer is parsing the capabilities.
+    /// </summary>
     private bool                isParsingGetCapabilities = false;
+    
+    /// <summary>
+    /// The WMS capabilities.
+    /// </summary>
+    private UnitySlippyMap.WMS.WMT_MS_Capabilities  capabilities;
+    public UnitySlippyMap.WMS.WMT_MS_Capabilities Capabilities { get { return capabilities; } }
 
     #endregion
 
@@ -107,7 +173,7 @@ public class WMSTileLayer : WebTileLayer
 
                     UnityThreadHelper.TaskDistributor.Dispatch(() =>
                     {
-						UnitySlippyMap.WMS.WMT_MS_Capabilities capabilities = null;
+                        capabilities = null;
 						try
 						{
 	                        XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
@@ -158,6 +224,9 @@ public class WMSTileLayer : WebTileLayer
                             ));
                         */
 
+                        CheckLayers();
+                        CheckSRS();
+
                         UnityThreadHelper.Dispatcher.Dispatch(() =>
                         {
 #if DEBUG_LOG
@@ -166,8 +235,8 @@ public class WMSTileLayer : WebTileLayer
 	                            string layers = String.Empty;
 	                            foreach (UnitySlippyMap.WMS.Layer layer in capabilities.Capability.Layer.Layers)
 	                            {
-	                                layers += layer.Name + " " + layer.Abstract + "\n";
-	                            }
+                                    layers += "'" + layer.Name + "': " + layer.Abstract + "\n";
+                                }
 	
 	                            Debug.Log("DEBUG: WMSTileLayer.Update: layers: " + capabilities.Capability.Layer.Layers.Count + "\n" + layers);
 							}
@@ -285,5 +354,68 @@ public class WMSTileLayer : WebTileLayer
         return baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=" + layers + "&STYLES=&SRS=" + srsName + "&BBOX=" + min[0] + "," + min[1] + "," + max[0] + "," + max[1] + "&WIDTH=" + Map.TileResolution + "&HEIGHT=" + Map.TileResolution + "&FORMAT=" + format;
 	}
 	#endregion
+
+    #region WMSTileLayer implementation
+
+    /// <summary>
+    /// Throws an exception if the layers' list is invalid.
+    /// </summary>
+    private void CheckLayers()
+    {
+        if (capabilities == null
+            || capabilities.Capability == null
+            || capabilities.Capability.Layer == null
+            || capabilities.Capability.Layer.Layers == null)
+            return;
+
+        // check if the layers exist
+        string[] layersArray = layers.Split(new Char[] { ',' });
+        foreach (string layersArrayItem in layersArray)
+        {
+            bool exists = false;
+            foreach (UnitySlippyMap.WMS.Layer layer in capabilities.Capability.Layer.Layers)
+            {
+                if (layersArrayItem == layer.Name)
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            if (exists == false)
+            {
+#if DEBUG_LOG
+                Debug.LogError("layer '" + layersArrayItem + "' doesn't exist");
+#endif
+                throw new ArgumentException("layer '" + layersArrayItem + "' doesn't exist");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Throws an exception if the SRS is invalid.
+    /// </summary>
+    private void CheckSRS()
+    {
+        if (capabilities == null
+            || capabilities.Capability == null
+            || capabilities.Capability.Layer == null
+            || capabilities.Capability.Layer.SRS == null)
+            return;
+
+        // check if the srs is supported
+        bool exists = false;
+        foreach (string supportedSRS in capabilities.Capability.Layer.SRS)
+        {
+            if (supportedSRS == srsName)
+            {
+                exists = true;
+                break;
+            }
+        }
+        if (exists == false)
+            throw new ArgumentException("SRS '" + srsName + "' isn't supported");
+    }
+
+    #endregion
 }
 

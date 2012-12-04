@@ -40,20 +40,57 @@ public class VirtualEarthTileLayer : WebTileLayer
     // http://msdn.microsoft.com/en-us/library/ff701712.aspx
     // http://msdn.microsoft.com/en-us/library/ff701716.aspx
 
-    // TODO: summaries, arguments safeguards, subdomain rotations, display logo and copyright (url in metadata)
-
     #region Private members & properties
 
+    /// <summary>
+    /// Set it to true to notify the VirtualEarthTileLayer to reload the metadata.
+    /// </summary>
     private bool            metadataURLChanged = false;
+    /// <summary>
+    /// The URL for the metada, also used for downloading the tiles.
+    /// </summary>
     private string          metadataURL = "http://dev.virtualearth.net/REST/V1/Imagery/Metadata/Road?mapVersion=v1&output=xml&key=";
-    public string           MetadataURL { get { return metadataURL; } set { metadataURL = value; } }
+    public string           MetadataURL
+    {
+        get { return metadataURL; }
+        set
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value == String.Empty)
+                throw new ArgumentException("value cannot be empty");
+            metadataURLChanged = true;
+            metadataURL = value;
+        } 
+    }
 
-    private bool            keyChanged = false;
+    /// <summary>
+    /// Set it to true to notify the VirtualEarthTileLayer to reload the metadata.
+    /// </summary>
+    private bool keyChanged = false;
+    /// <summary>
+    /// The authentication key to VirtualEarth service.
+    /// </summary>
     private string          key = String.Empty;
-    public string           Key { get { return key; } set { keyChanged = true; key = value; } }
+    public string           Key
+    {
+        get { return key; }
+        set
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value == String.Empty)
+                throw new ArgumentException("value cannot be empty");
+            keyChanged = true;
+            key = value; 
+        } 
+    }
 
     private WWW             loader;
 
+    /// <summary>
+    /// Set to true when the VirtualEarthTileLayer is parsing the metadata.
+    /// </summary>
     private bool            isParsingMetadata = false;
 
     #endregion
@@ -63,6 +100,8 @@ public class VirtualEarthTileLayer : WebTileLayer
     private new void Awake()
     {
         base.Awake();
+        minZoom = 1;
+        maxZoom = 23;
     }
 
     private void Update()
@@ -73,7 +112,6 @@ public class VirtualEarthTileLayer : WebTileLayer
             Debug.Log("DEBUG: VirtualEarthTileLayer.Update: launching metadata request on: " + metadataURL + key);
 #endif
 
-            // FIXME: assert the properties
             if (metadataURL != null && metadataURL != String.Empty
                 && key != null && key != String.Empty)
                 loader = new WWW(metadataURL + key);

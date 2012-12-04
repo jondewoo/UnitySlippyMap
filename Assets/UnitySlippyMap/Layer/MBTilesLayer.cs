@@ -35,27 +35,65 @@ public class MBTilesLayer : DBTileLayer
 {
 	#region Private members & properties
 	
+    /// <summary>
+    /// The path to the MBTiles file to query. Changing the property triggers the loading.
+    /// </summary>
 	private string				filepath;
-	public string				Filepath { get { return filepath; } set { filepath = value; if (filepath != null)Open (); else Close(); } }
+	public string				Filepath
+    {
+        get { return filepath; }
+        set
+        {
+            filepath = value;
+            if (filepath != null && filepath != String.Empty)
+                Open();
+            else
+            {
+                Close();
+                throw new ArgumentException("filepath must not be null or empty");
+            }
+        }
+    }
 	
+    /// <summary>
+    /// The bounds of the layer.
+    /// </summary>
 	private Rect				bounds;
 	public Rect					Bounds { get { return bounds; } }
 	
+    /// <summary>
+    /// The center of the layer.
+    /// </summary>
 	private Vector3				center;
 	public Vector3				Center { get { return center; } }
 	
+    /// <summary>
+    /// The name of the layer.
+    /// </summary>
 	private string				_name;
 	public string				Name { get { return _name; } }
 	
+    /// <summary>
+    /// The description of the layer.
+    /// </summary>
 	private string				description;
 	public string				Description { get { return description; } }
 	
+    /// <summary>
+    /// The attribution of the layer.
+    /// </summary>
 	private string				attribution;
 	public string				Attribution { get { return attribution; } }
 	
+    /// <summary>
+    /// The template of the layer.
+    /// </summary>
 	private string				template;
 	public string				Template { get { return template; } }
 	
+    /// <summary>
+    /// The MBTiles version of the database.
+    /// </summary>
 	private string				version;
 	public string				Version { get { return version; } }	
 	
@@ -73,6 +111,9 @@ public class MBTilesLayer : DBTileLayer
 		return false;
 	}
 	
+    /// <summary>
+    /// Opens the MBTiles database file located at Filepath.
+    /// </summary>
 	private void Open()
 	{
 		if (db != null)
@@ -174,6 +215,9 @@ public class MBTilesLayer : DBTileLayer
 		isReadyToBeQueried = true;
 	}
 	
+    /// <summary>
+    /// Closes the MBTiles database file.
+    /// </summary>
 	private void Close()
 	{
 		isReadyToBeQueried = false;

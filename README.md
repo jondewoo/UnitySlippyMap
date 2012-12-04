@@ -42,5 +42,9 @@ Here is a short list of what could be fixed or added to UnitySlippyMap:
 * Add a better zoom rounding (>80%, <20%?)
 * Add a map constraint to a given 'size', bounce on limits
 * Add movements inertia
+* Support other versions of WMS (used trang to convert dtd to xsd, then Xsd2Code to generate xml serializable classes)
+* Subdomain rotations for VirtualEarth & OSM
+* Display logo and copyright for VirtualEarth (url in metadata) & OSM (see OSM Wiki)
+	
 
 * Optimise, use one material for the tiles to enable dynamic batching: tried and failed, merging textures on the fly is to costly (see TextureAtlasManager.cs)

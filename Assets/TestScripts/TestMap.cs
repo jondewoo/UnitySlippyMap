@@ -29,6 +29,7 @@ using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
 
 public class TestMap : MonoBehaviour
 {
@@ -46,6 +47,9 @@ public class TestMap : MonoBehaviour
 	private float	currentAngle = 0.0f;
 	private float	animationDuration = 0.5f;
 	private float	animationStartTime = 0.0f;
+
+    private List<Layer> layers;
+    private int     currentLayerIndex = 0;
 	
 	bool Toolbar(Map map)
 	{
@@ -103,14 +107,20 @@ public class TestMap : MonoBehaviour
                 pressed = true;
         }
 
-        /*
-        if (GUILayout.Button("Street/Aerial", GUILayout.ExpandHeight(true)))
+        string layerMessage = String.Empty;
+        if (map.CurrentZoom > layers[currentLayerIndex].MaxZoom)
+            layerMessage = "\nZoom out!";
+        else if (map.CurrentZoom < layers[currentLayerIndex].MinZoom)
+            layerMessage = "\nZoom in!";
+        if (GUILayout.Button(((layers != null && currentLayerIndex < layers.Count) ? layers[currentLayerIndex].name + layerMessage : "Layer"), GUILayout.ExpandHeight(true)))
         {
-            mqOSMLayer.gameObject.SetActiveRecursively(!mqOSMLayer.gameObject.active);
-            mqSatLayer.gameObject.SetActiveRecursively(!mqSatLayer.gameObject.active);
+            layers[currentLayerIndex].gameObject.SetActiveRecursively(false);
+            ++currentLayerIndex;
+            if (currentLayerIndex >= layers.Count)
+                currentLayerIndex = 0;
+            layers[currentLayerIndex].gameObject.SetActiveRecursively(true);
             map.IsDirty = true;
         }
-        */
 
         if (GUILayout.RepeatButton("-", GUILayout.ExpandHeight(true)))
 		{
@@ -131,7 +141,7 @@ public class TestMap : MonoBehaviour
 		return pressed;
 	}
 	
-	private void /*IEnumerator*/ Start()
+	private IEnumerator Start()
 	{
 		// setup the gui scale according to the screen resolution
         guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
@@ -151,28 +161,33 @@ public class TestMap : MonoBehaviour
 
 		map.GUIDelegate += Toolbar;
 
+        layers = new List<Layer>();
+
 		// create an OSM tile layer
-        OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test OSM tile layer");
-		layer.BaseURL = "http://a.tile.openstreetmap.org/";
-		
-		/*
+        OSMTileLayer osmLayer = map.CreateLayer<OSMTileLayer>("OSM");
+        osmLayer.BaseURL = "http://a.tile.openstreetmap.org/";
+
+        layers.Add(osmLayer);
+
 		// create a WMS tile layer
-        WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("test WMS tile layer");
+        WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("WMS");
         //wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
         //wmsLayer.Layers = "osm_auto:all";
         wmsLayer.BaseURL = "http://labs.metacarta.com/wms/vmap0";
         wmsLayer.Layers = "basic";
-		*/
-		
-		/*
+        wmsLayer.gameObject.SetActiveRecursively(false);
+
+        layers.Add(wmsLayer);
+
 		// create a VirtualEarth tile layer
-        VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("test VirtualEarth tile layer");
+        VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
-		*/
+        virtualEarthLayer.gameObject.SetActiveRecursively(false);
+
+        layers.Add(virtualEarthLayer);
 
 		// create an MBTiles tile layer
-		/*
 		bool error = false;
 		// on iOS, you need to add the db file to the Xcode project using a directory reference
 		string mbTilesDir = "MBTiles/";
@@ -216,17 +231,16 @@ public class TestMap : MonoBehaviour
 		
 		if (error == false)
 		{
-			MBTilesLayer mbTilesLayer = map.CreateLayer<MBTilesLayer>("test MBTiles tile layer");
+            Debug.Log("DEBUG: using MBTiles file: " + filepath);
+			MBTilesLayer mbTilesLayer = map.CreateLayer<MBTilesLayer>("MBTiles");
 			mbTilesLayer.Filepath = filepath;
-			Debug.Log("DEBUG: mbtiles file: " + filepath);
-	
-			// the test files contains tiles from zoom 0 to 8
-			map.CurrentZoom = mbTilesLayer.Center.z;
-			map.MinZoom = mbTilesLayer.MinZoom;
-			map.MaxZoom = mbTilesLayer.MaxZoom;
+            mbTilesLayer.gameObject.SetActiveRecursively(false);
+
+            layers.Add(mbTilesLayer);
 		}
-		*/
-		
+        else
+            Debug.LogError("ERROR: MBTiles file not found!");
+
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
 		go.renderer.material.mainTexture = MarkerTexture;

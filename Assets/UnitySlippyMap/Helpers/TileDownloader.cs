@@ -156,6 +156,8 @@ public class TileDownloader : MonoBehaviour
 		{
 			WWW www = null;
 			string ext = Path.GetExtension(url);
+            if (ext.Contains("?"))
+                ext = ext.Substring(0, ext.IndexOf('?'));
             if (cached && File.Exists(Application.persistentDataPath + "/" + this.guid + ext))
             {
                 www = new WWW("file:///" + Application.persistentDataPath + "/" + this.guid + ext);

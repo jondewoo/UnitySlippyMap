@@ -31,14 +31,29 @@ using System.IO;
 // </summary>
 public class OSMTileLayer : WebTileLayer
 {
-	// TODO: subdomain rotations
-	
 	#region Private members & properties
 	
+    /// <summary>
+    /// The format for the URL parameters as in String.Format().
+    /// </summary>
 	private string		urlParametersFormat = "{0}/{1}/{2}";
-	public string		URLParametersFormat { get { return urlParametersFormat; } set { urlParametersFormat = value; } }
+	public string		URLParametersFormat
+    {
+        get { return urlParametersFormat; } 
+        set 
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value == String.Empty)
+                throw new ArgumentException("value cannot be empty");
+            urlParametersFormat = value; 
+        }
+    }
+    /// <summary>
+    /// The extension of the tile files.
+    /// </summary>
 	private string		tileImageExtension = ".png";
-	public string		TileImageExtension { get { return tileImageExtension; } set { tileImageExtension = value; } }
+    public string       TileImageExtension { get { return tileImageExtension; } set { tileImageExtension = value; if (tileImageExtension == null) tileImageExtension = String.Empty; } }
 	
 	#endregion
 
@@ -47,6 +62,17 @@ public class OSMTileLayer : WebTileLayer
     public OSMTileLayer()
     {
         isReadyToBeQueried = true;
+    }
+
+    #endregion
+
+    #region MonoBehaviour implementation
+    
+    private new void Awake()
+    {
+        base.Awake();
+        minZoom = 1;
+        maxZoom = 18;
     }
 
     #endregion
