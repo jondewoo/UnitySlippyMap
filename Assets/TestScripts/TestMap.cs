@@ -141,6 +141,7 @@ public class TestMap : MonoBehaviour
 
 		// create the map singleton
 		map = Map.Instance;
+		map.InputDelegate += UnitySlippyMap.Input.MapInput.BasicTouchAndKeyboard;
 		
 		// 9 rue Gentil, Lyon
 		map.CenterWGS84 = new double[2] { 4.83527, 45.76487 };

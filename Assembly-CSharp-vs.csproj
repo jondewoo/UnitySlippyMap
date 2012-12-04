@@ -70,6 +70,7 @@
      <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\Metadata.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\TileSystem.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\WMS\WMS111.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Input\Input.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\DBTileLayer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\Layer.cs" />
      <Compile Include="Assets\UnitySlippyMap\Layer\MBTilesLayer.cs" />
