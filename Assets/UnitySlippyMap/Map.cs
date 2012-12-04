@@ -177,7 +177,7 @@ public class Map : MonoBehaviour
             
             //UpdateInternals();
             
-			isDirty = true;
+			IsDirty = true;
 		}
 	}
 	
@@ -211,7 +211,7 @@ public class Map : MonoBehaviour
 			centerEPSG900913 = value;
             centerWGS84 = epsg900913ToWGS84Transform.Transform(centerEPSG900913); //GeoHelpers.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
             
-			isDirty = true;
+			IsDirty = true;
 		}
 	}
 	
@@ -571,7 +571,7 @@ public class Map : MonoBehaviour
 
         // set the update flag to tell the behaviour the user is manipulating the map
         hasMoved = true;
-        isDirty = true;
+        IsDirty = true;
 	}
 	
 	private void OnGUI()
@@ -804,7 +804,7 @@ public class Map : MonoBehaviour
     			lastHitPosition = Vector3.zero;
     			
     			// trigger a tile update
-    			isDirty = true;
+    			IsDirty = true;
     		}
     
     		// apply the zoom
@@ -824,6 +824,10 @@ public class Map : MonoBehaviour
 	
 	private void Update()
 	{
+#if DEBUG_PROFILE
+		UnitySlippyMap.Profiler.Begin("Map.Update");
+#endif
+		
 		// update the centerWGS84 with the last location if enabled
 		if (useLocation
 			&& Input.location.status == LocationServiceStatus.Running)
@@ -834,8 +838,10 @@ public class Map : MonoBehaviour
 					&& Input.location.lastData.longitude >= -180.0f
 					&& Input.location.lastData.latitude <= 90.0f
 					&& Input.location.lastData.latitude >= -90.0f)
-				{				
-					CenterWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+				{
+					if (CenterWGS84[0] != Input.location.lastData.longitude
+					|| CenterWGS84[1] != Input.location.lastData.latitude)
+						CenterWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
 					
 					//Debug.Log("DEBUG: Map.Update: new location: " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);					
 				}
@@ -915,7 +921,7 @@ public class Map : MonoBehaviour
 					}
 				}
 					
-				isDirty = true;
+				IsDirty = true;
 			}
 				
 			if (locationMarker != null
@@ -944,10 +950,13 @@ public class Map : MonoBehaviour
 		}
 			
 		// update the tiles if needed
-		if (isDirty == true && hasMoved == false)
+		if (IsDirty == true && hasMoved == false)
 		{
-			Debug.Log("DEBUG: isDirty: " + isDirty + ", hasMoved: " + hasMoved);
-			isDirty = false;
+#if DEBUG_LOG
+			Debug.Log("DEBUG: Map.Update: update layers & markers");
+#endif
+			
+			IsDirty = false;
 			
 			if (locationMarker != null
 #if UNITY_4_0
@@ -993,6 +1002,10 @@ public class Map : MonoBehaviour
 		
 		// reset the deferred update flag
 		hasMoved = false;
+						
+#if DEBUG_PROFILE
+		UnitySlippyMap.Profiler.End("Map.Update");
+#endif
 	}
 	
 	#endregion
@@ -1054,7 +1067,7 @@ public class Map : MonoBehaviour
 		locationMarker = marker;
 		
 		// tell the map to update
-		isDirty = true;
+		IsDirty = true;
 		
 		return marker;
 	}
@@ -1082,7 +1095,7 @@ public class Map : MonoBehaviour
 		layers.Add(layer);
 		
 		// tell the map to update
-		isDirty = true;
+		IsDirty = true;
 		
 		return layer;
 	}
@@ -1110,7 +1123,7 @@ public class Map : MonoBehaviour
 		markers.Add(marker);
 		
 		// tell the map to update
-		isDirty = true;
+		IsDirty = true;
 		
 		return marker;
 	}
@@ -1162,7 +1175,7 @@ public class Map : MonoBehaviour
 		
 		// set the update flag to tell the behaviour the user is manipulating the map
 		hasMoved = true;
-		isDirty = true;
+		IsDirty = true;
 	}
 	
 	#endregion

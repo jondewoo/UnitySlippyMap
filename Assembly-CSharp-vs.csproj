@@ -50,6 +50,7 @@
      <Compile Include="Assets\UnitySlippyMap\Helpers\GeoHelpers.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\Job.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\JobManager.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\MD5.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\MaxRectsBinPack.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\Profiler.cs" />
      <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\DataTable.cs" />

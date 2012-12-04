@@ -103,9 +103,9 @@ public class TileDownloader : MonoBehaviour
 		public int		size;
 		[XmlAttribute("guid")]
 		public string	guid;
-		
 		[XmlAttribute("url")]
 		public string	url;
+		
         [XmlIgnore]
         public Tile     tile;
         [XmlIgnore]
@@ -155,9 +155,10 @@ public class TileDownloader : MonoBehaviour
 		private IEnumerator DownloadCoroutine()
 		{
 			WWW www = null;
-            if (cached && File.Exists(Application.persistentDataPath + "/" + this.guid + ".png"))
+			string ext = Path.GetExtension(url);
+            if (cached && File.Exists(Application.persistentDataPath + "/" + this.guid + ext))
             {
-                www = new WWW("file:///" + Application.persistentDataPath + "/" + this.guid + ".png");
+                www = new WWW("file:///" + Application.persistentDataPath + "/" + this.guid + ext);
 #if DEBUG_LOG
                 Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from cache: url: " + www.url);
 #endif
@@ -172,54 +173,95 @@ public class TileDownloader : MonoBehaviour
 				
 			yield return www;
 			
+#if DEBUG_PROFILE
+			UnitySlippyMap.Profiler.Begin("TileDownloader.TileEntry.DownloadCoroutine");
+#endif
+
+#if DEBUG_PROFILE
+			UnitySlippyMap.Profiler.Begin("www error test");
+#endif
 			if (www.error == null && www.text.Contains("404 Not Found") == false)
 			{
-                if (www.texture.isBogus())
-                {
-#if DEBUG_LOG
-                    Debug.LogError("DEBUG: TileEntry.DownloadCoroutine: image from cache is bogus, trying to download it: " + www.url + " [" + url + "]");
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.End("www error test");
 #endif
-                    //TileDownloader.Instance.DeleteCachedTile(this);
-                    //TileDownloader.Instance.Get(url, material);
-                    error = true;
-                }
-                else
-                {
-                    Texture2D texture = www.texture;
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.Begin("www.texture");
+#endif
+				
+                Texture2D texture = www.texture;
+				
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.End("www.texture");
+#endif
 
-					tile.SetTexture(texture);
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.Begin("is cached?");
+#endif
+                if (this.cached == false)
+				{
+#if DEBUG_PROFILE
+					UnitySlippyMap.Profiler.End("is cached?");
+#endif
+    					
+#if DEBUG_PROFILE
+					UnitySlippyMap.Profiler.Begin("set TileEntry members");
+#endif
+
+	                byte[] bytes = www.bytes;
 					
-                    if (this.cached == false)
-    				{
-    					// write the png asynchroneously
-                        byte[] bytes = texture.EncodeToPNG();
-    					
-    					this.size = bytes.Length;
-    					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
-    					this.guid = Guid.NewGuid().ToString();
-    					
-    					FileStream fs = new FileStream(Application.persistentDataPath + "/" + this.guid + ".png", FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
-    					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), new AsyncInfo(this, fs));
-    				
-#if DEBUG_LOG
-    					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading: " + www.url + ", writing to cache: " + fs.Name);
+					this.size = bytes.Length;
+					this.guid = Guid.NewGuid().ToString();
+#if DEBUG_PROFILE
+					UnitySlippyMap.Profiler.End("set TileEntry members");
 #endif
-    				}
-    				else
-    				{
-#if DEBUG_LOG
-    	    			Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading from cache: " + www.url + " [" + url + "]");
+					
+#if DEBUG_PROFILE
+					UnitySlippyMap.Profiler.Begin("new FileStream & FileStream.BeginWrite");
 #endif
-    				}
-                }
+					FileStream fs = new FileStream(Application.persistentDataPath + "/" + this.guid + ext, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), new AsyncInfo(this, fs));
+#if DEBUG_PROFILE
+					UnitySlippyMap.Profiler.End("new FileStream & FileStream.BeginWrite");
+#endif
+				
+#if DEBUG_LOG
+					Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading: " + www.url + ", writing to cache: " + fs.Name);
+#endif
+				}
+				else
+				{
+#if DEBUG_PROFILE
+					UnitySlippyMap.Profiler.End("is cached?");
+#endif
+#if DEBUG_LOG
+	    			Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading from cache: " + www.url + " [" + url + "]");
+#endif
+				}
+
+				this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.Begin("Tile.SetTexture");
+#endif
+				tile.SetTexture(texture);
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.End("Tile.SetTexture");
+#endif
 			}
 			else
 			{
-				error = true;
+#if DEBUG_PROFILE
+				UnitySlippyMap.Profiler.End("www error test");
+#endif
+				this.error = true;
 #if DEBUG_LOG
 				Debug.LogError("ERROR: TileEntry.DownloadCoroutine: done downloading: " + www.url + " with error: " + www.error);
 #endif
 			}
+			
+#if DEBUG_PROFILE
+			UnitySlippyMap.Profiler.End("TileDownloader.TileEntry.DownloadCoroutine");
+#endif
 		}
 		
 		private static void EndWriteCallback(IAsyncResult result)
@@ -454,7 +496,7 @@ public class TileDownloader : MonoBehaviour
  
     private void Start()
     {
-        TextureBogusExtensions.Init(this);
+        TextureBogusExtension.Init(this);
     }
     
 	private void Update()

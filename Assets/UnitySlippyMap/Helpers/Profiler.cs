@@ -102,12 +102,15 @@ namespace UnitySlippyMap
 		
 		private static void Dump(Profile profile, string indentation, out string text)
 		{
-			int percentate = 100;
+			int percentage = 100;
 			if (profile.Parent != null)
 			{
 				try
 				{
-					percentate = Convert.ToInt32((double)profile.Ts.Ticks / (double)profile.Parent.Ts.Ticks * 100.0);
+					if (profile.Parent.Ts.Ticks != 0)
+						percentage = (int)Math.Round((double)profile.Ts.Ticks / (double)profile.Parent.Ts.Ticks * 100.0);
+					else
+						percentage = 0;
 				}
 				catch (OverflowException e)
 				{
@@ -117,7 +120,7 @@ namespace UnitySlippyMap
 			}
 			text = String.Format("{0}[{1}% | {2} calls] {3}: {4:00}:{5:00}:{6:00}.{7:00}\n",
 			                     indentation,
-			                     percentate,
+			                     percentage,
 			                     profile.Count,
 			                     profile.Name,
 			                     profile.Ts.Hours,
@@ -141,6 +144,22 @@ namespace UnitySlippyMap
 			
 			Dump(root, "", out result);
 			return result;
+		}
+		
+		public static void Reset()
+		{
+			Reset(root);
+		}
+		
+		private static void Reset(Profile p)
+		{
+			p.Count = 0;
+			p.Watch.Reset();
+			p.Ts = new TimeSpan(0);
+			foreach (KeyValuePair<string, Profile> child in p.Children)
+			{
+				Reset(child.Value);
+			}
 		}
 	}
 }

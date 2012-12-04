@@ -131,7 +131,7 @@ public class TestMap : MonoBehaviour
 		return pressed;
 	}
 	
-	IEnumerator Start()
+	private void /*IEnumerator*/ Start()
 	{
 		// setup the gui scale according to the screen resolution
         guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
@@ -151,10 +151,8 @@ public class TestMap : MonoBehaviour
 		map.GUIDelegate += Toolbar;
 
 		// create an OSM tile layer
-		/*
         OSMTileLayer layer = map.CreateLayer<OSMTileLayer>("test OSM tile layer");
 		layer.BaseURL = "http://a.tile.openstreetmap.org/";
-		*/
 		
 		/*
 		// create a WMS tile layer
@@ -173,6 +171,7 @@ public class TestMap : MonoBehaviour
 		*/
 
 		// create an MBTiles tile layer
+		/*
 		bool error = false;
 		// on iOS, you need to add the db file to the Xcode project using a directory reference
 		string mbTilesDir = "MBTiles/";
@@ -225,6 +224,7 @@ public class TestMap : MonoBehaviour
 			map.MinZoom = mbTilesLayer.MinZoom;
 			map.MaxZoom = mbTilesLayer.MaxZoom;
 		}
+		*/
 		
 		// create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
@@ -285,5 +285,13 @@ public class TestMap : MonoBehaviour
 			map.HasMoved = true;
 		}
 	}
+	
+#if DEBUG_PROFILE
+	void LateUpdate()
+	{
+		Debug.Log("PROFILE:\n" + UnitySlippyMap.Profiler.Dump());
+		UnitySlippyMap.Profiler.Reset();
+	}
+#endif
 }
 
