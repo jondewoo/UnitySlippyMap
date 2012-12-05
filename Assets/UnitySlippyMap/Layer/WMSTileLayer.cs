@@ -179,9 +179,8 @@ public class WMSTileLayer : WebTileLayer
 	                        XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
 							using (XmlReader xr = XmlReader.Create(new MemoryStream(bytes),
 							new XmlReaderSettings {
-								ProhibitDtd = false//,
-								//FIXME: not tested on Android
-#if UNITY_IPHONE
+								ProhibitDtd = false
+#if UNITY_IPHONE || UNITY_ANDROID
 								, XmlResolver = null
 #endif
 							}))

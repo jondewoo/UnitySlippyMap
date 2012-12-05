@@ -114,11 +114,19 @@ public class TestMap : MonoBehaviour
             layerMessage = "\nZoom in!";
         if (GUILayout.Button(((layers != null && currentLayerIndex < layers.Count) ? layers[currentLayerIndex].name + layerMessage : "Layer"), GUILayout.ExpandHeight(true)))
         {
+#if UNITY_4_0
+            layers[currentLayerIndex].gameObject.SetActive(false);
+#else
             layers[currentLayerIndex].gameObject.SetActiveRecursively(false);
+#endif
             ++currentLayerIndex;
             if (currentLayerIndex >= layers.Count)
                 currentLayerIndex = 0;
+#if UNITY_4_0
+            layers[currentLayerIndex].gameObject.SetActive(true);
+#else
             layers[currentLayerIndex].gameObject.SetActiveRecursively(true);
+#endif
             map.IsDirty = true;
         }
 
@@ -175,7 +183,11 @@ public class TestMap : MonoBehaviour
         //wmsLayer.Layers = "osm_auto:all";
         wmsLayer.BaseURL = "http://labs.metacarta.com/wms/vmap0";
         wmsLayer.Layers = "basic";
+#if UNITY_4_0
+        wmsLayer.gameObject.SetActive(false);
+#else
         wmsLayer.gameObject.SetActiveRecursively(false);
+#endif
 
         layers.Add(wmsLayer);
 
@@ -183,7 +195,11 @@ public class TestMap : MonoBehaviour
         VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
+#if UNITY_4_0
+        virtualEarthLayer.gameObject.SetActive(false);
+#else
         virtualEarthLayer.gameObject.SetActiveRecursively(false);
+#endif
 
         layers.Add(virtualEarthLayer);
 
@@ -234,7 +250,11 @@ public class TestMap : MonoBehaviour
             Debug.Log("DEBUG: using MBTiles file: " + filepath);
 			MBTilesLayer mbTilesLayer = map.CreateLayer<MBTilesLayer>("MBTiles");
 			mbTilesLayer.Filepath = filepath;
+#if UNITY_4_0
+	        mbTilesLayer.gameObject.SetActive(false);
+#else
             mbTilesLayer.gameObject.SetActiveRecursively(false);
+#endif
 
             layers.Add(mbTilesLayer);
 		}

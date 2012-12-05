@@ -55,12 +55,12 @@ public abstract class WebTileLayer : TileLayer
         //double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
         //Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
 		
-		TileDownloader.Instance.Get(GetTileURL(tileX, tileY, Map.RoundedZoom), tile);
+		TileDownloader.Instance.Get(GetTileURL(tileX, tileY, roundedZoom), tile);
 	}
 
 	protected override void CancelTileRequest(int tileX, int tileY, int roundedZoom)
 	{
-		TileDownloader.Instance.Cancel(GetTileURL(tileX, tileY, Map.RoundedZoom));
+		TileDownloader.Instance.Cancel(GetTileURL(tileX, tileY, roundedZoom));
 	}
 	
 	#endregion

@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_LOG
+//#define DEBUG_LOG
 
 using System;
 using System.IO;
@@ -318,11 +318,6 @@ public class MBTilesLayer : DBTileLayer
 	
 	protected override void RequestTile(int tileX, int tileY, int roundedZoom, Tile tile)
 	{
-        //double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
-        //Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
-		
-		//TileDownloader.Instance.Get(GetTileURL(tileX, tileY, Map.RoundedZoom), tile);
-		
 		if (db == null)
 		{
 			throw new NullReferenceException("db");
