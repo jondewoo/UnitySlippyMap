@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//#define DEBUG_LOG
+#define DEBUG_LOG
 
 using System;
 using System.IO;
@@ -45,22 +45,50 @@ public class VirtualEarthTileLayer : WebTileLayer
     /// <summary>
     /// Set it to true to notify the VirtualEarthTileLayer to reload the metadata.
     /// </summary>
-    private bool            metadataURLChanged = false;
+    private bool hostnameChanged = false;
     /// <summary>
-    /// The URL for the metada, also used for downloading the tiles.
+    /// The host.
     /// </summary>
-    private string          metadataURL = "http://dev.virtualearth.net/REST/V1/Imagery/Metadata/Road?mapVersion=v1&output=xml&key=";
-    public string           MetadataURL
+    private string hostname = "dev.virtualearth.net";
+    public string           Hostname
     {
-        get { return metadataURL; }
+        get { return hostname; }
         set
         {
             if (value == null)
                 throw new ArgumentNullException("value");
             if (value == String.Empty)
                 throw new ArgumentException("value cannot be empty");
-            metadataURLChanged = true;
-            metadataURL = value;
+            hostnameChanged = true;
+            hostname = value;
+        }
+    }
+
+    /// <summary>
+    /// Set it if you are using a proxy (mandatory with Unity3D webplayer since http://dev.virtualearth.net/crossdomain.xml is not supported for some reason).
+    /// </summary>
+    private string proxyURL = null;
+    public string ProxyURL { get { return proxyURL; } set { proxyURL = value; } }
+
+    /// <summary>
+    /// Set it to true to notify the VirtualEarthTileLayer to reload the metadata.
+    /// </summary>
+    private bool            metadataRequestURIChanged = false;
+    /// <summary>
+    /// The request URI for the metada.
+    /// </summary>
+    private string          metadataRequestURI = "/REST/V1/Imagery/Metadata/Road?mapVersion=v1&output=xml&key=";
+    public string           MetadataURL
+    {
+        get { return metadataRequestURI; }
+        set
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value == String.Empty)
+                throw new ArgumentException("value cannot be empty");
+            metadataRequestURIChanged = true;
+            metadataRequestURI = value;
         } 
     }
 
@@ -106,20 +134,27 @@ public class VirtualEarthTileLayer : WebTileLayer
 
     private void Update()
     {
-        if ((keyChanged || metadataURLChanged) && loader == null)
+        if ((hostnameChanged || keyChanged || metadataRequestURIChanged) && loader == null)
         {
+            if (metadataRequestURI != null && metadataRequestURI != String.Empty
+                && key != null && key != String.Empty)
+            {
+                string url = "http://" + hostname + "/" + metadataRequestURI + key;
+                if (proxyURL != null)
+                    url = (proxyURL.StartsWith("http://") ? "" : "http://") + proxyURL + (proxyURL.EndsWith("?") ? "" : "?") + "url=" + WWW.EscapeURL(url);
+
 #if DEBUG_LOG
-            Debug.Log("DEBUG: VirtualEarthTileLayer.Update: launching metadata request on: " + metadataURL + key);
+                Debug.Log("DEBUG: VirtualEarthTileLayer.Update: launching metadata request on: " + url);
 #endif
 
-            if (metadataURL != null && metadataURL != String.Empty
-                && key != null && key != String.Empty)
-                loader = new WWW(metadataURL + key);
+                loader = new WWW(url);
+            }
             else
                 loader = null;
 
+            hostnameChanged = false;
             keyChanged = false;
-            metadataURLChanged = false;
+            metadataRequestURIChanged = false;
             isReadyToBeQueried = false;
         }
         else if (loader != null && loader.isDone)
@@ -127,7 +162,7 @@ public class VirtualEarthTileLayer : WebTileLayer
             if (loader.error != null || loader.text.Contains("404 Not Found"))
             {
 #if DEBUG_LOG
-				Debug.LogError("ERROR: VirtualEarthTileLayer.Update: loader [" + loader.url + "] error: " + loader.error + "(" + loader.text + ")");
+				Debug.LogError("ERROR: VirtualEarthTileLayer.Update: loader [" + loader.url + "] error: " + loader.error);// + "(" + loader.text + ")");
 #endif
                 loader = null;
                 return;
@@ -144,7 +179,7 @@ public class VirtualEarthTileLayer : WebTileLayer
 
                     isParsingMetadata = true;
 
-                    UnityThreadHelper.TaskDistributor.Dispatch(() =>
+                    UnityThreadHelper.CreateThread(() =>
                     {
                         UnitySlippyMap.VirtualEarth.Metadata metadata = null;
                         try
@@ -277,7 +312,10 @@ public class VirtualEarthTileLayer : WebTileLayer
     protected override string GetTileURL(int tileX, int tileY, int roundedZoom)
     {
         string quadKey = TileSystem.TileXYToQuadKey(tileX, tileY, roundedZoom);
-        return baseURL.Replace("{quadkey}", quadKey).Replace("{subdomain}", "t0");
+        string url = baseURL.Replace("{quadkey}", quadKey).Replace("{subdomain}", "t0");
+        if (proxyURL != null)
+            url = (proxyURL.StartsWith("http://") ? "" : "http://") + proxyURL + (proxyURL.EndsWith("?") ? "" : "?") + "key=" + key + "&url=" + WWW.EscapeURL(url);
+        return url;
     }
 	
     #endregion

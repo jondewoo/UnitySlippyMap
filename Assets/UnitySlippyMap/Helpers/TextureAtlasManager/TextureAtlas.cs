@@ -134,14 +134,14 @@ public class TextureAtlas
                     ts.Hours, ts.Minutes, ts.Seconds, 
                     ts.Milliseconds/10));
 		 */
-		
-		/*
-		UnityThreadHelper.TaskDistributor.Dispatch(() => {
-			pixelsWorker(texture, rect);
-		});
-		*/
-		
-		new Job(pixelsWorker(texture, rect), this, true);
+
+        /*
+        UnityThreadHelper.CreateThread(() => {
+            pixelsWorker(texture, rect);
+        });
+        */
+
+        new Job(pixelsWorker(texture, rect), this, true);
 		
 		//UnityThreadHelper.CreateThread(() => { pixelsWorker(texture, rect); });
 		//pixelsWorker(texture, rect);

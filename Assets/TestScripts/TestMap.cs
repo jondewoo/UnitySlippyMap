@@ -149,9 +149,15 @@ public class TestMap : MonoBehaviour
 		return pressed;
 	}
 	
-	private IEnumerator Start()
+	private
+#if !UNITY_WEBPLAYER
+        IEnumerator
+#else
+        void
+#endif
+        Start()
 	{
-		// setup the gui scale according to the screen resolution
+        // setup the gui scale according to the screen resolution
         guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
 		// setup the gui area
 		guiRect = new Rect(16.0f * guiScale, 16.0f * guiScale, Screen.width / guiScale - 32.0f * guiScale, 32.0f * guiScale);
@@ -195,6 +201,9 @@ public class TestMap : MonoBehaviour
         VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
+#if UNITY_WEBPLAYER
+        virtualEarthLayer.ProxyURL = "http://reallyreallyreal.com/UnitySlippyMap/demo/veproxy.php";
+#endif
 #if UNITY_4_0
         virtualEarthLayer.gameObject.SetActive(false);
 #else
@@ -203,6 +212,7 @@ public class TestMap : MonoBehaviour
 
         layers.Add(virtualEarthLayer);
 
+#if !UNITY_WEBPLAYER // FIXME: SQLite won't work in webplayer except if I find a full .NET 2.0 implementation (for free)
 		// create an MBTiles tile layer
 		bool error = false;
 		// on iOS, you need to add the db file to the Xcode project using a directory reference
@@ -240,7 +250,7 @@ public class TestMap : MonoBehaviour
 				Debug.Log("DEBUG: exists: " + newfilepath);
 			filepath = newfilepath;
 		}
-		else
+        else
 		{
 			filepath = Application.dataPath + "/StreamingAssets/" + mbTilesDir + filename;
 		}
@@ -261,7 +271,9 @@ public class TestMap : MonoBehaviour
         else
             Debug.LogError("ERROR: MBTiles file not found!");
 
-		// create some test 2D markers
+#endif
+
+        // create some test 2D markers
 		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
 		go.renderer.material.mainTexture = MarkerTexture;
 		go.renderer.material.renderQueue = 4001;

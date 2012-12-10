@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading;
+using UnityEngine;
 
 namespace UnityThreading
 {
@@ -292,8 +293,10 @@ namespace UnityThreading
 		/// </summary>
         public void ProcessTasks()
         {
-			if (dataEvent.WaitOne(0, false))
+            //Debug.Log("DEBUG 1");
+            if (UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(dataEvent, 0) : dataEvent.WaitOne(0, false))
 				ProcessTasksInternal();
+            //Debug.Log("DEBUG 2");
         }
 
 		/// <summary>

@@ -171,7 +171,7 @@ public class WMSTileLayer : WebTileLayer
 
                     isParsingGetCapabilities = true;
 
-                    UnityThreadHelper.TaskDistributor.Dispatch(() =>
+                    UnityThreadHelper.CreateThread(() =>
                     {
                         capabilities = null;
 						try
@@ -180,7 +180,7 @@ public class WMSTileLayer : WebTileLayer
 							using (XmlReader xr = XmlReader.Create(new MemoryStream(bytes),
 							new XmlReaderSettings {
 								ProhibitDtd = false
-#if UNITY_IPHONE || UNITY_ANDROID
+#if UNITY_IPHONE || UNITY_ANDROID || UNITY_WEBPLAYER
 								, XmlResolver = null
 #endif
 							}))

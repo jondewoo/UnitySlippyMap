@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using System.Threading;
 using System.Collections;
+using UnityEngine;
 
 namespace UnityThreading
 {
@@ -33,8 +34,8 @@ namespace UnityThreading
         public bool ShouldAbort
         {
             get
-			{
-				return abortEvent.WaitOne(0, false); 
+            {
+                return UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(abortEvent, 0) : abortEvent.WaitOne(0, false); 
 			}
         }
 
@@ -45,7 +46,7 @@ namespace UnityThreading
         {
             get 
 			{
-				return endedEvent.WaitOne(0, false); 
+                return UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(endedEvent, 0) : endedEvent.WaitOne(0, false); 
 			}
         }
 
@@ -58,7 +59,8 @@ namespace UnityThreading
         {
             get
             {
-				return endedEvent.WaitOne(0, false) && !abortEvent.WaitOne(0, false);
+                //return UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(endedEvent, 0) : endedEvent.WaitOne(0, false);
+                return HasEnded && !ShouldAbort;
             }
         }
 
@@ -70,7 +72,9 @@ namespace UnityThreading
         {
             get
             {
-				return endedEvent.WaitOne(0, false) && abortEvent.WaitOne(0, false);
+                //return (UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(endedEvent, 0) : endedEvent.WaitOne(0, false))
+                //    && (UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(abortEvent, 0) : abortEvent.WaitOne(0, false));
+                return HasEnded && ShouldAbort;
             }
         }
 
@@ -117,7 +121,10 @@ namespace UnityThreading
 		/// <param name="seconds">Time in seconds this method will max wait.</param>
         public void WaitForSeconds(float seconds)
         {
-			endedEvent.WaitOne(TimeSpan.FromSeconds(seconds));
+            if (UnityThreadHelper.IsWebPlayer)
+                UnityThreadHelper.WaitOne(endedEvent, TimeSpan.FromSeconds(seconds));
+            else
+                endedEvent.WaitOne(TimeSpan.FromSeconds(seconds));
         }
 
 		/// <summary>

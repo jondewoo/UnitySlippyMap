@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Collections;
+using UnityEngine;
 
 namespace UnityThreading
 {
@@ -167,8 +168,10 @@ namespace UnityThreading
 
         protected override IEnumerator Do()
         {
-            while (!exitEvent.WaitOne(0, false))
+            //Debug.Log("DEBUG1");
+            while (!(UnityThreadHelper.IsWebPlayer ? UnityThreadHelper.WaitOne(exitEvent, 0) : exitEvent.WaitOne(0, false)))
             {
+                //Debug.Log("DEBUG2");
                 if (!Dispatcher.ProcessNextTask())
                 {
 					TaskDistributor.FillTasks(Dispatcher);

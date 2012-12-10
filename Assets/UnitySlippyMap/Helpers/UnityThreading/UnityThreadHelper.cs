@@ -2,9 +2,13 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading;
+using System;
 
 public class UnityThreadHelper : MonoBehaviour
 {
+    #region Singleton stuff
+
     private static UnityThreadHelper instance = null;
 
     public static void EnsureHelper()
@@ -30,6 +34,23 @@ public class UnityThreadHelper : MonoBehaviour
             return instance;
         }
     }
+
+    #endregion
+
+    #region Private members
+
+    /*
+    private static System.Reflection.MethodInfo waitOneInt;
+    private static System.Reflection.MethodInfo waitOneTimeSpan;
+     */
+
+    private static bool isWebPlayer;
+    public static bool IsWebPlayer
+    {
+        get { return isWebPlayer; }
+    }
+
+    #endregion
 
     /// <summary>
     /// Returns the GUI/Main Dispatcher.
@@ -78,6 +99,26 @@ public class UnityThreadHelper : MonoBehaviour
 
         if (taskDistributor == null)
             taskDistributor = new UnityThreading.TaskDistributor();
+
+        isWebPlayer = Application.isWebPlayer;
+    }
+
+    public static bool WaitOne(ManualResetEvent evt, int ms)
+    {
+        System.Reflection.MethodInfo waitOneInt;
+        Type type = evt.GetType();
+        waitOneInt = type.GetMethod("WaitOne", new Type[1] { typeof(int) });
+
+        return (bool)waitOneInt.Invoke(evt, new object[1] { ms });
+    }
+
+    public static bool WaitOne(ManualResetEvent evt, TimeSpan ts)
+    {
+        System.Reflection.MethodInfo waitOneTimeSpan;
+        Type type = evt.GetType();
+        waitOneTimeSpan = type.GetMethod("WaitOne", new Type[1] { typeof(TimeSpan) });
+
+        return (bool)waitOneTimeSpan.Invoke(evt, new object[1] { ts });
     }
 
     /// <summary>

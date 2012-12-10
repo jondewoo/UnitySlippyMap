@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//#define DEBUG_LOG
+#define DEBUG_LOG
 
 using UnityEngine;
 
@@ -60,7 +60,9 @@ public class TileDownloader : MonoBehaviour
 
 	private void EnsureDownloader()
 	{
+#if !UNITY_WEBPLAYER
 		LoadTiles();
+#endif
 	}
 	
 	private TileDownloader()
@@ -97,12 +99,14 @@ public class TileDownloader : MonoBehaviour
 	// </summary>
 	public class TileEntry
 	{
+#if !UNITY_WEBPLAYER
 		[XmlAttribute("timestamp")]
 		public double	timestamp;
 		[XmlAttribute("size")]
 		public int		size;
 		[XmlAttribute("guid")]
 		public string	guid;
+#endif
 		[XmlAttribute("url")]
 		public string	url;
 		
@@ -110,8 +114,10 @@ public class TileDownloader : MonoBehaviour
         public Tile     tile;
         [XmlIgnore]
         public Texture2D texture;
+#if !UNITY_WEBPLAYER
         [XmlIgnore]
 		public bool		cached = false;
+#endif
 		[XmlIgnore]
 		public bool		error = false;
 		
@@ -158,6 +164,7 @@ public class TileDownloader : MonoBehaviour
 			string ext = Path.GetExtension(url);
             if (ext.Contains("?"))
                 ext = ext.Substring(0, ext.IndexOf('?'));
+#if !UNITY_WEBPLAYER
             if (cached && File.Exists(Application.persistentDataPath + "/" + this.guid + ext))
             {
                 www = new WWW("file:///" + Application.persistentDataPath + "/" + this.guid + ext);
@@ -166,14 +173,19 @@ public class TileDownloader : MonoBehaviour
 #endif
             }
             else
+#endif
             {
                 www = new WWW(url);
 #if DEBUG_LOG
-                Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from provider: url: " + www.url + "(cached: " + cached + ")");
+                Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from provider: url: " + www.url
+#if !UNITY_WEBPLAYER
+                    + "(cached: " + cached + ")"
+#endif
+                    );
 #endif
             }
-				
-			yield return www;
+
+            yield return www;
 			
 #if DEBUG_PROFILE
 			UnitySlippyMap.Profiler.Begin("TileDownloader.TileEntry.DownloadCoroutine");
@@ -200,6 +212,7 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.Begin("is cached?");
 #endif
+#if !UNITY_WEBPLAYER
                 if (this.cached == false)
 				{
 #if DEBUG_PROFILE
@@ -242,6 +255,8 @@ public class TileDownloader : MonoBehaviour
 				}
 
 				this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
+#endif
+
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.Begin("Tile.SetTexture");
 #endif
@@ -266,6 +281,7 @@ public class TileDownloader : MonoBehaviour
 #endif
 		}
 		
+#if !UNITY_WEBPLAYER
 		private static void EndWriteCallback(IAsyncResult result)
 		{
 			AsyncInfo info = result.AsyncState as AsyncInfo;
@@ -280,6 +296,7 @@ public class TileDownloader : MonoBehaviour
 			Debug.Log("DEBUG: TileEntry.EndWriteCallback: done writing: " + info.Entry.url + " [" + info.Entry.guid + "]");
 #endif
 		}
+#endif
 	}
 	
 	#endregion
@@ -299,17 +316,22 @@ public class TileDownloader : MonoBehaviour
 	
 	private List<TileEntry>	tilesToLoad = new List<TileEntry>();
 	private List<TileEntry>	tilesLoading = new List<TileEntry>();
+
+#if !UNITY_WEBPLAYER
 	private List<TileEntry>	tiles = new List<TileEntry>();
 
     private string          tilePath = Application.persistentDataPath;
+#endif
 	
 	private int				maxSimultaneousDownloads = 2;
 	public int				MaxSimultaneousDownloads { get { return maxSimultaneousDownloads; } set { maxSimultaneousDownloads = value; } }
 	
+#if !UNITY_WEBPLAYER
 	private int				maxCacheSize = 20000000; // 20 Mo
 	public int				MaxCacheSize { get { return maxCacheSize; } set { maxCacheSize = value; } }
 	
 	private int				cacheSize = 0;
+#endif
 	
 	#endregion
 		
@@ -341,15 +363,18 @@ public class TileDownloader : MonoBehaviour
 			return ;
 		}
 		
+#if !UNITY_WEBPLAYER
 		TileEntry cachedEntry = tiles.Find(tileURLMatchPredicate);
 
 		if (cachedEntry == null)
+#endif
         {
 #if DEBUG_LOG
             Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list");
 #endif
             tilesToLoad.Add(new TileEntry(url, tile));
         }
+#if !UNITY_WEBPLAYER
 		else
 		{
 #if DEBUG_LOG
@@ -360,7 +385,8 @@ public class TileDownloader : MonoBehaviour
 			//cachedEntry.Complete = material;
 			tilesToLoad.Add(cachedEntry);
 		}
-	}
+#endif
+    }
 	
 	// <summary>
 	// Cancels the request for a tile by its URL.
@@ -405,6 +431,7 @@ public class TileDownloader : MonoBehaviour
 		TileEntry entry = e.Owner as TileEntry;
 		tilesLoading.Remove(entry);
 		
+#if !UNITY_WEBPLAYER
 		if (e.WasKilled == false)
 		{
 			if (entry.error && entry.cached)
@@ -474,6 +501,7 @@ public class TileDownloader : MonoBehaviour
 #endif
 			}
 		}
+#endif
 	}
 
 	public void PauseAll()
@@ -510,6 +538,7 @@ public class TileDownloader : MonoBehaviour
 		}
         
 #if DEBUG_LOG
+        /*
         if (tilesLoading.Count >= MaxSimultaneousDownloads)
         {
             Debug.Log("DEBUG: TileDownload.Update: tilesLoading.Count (" + tilesLoading.Count + ") > MaxSimultaneousDownloads (" + MaxSimultaneousDownloads + ")");
@@ -520,6 +549,7 @@ public class TileDownloader : MonoBehaviour
             }
             Debug.Log(dbg);
         }
+         */
   
         /*
         {
@@ -550,7 +580,9 @@ public class TileDownloader : MonoBehaviour
 	private void OnDestroy()
 	{
         KillAll();		
+#if !UNITY_WEBPLAYER
 		SaveTiles();
+#endif
 		instance = null;
 	}
     
@@ -562,6 +594,7 @@ public class TileDownloader : MonoBehaviour
         }
     }
     
+#if !UNITY_WEBPLAYER
     private void DeleteCachedTile(TileEntry t)
     {
         cacheSize -= t.size;
@@ -617,6 +650,7 @@ public class TileDownloader : MonoBehaviour
 			cacheSize += tile.size;
 		}
 	}
+#endif
 	
 	#endregion
 }
