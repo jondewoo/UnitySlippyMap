@@ -172,6 +172,7 @@ public class TestMap : MonoBehaviour
 		map.UseLocation = true;
 		map.InputsEnabled = true;
 		map.ShowGUIControls = true;
+		map.ReluctantZoom = true;
 
 		map.GUIDelegate += Toolbar;
 
@@ -252,7 +253,7 @@ public class TestMap : MonoBehaviour
 		}
         else
 		{
-			filepath = Application.dataPath + "/StreamingAssets/" + mbTilesDir + filename;
+			filepath = Application.dataPath + "/Data/StreamingAssets/" + mbTilesDir + filename;
 		}
 		
 		if (error == false)

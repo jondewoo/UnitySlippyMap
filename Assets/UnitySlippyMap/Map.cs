@@ -236,9 +236,16 @@ public class Map : MonoBehaviour
 #endif
 				return ;
 			}
-			
+
 			currentZoom = value;
-			roundedZoom = (int)Mathf.Floor(currentZoom);
+            if (!reluctantZoom) {
+				roundedZoom = (int)Mathf.Floor(currentZoom);
+            } else {
+                roundedZoom = (int)(Mathf.Round(currentZoom + 0.6f));
+            	if (roundedZoom>maxZoom) {
+    	        	roundedZoom=(int)maxZoom;
+            	}
+			}
 
             UpdateInternals();
 		}
@@ -295,6 +302,17 @@ public class Map : MonoBehaviour
 			}
 		}
 	}
+		
+    private bool                           reluctantZoom = false;
+	public bool                            ReluctantZoom
+    {
+	    get { return reluctantZoom; }
+        set
+        {
+		    reluctantZoom = value;
+        }
+	}
+
 
 	private int								roundedZoom;
 	public int								RoundedZoom { get { return roundedZoom; } }
