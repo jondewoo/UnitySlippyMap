@@ -163,8 +163,7 @@ public class OSMTileLayer : WebTileLayer
 	{
         //double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
         //Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
-
-        return String.Format(Path.Combine(BaseURL, URLParametersFormat) + TileImageExtension, roundedZoom, tileX, tileY);
+        return String.Format(Path.Combine(BaseURL, URLParametersFormat).Replace("\\", "/") + TileImageExtension, roundedZoom, tileX, tileY);
 	}
 
 	#endregion
