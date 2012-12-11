@@ -165,9 +165,9 @@ public class TileDownloader : MonoBehaviour
             if (ext.Contains("?"))
                 ext = ext.Substring(0, ext.IndexOf('?'));
 #if !UNITY_WEBPLAYER
-            if (cached && File.Exists(Application.persistentDataPath + "/" + this.guid + ext))
+            if (cached && File.Exists(Application.temporaryCachePath + "/" + this.guid + ext))
             {
-                www = new WWW("file:///" + Application.persistentDataPath + "/" + this.guid + ext);
+                www = new WWW("file:///" + Application.temporaryCachePath + "/" + this.guid + ext);
 #if DEBUG_LOG
                 Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from cache: url: " + www.url);
 #endif
@@ -234,7 +234,7 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_PROFILE
 					UnitySlippyMap.Profiler.Begin("new FileStream & FileStream.BeginWrite");
 #endif
-					FileStream fs = new FileStream(Application.persistentDataPath + "/" + this.guid + ext, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+					FileStream fs = new FileStream(Application.temporaryCachePath + "/" + this.guid + ext, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
 					fs.BeginWrite(bytes, 0, bytes.Length, new AsyncCallback(EndWriteCallback), new AsyncInfo(this, fs));
 #if DEBUG_PROFILE
 					UnitySlippyMap.Profiler.End("new FileStream & FileStream.BeginWrite");
@@ -320,7 +320,7 @@ public class TileDownloader : MonoBehaviour
 #if !UNITY_WEBPLAYER
 	private List<TileEntry>	tiles = new List<TileEntry>();
 
-    private string          tilePath = Application.persistentDataPath;
+    private string          tilePath = Application.temporaryCachePath;
 #endif
 	
 	private int				maxSimultaneousDownloads = 2;

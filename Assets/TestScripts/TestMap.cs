@@ -227,7 +227,7 @@ public class TestMap : MonoBehaviour
 			// Place your MBTiles file in the StreamingAssets folder (http://docs.unity3d.com/Documentation/Manual/StreamingAssets.html).
 			// Then you need to access the APK on the device with WWW and copy the file to persitentDataPath
 			// to that it can be read by SqliteDatabase as an individual file
-			string newfilepath = Application.persistentDataPath + "/" + filename;
+			string newfilepath = Application.temporaryCachePath + "/" + filename;
 			if (File.Exists(newfilepath) == false)
 			{
 				Debug.Log("DEBUG: file doesn't exist: " + newfilepath);
