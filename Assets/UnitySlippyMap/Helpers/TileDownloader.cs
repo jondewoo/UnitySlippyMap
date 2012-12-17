@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_LOG
+//#define DEBUG_LOG
 
 using UnityEngine;
 
@@ -202,8 +202,9 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.Begin("www.texture");
 #endif
-				
-                Texture2D texture = www.texture;
+
+                Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, true);
+				www.LoadImageIntoTexture(texture);
 				
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.End("www.texture");
