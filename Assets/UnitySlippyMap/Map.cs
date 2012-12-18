@@ -229,7 +229,7 @@ public class Map : MonoBehaviour
 		set
 		{
 			if (value < minZoom
-				|| value > (maxZoom + 0.5f))
+				|| value > maxZoom)
 			{
 #if DEBUG_LOG
 				Debug.LogError("ERROR: Map.Zoom: value must be inside range [" + minZoom + " - " + maxZoom + "]");
