@@ -7,10 +7,9 @@ Products
 
 
 # Unity3D
-/iOS/
+/Build/
 /Temp/*
 /Library/*
-/Android/
 
 
 

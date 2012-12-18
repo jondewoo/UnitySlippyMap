@@ -220,7 +220,9 @@ public class TestMap : MonoBehaviour
 		string filename = "UnitySlippyMap_World_0_8.mbtiles";
 		string filepath = null;
 		if (Application.platform == RuntimePlatform.IPhonePlayer)
-			filepath = Application.dataPath + "/Raw/" + mbTilesDir + filename;
+		{
+			filepath = Application.streamingAssetsPath + "/" + mbTilesDir + filename;
+		}
 		else if (Application.platform == RuntimePlatform.Android)
 		{
 			// Note: Android is a bit tricky, Unity produces APK files and those are never unzip on the device.
@@ -231,7 +233,7 @@ public class TestMap : MonoBehaviour
 			if (File.Exists(newfilepath) == false)
 			{
 				Debug.Log("DEBUG: file doesn't exist: " + newfilepath);
-				filepath = "jar:file://" + Application.dataPath + "!/assets/" + mbTilesDir + filename;
+				filepath = Application.streamingAssetsPath + "/" + mbTilesDir + filename;
 				// TODO: read the file with WWW and write it to persitentDataPath
 				WWW loader = new WWW(filepath);
 				yield return loader;
@@ -252,7 +254,7 @@ public class TestMap : MonoBehaviour
 		}
         else
 		{
-			filepath = Application.dataPath + "/StreamingAssets/" + mbTilesDir + filename;
+			filepath = Application.streamingAssetsPath + "/" + mbTilesDir + filename;
 		}
 		
 		if (error == false)
