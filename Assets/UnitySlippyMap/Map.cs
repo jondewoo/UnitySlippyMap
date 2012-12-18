@@ -238,7 +238,7 @@ public class Map : MonoBehaviour
 			}
 			
 			currentZoom = value;
-			roundedZoom = (int)Mathf.Floor(currentZoom);
+			roundedZoom = (int)Mathf.Round(currentZoom);
 
             UpdateInternals();
 		}
