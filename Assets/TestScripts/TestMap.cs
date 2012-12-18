@@ -38,7 +38,8 @@ public class TestMap : MonoBehaviour
 	public Texture	LocationTexture;
 	public Texture	MarkerTexture;
 	
-	private float	guiScale;
+	private float	guiXScale;
+	private float	guiYScale;
 	private Rect	guiRect;
 	
 	private bool 	isPerspectiveView = false;
@@ -53,7 +54,7 @@ public class TestMap : MonoBehaviour
 	
 	bool Toolbar(Map map)
 	{
-		GUI.matrix = Matrix4x4.Scale(Vector3.one * guiScale);
+		GUI.matrix = Matrix4x4.Scale(new Vector3(guiXScale, guiXScale, 1.0f));
 		
 		GUILayout.BeginArea(guiRect);
 		
@@ -158,10 +159,10 @@ public class TestMap : MonoBehaviour
         Start()
 	{
         // setup the gui scale according to the screen resolution
-        guiScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
+        guiXScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
+        guiYScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.height : Screen.width) / 640.0f;
 		// setup the gui area
-		guiRect = new Rect(16.0f * guiScale, 16.0f * guiScale, Screen.width / guiScale - 32.0f * guiScale, 32.0f * guiScale);
-		// FIXME: make it customizable and screen orientation independent
+		guiRect = new Rect(16.0f * guiXScale, 4.0f * guiXScale, Screen.width / guiXScale - 32.0f * guiXScale, 32.0f * guiYScale);
 
 		// create the map singleton
 		map = Map.Instance;
@@ -180,7 +181,7 @@ public class TestMap : MonoBehaviour
 		// create an OSM tile layer
         OSMTileLayer osmLayer = map.CreateLayer<OSMTileLayer>("OSM");
         osmLayer.BaseURL = "http://a.tile.openstreetmap.org/";
-
+		
         layers.Add(osmLayer);
 
 		// create a WMS tile layer

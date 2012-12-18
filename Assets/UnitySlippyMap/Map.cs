@@ -238,10 +238,29 @@ public class Map : MonoBehaviour
 			}
 			
 			currentZoom = value;
-			roundedZoom = (int)Mathf.Round(currentZoom);
+			//roundedZoom = (int)Mathf.Round(currentZoom);
+			float diff = value - roundedZoom;
+			if (diff > 0.0f && diff >= zoomStepLowerThreshold)
+				roundedZoom = (int)Mathf.Ceil(currentZoom);
+			else if (diff < 0.0f && diff <= -zoomStepUpperThreshold)
+				roundedZoom = (int)Mathf.Floor(currentZoom);
 
             UpdateInternals();
 		}
+	}
+	
+	private float							zoomStepUpperThreshold = 0.8f;
+	public float							ZoomStepUpperThreshold
+	{
+		get { return zoomStepUpperThreshold; }
+		set { zoomStepUpperThreshold = value; }
+	}
+	
+	private float							zoomStepLowerThreshold = 0.2f;
+	public float							ZoomStepLowerThreshold
+	{
+		get { return zoomStepLowerThreshold; }
+		set { zoomStepLowerThreshold = value; }
 	}
 	
 	private float							minZoom = 1.0f;
