@@ -20,7 +20,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using UnityEngine;
-using System;
+
+namespace UnitySlippyMap
+{
 
 // FIXME: not sure the use of a namespace is appropriate
 // TODO: refactor the whole thing
@@ -255,4 +257,6 @@ public class Tile : MonoBehaviour
 	}
 
     #endregion
+}
+
 }

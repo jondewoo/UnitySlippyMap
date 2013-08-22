@@ -24,7 +24,8 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-using UnitySlippyMap;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // An abstract class representing a tile layer.
@@ -103,9 +104,9 @@ public abstract class TileLayer : Layer
 		if (tileTemplate.transform.localScale.x != Map.RoundedHalfMapScale)
 			tileTemplate.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
 
-        if (Camera.main != null && isReadyToBeQueried)
+        if (Map.CurrentCamera != null && isReadyToBeQueried)
         {
-            Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+			Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Map.CurrentCamera);
 
             CleanUpTiles(frustum, Map.RoundedZoom);
 
@@ -309,3 +310,4 @@ public abstract class TileLayer : Layer
 	
 }
 
+}

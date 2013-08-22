@@ -24,18 +24,14 @@
 using System;
 using System.IO;
 using System.Xml.Serialization;
-using System.Collections.Generic;
 
 using UnityEngine;
 
-using UnitySlippyMap;
-
-using ProjNet;
 using ProjNet.CoordinateSystems;
-using ProjNet.CoordinateSystems.Transformations;
-using ProjNet.Converters.WellKnownText;
 using System.Xml;
-using System.Threading;
+
+namespace UnitySlippyMap
+{
 
 // <summary>
 // A class representing a Web Mapping Service tile layer.
@@ -418,3 +414,4 @@ public class WMSTileLayer : WebTileLayer
     #endregion
 }
 
+}

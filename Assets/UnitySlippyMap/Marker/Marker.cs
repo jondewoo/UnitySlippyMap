@@ -21,16 +21,15 @@
 
 using UnityEngine;
 
-using System;
-
-using UnitySlippyMap;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // A simple marker class.
 // </summary>
 public class Marker : MonoBehaviour
 {
-	public Map			Map;
+	public Map Map;
 	
 	// <summary>
 	// The coordinates of the marker in WGS84.
@@ -82,7 +81,7 @@ public class Marker : MonoBehaviour
 	
 	#region MonoBehaviour implementation
 	
-	void Update()
+	protected void Update()
 	{
 		if (this.gameObject.transform.localScale.x != Map.HalfMapScale)
 			this.gameObject.transform.localScale = new Vector3(Map.HalfMapScale, Map.HalfMapScale, Map.HalfMapScale);
@@ -131,4 +130,6 @@ public class Marker : MonoBehaviour
 	}
 	
 	#endregion
+}
+
 }

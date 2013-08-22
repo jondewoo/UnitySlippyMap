@@ -25,10 +25,12 @@ using UnityEngine;
 
 using System;
 using System.IO;
-using System.Xml;
 using System.Xml.Serialization;
 using System.Collections;
 using System.Collections.Generic;
+
+namespace UnitySlippyMap
+{
 
 // <summary>
 // A singleton class in charge of downloading, caching and serving tiles.
@@ -657,3 +659,4 @@ public class TileDownloader : MonoBehaviour
 }
 
 
+}

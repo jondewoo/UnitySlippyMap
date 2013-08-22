@@ -115,18 +115,18 @@ public class TestMap : MonoBehaviour
             layerMessage = "\nZoom in!";
         if (GUILayout.Button(((layers != null && currentLayerIndex < layers.Count) ? layers[currentLayerIndex].name + layerMessage : "Layer"), GUILayout.ExpandHeight(true)))
         {
-#if UNITY_4_0
-            layers[currentLayerIndex].gameObject.SetActive(false);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
             layers[currentLayerIndex].gameObject.SetActiveRecursively(false);
+#else
+			layers[currentLayerIndex].gameObject.SetActive(false);
 #endif
             ++currentLayerIndex;
             if (currentLayerIndex >= layers.Count)
                 currentLayerIndex = 0;
-#if UNITY_4_0
-            layers[currentLayerIndex].gameObject.SetActive(true);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
             layers[currentLayerIndex].gameObject.SetActiveRecursively(true);
+#else
+			layers[currentLayerIndex].gameObject.SetActive(true);
 #endif
             map.IsDirty = true;
         }
@@ -166,6 +166,7 @@ public class TestMap : MonoBehaviour
 
 		// create the map singleton
 		map = Map.Instance;
+		map.CurrentCamera = Camera.main;
 		map.InputDelegate += UnitySlippyMap.Input.MapInput.BasicTouchAndKeyboard;
 		
 		// 9 rue Gentil, Lyon
@@ -190,10 +191,10 @@ public class TestMap : MonoBehaviour
         //wmsLayer.Layers = "osm_auto:all";
         wmsLayer.BaseURL = "http://labs.metacarta.com/wms/vmap0";
         wmsLayer.Layers = "basic";
-#if UNITY_4_0
-        wmsLayer.gameObject.SetActive(false);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
         wmsLayer.gameObject.SetActiveRecursively(false);
+#else
+		wmsLayer.gameObject.SetActive(false);
 #endif
 
         layers.Add(wmsLayer);
@@ -205,10 +206,10 @@ public class TestMap : MonoBehaviour
 #if UNITY_WEBPLAYER
         virtualEarthLayer.ProxyURL = "http://reallyreallyreal.com/UnitySlippyMap/demo/veproxy.php";
 #endif
-#if UNITY_4_0
-        virtualEarthLayer.gameObject.SetActive(false);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
         virtualEarthLayer.gameObject.SetActiveRecursively(false);
+#else
+		virtualEarthLayer.gameObject.SetActive(false);
 #endif
 
         layers.Add(virtualEarthLayer);
@@ -263,10 +264,10 @@ public class TestMap : MonoBehaviour
             Debug.Log("DEBUG: using MBTiles file: " + filepath);
 			MBTilesLayer mbTilesLayer = map.CreateLayer<MBTilesLayer>("MBTiles");
 			mbTilesLayer.Filepath = filepath;
-#if UNITY_4_0
-	        mbTilesLayer.gameObject.SetActive(false);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
             mbTilesLayer.gameObject.SetActiveRecursively(false);
+#else
+			mbTilesLayer.gameObject.SetActive(false);
 #endif
 
             layers.Add(mbTilesLayer);

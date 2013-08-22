@@ -22,11 +22,11 @@
 //#define DEBUG_LOG
 
 using System;
-using System.IO;
 
 using UnityEngine;
 
-using UnitySlippyMap;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // An class representing an MBTiles tile layer.
@@ -351,4 +351,6 @@ public class MBTilesLayer : DBTileLayer
 	}
 	
 	#endregion
+}
+
 }
