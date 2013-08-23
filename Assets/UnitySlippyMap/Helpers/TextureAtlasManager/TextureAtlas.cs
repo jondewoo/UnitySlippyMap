@@ -27,6 +27,9 @@ using System.Collections.Generic;
 
 using System.Diagnostics;
 
+namespace UnitySlippyMap
+{
+
 public class TextureAtlas
 {
     public class TextureInfo
@@ -235,4 +238,6 @@ public class TextureAtlas
     }
 
     #endregion
+}
+
 }

@@ -27,10 +27,11 @@ using System.Xml.Serialization;
 
 using UnityEngine;
 
-using UnitySlippyMap;
-
 using System.Globalization;
 using Microsoft.MapPoint;
+
+namespace UnitySlippyMap
+{
 
 // <summary>
 // A class representing a VirtualEarth tile layer.
@@ -321,3 +322,4 @@ public class VirtualEarthTileLayer : WebTileLayer
     #endregion
 }
 
+}

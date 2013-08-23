@@ -1,8 +1,7 @@
 using UnityEngine;
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
+namespace UnitySlippyMap
+{
 
 public class JobManager : MonoBehaviour
 {
@@ -45,4 +44,6 @@ public class JobManager : MonoBehaviour
 	}
 
 	#endregion
+}
+
 }

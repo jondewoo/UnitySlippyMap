@@ -21,10 +21,8 @@
 
 using System;
 
-using UnityEngine;
-
-using UnitySlippyMap;
-using System.IO;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // An abstract class representing a web tile layer.
@@ -85,4 +83,6 @@ public abstract class WebTileLayer : TileLayer
 	protected abstract string GetTileURL(int tileX, int tileY, int roundedZoom);
 
 	#endregion
+}
+
 }

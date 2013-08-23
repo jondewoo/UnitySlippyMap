@@ -21,10 +21,9 @@
 
 using UnityEngine;
 
-using System;
-
 namespace UnitySlippyMap.Input
 {
+
 	/// <summary>
 	/// Input delegate.
 	/// </summary>
@@ -203,7 +202,7 @@ namespace UnitySlippyMap.Input
     			map.UpdateCenterWithLocation = false;
     			
     			// apply the movements
-    			Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+    			Ray ray = map.CurrentCamera.ScreenPointToRay(screenPosition);
     			RaycastHit hitInfo;
     			if (Physics.Raycast(ray, out hitInfo))
     			{

@@ -23,8 +23,10 @@ using System;
 
 using UnityEngine;
 
-using UnitySlippyMap;
 using System.IO;
+
+namespace UnitySlippyMap
+{
 
 // <summary>
 // A class representing an Open Street Map tile layer.
@@ -167,4 +169,6 @@ public class OSMTileLayer : WebTileLayer
 	}
 
 	#endregion
+}
+
 }

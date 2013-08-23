@@ -22,16 +22,16 @@
 using UnityEngine;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
 
-using UnitySlippyMap;
 using UnitySlippyMap.GUI;
 using UnitySlippyMap.Input;
+
+//using UnitySlippyMap.Input;
 
 // <summary>
 // The Map class is a singleton handling layers and markers.
@@ -91,6 +91,9 @@ using UnitySlippyMap.Input;
 // }
 // </example>
 
+namespace UnitySlippyMap
+{
+
 public class Map : MonoBehaviour
 {
 	#region Singleton stuff
@@ -137,7 +140,17 @@ public class Map : MonoBehaviour
 	#endregion
 	
 	#region Variables & properties
-	
+
+	/// <summary>
+	/// Camera used to render the map
+	/// </summary>
+	private Camera currentCamera;
+	public Camera CurrentCamera
+	{
+		get { return currentCamera; }
+		set { currentCamera = value; }
+	}
+
 	// <summary>
 	// Should be set to true to tell the map to update its layers and markers.
 	// </summary>
@@ -359,11 +372,11 @@ public class Map : MonoBehaviour
 			
 			if (useLocation)
 			{
-				if (Input.location.isEnabledByUser
-					&& (Input.location.status == LocationServiceStatus.Stopped
-					|| Input.location.status == LocationServiceStatus.Failed))
+				if (UnityEngine.Input.location.isEnabledByUser
+					&& (UnityEngine.Input.location.status == LocationServiceStatus.Stopped
+					|| UnityEngine.Input.location.status == LocationServiceStatus.Failed))
 				{
-					Input.location.Start();
+					UnityEngine.Input.location.Start();
 				}
 				else
 				{
@@ -374,11 +387,11 @@ public class Map : MonoBehaviour
 			}
 			else
 			{
-				if (Input.location.isEnabledByUser
-					&& (Input.location.status == LocationServiceStatus.Initializing
-					|| Input.location.status == LocationServiceStatus.Running))
+				if (UnityEngine.Input.location.isEnabledByUser
+					&& (UnityEngine.Input.location.status == LocationServiceStatus.Initializing
+					|| UnityEngine.Input.location.status == LocationServiceStatus.Running))
 				{
-					Input.location.Start();
+					UnityEngine.Input.location.Start();
 				}
 			}
 		}
@@ -422,11 +435,11 @@ public class Map : MonoBehaviour
 				// you must also enable location updates by calling Input.location.Start().
 				if (useLocation == false)
 				{
-					if (Input.location.isEnabledByUser
-						&& (Input.location.status == LocationServiceStatus.Stopped
-						|| Input.location.status == LocationServiceStatus.Failed))
+					if (UnityEngine.Input.location.isEnabledByUser
+						&& (UnityEngine.Input.location.status == LocationServiceStatus.Stopped
+						|| UnityEngine.Input.location.status == LocationServiceStatus.Failed))
 					{
-						Input.location.Start();
+						UnityEngine.Input.location.Start();
 					}
 					else
 					{
@@ -435,18 +448,18 @@ public class Map : MonoBehaviour
 #endif
 					}
 				}
-				Input.compass.enabled = true;
+				UnityEngine.Input.compass.enabled = true;
 			}
 			else
 			{
 				if (useLocation == false)
 				{
-					if (Input.location.isEnabledByUser
-						&& (Input.location.status == LocationServiceStatus.Initializing
-						|| Input.location.status == LocationServiceStatus.Running))
-						Input.location.Start();
+					if (UnityEngine.Input.location.isEnabledByUser
+						&& (UnityEngine.Input.location.status == LocationServiceStatus.Initializing
+						|| UnityEngine.Input.location.status == LocationServiceStatus.Running))
+						UnityEngine.Input.location.Start();
 				}
-				Input.compass.enabled = false;
+				UnityEngine.Input.compass.enabled = false;
 			}
 		}
 	}
@@ -557,9 +570,10 @@ public class Map : MonoBehaviour
         // maybe there is a way to take the values out of the calculations and reintroduce them on Layer level...
         // FIXME: the 'division by 20000' helps the values to be kept in range for the Unity3D engine, not sure
         // this is the right approach either, feels kinda voodooish...
+		
         halfMapScale = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, /*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
         roundedHalfMapScale = GeoHelpers.OsmZoomLevelToMapScale(roundedZoom, (float)/*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
-        
+
         metersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)currentZoom);
         roundedMetersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)roundedZoom);
         
@@ -602,7 +616,7 @@ public class Map : MonoBehaviour
             GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider,
 			0);
 			*/
-        Camera.main.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+        currentCamera.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 		Zoom(0.0f);
 
         // set the update flag to tell the behaviour the user is manipulating the map
@@ -643,49 +657,49 @@ public class Map : MonoBehaviour
 		
 		// update the centerWGS84 with the last location if enabled
 		if (useLocation
-			&& Input.location.status == LocationServiceStatus.Running)
+			&& UnityEngine.Input.location.status == LocationServiceStatus.Running)
 		{
 			if (updateCenterWithLocation)
 			{
-				if (Input.location.lastData.longitude <= 180.0f
-					&& Input.location.lastData.longitude >= -180.0f
-					&& Input.location.lastData.latitude <= 90.0f
-					&& Input.location.lastData.latitude >= -90.0f)
+				if (UnityEngine.Input.location.lastData.longitude <= 180.0f
+					&& UnityEngine.Input.location.lastData.longitude >= -180.0f
+					&& UnityEngine.Input.location.lastData.latitude <= 90.0f
+					&& UnityEngine.Input.location.lastData.latitude >= -90.0f)
 				{
-					if (CenterWGS84[0] != Input.location.lastData.longitude
-					|| CenterWGS84[1] != Input.location.lastData.latitude)
-						CenterWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+					if (CenterWGS84[0] != UnityEngine.Input.location.lastData.longitude
+					|| CenterWGS84[1] != UnityEngine.Input.location.lastData.latitude)
+						CenterWGS84 = new double[2] { UnityEngine.Input.location.lastData.longitude, UnityEngine.Input.location.lastData.latitude };
 					
 					//Debug.Log("DEBUG: Map.Update: new location: " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);					
 				}
 				else
 				{
 //#if DEBUG_LOG
-					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);
+					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
 //#endif
 				}
 			}
 			
 			if (locationMarker != null)
 			{
-#if UNITY_4_0
-				if (locationMarker.gameObject.activeSelf == false)
-					locationMarker.gameObject.SetActive(true);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				if (locationMarker.gameObject.active == false)
 					locationMarker.gameObject.SetActiveRecursively(true);
+#else
+				if (locationMarker.gameObject.activeSelf == false)
+					locationMarker.gameObject.SetActive(true);
 #endif
-				if (Input.location.lastData.longitude <= 180.0f
-					&& Input.location.lastData.longitude >= -180.0f
-					&& Input.location.lastData.latitude <= 90.0f
-					&& Input.location.lastData.latitude >= -90.0f)
+				if (UnityEngine.Input.location.lastData.longitude <= 180.0f
+					&& UnityEngine.Input.location.lastData.longitude >= -180.0f
+					&& UnityEngine.Input.location.lastData.latitude <= 90.0f
+					&& UnityEngine.Input.location.lastData.latitude >= -90.0f)
 				{
-					locationMarker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+					locationMarker.CoordinatesWGS84 = new double[2] { UnityEngine.Input.location.lastData.longitude, UnityEngine.Input.location.lastData.latitude };
 				}
 				else
 				{
 //#if DEBUG_LOG
-					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + Input.location.lastData.longitude + " " + Input.location.lastData.latitude + ":  " + Input.location.status);
+					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
 //#endif
 				}
 			}
@@ -699,10 +713,10 @@ public class Map : MonoBehaviour
             switch (Screen.orientation)
             {
             case ScreenOrientation.LandscapeLeft:
-                heading = Input.compass.trueHeading;
+					heading = UnityEngine.Input.compass.trueHeading;
                 break ;
             case ScreenOrientation.Portrait: // FIXME: not tested, likely wrong, legacy code
-                heading = -Input.compass.trueHeading;
+				heading = -UnityEngine.Input.compass.trueHeading;
                 break ;
             }
 
@@ -710,7 +724,7 @@ public class Map : MonoBehaviour
 			{
 				if (lastCameraOrientation == 0.0f)
 				{
-					Camera.main.transform.RotateAround(Vector3.zero, Vector3.up, heading);
+					currentCamera.transform.RotateAround(Vector3.zero, Vector3.up, heading);
 
 					lastCameraOrientation = heading;
 				}
@@ -720,14 +734,14 @@ public class Map : MonoBehaviour
 					float relativeAngle = (heading - lastCameraOrientation) * cameraRotationSpeed * Time.deltaTime;
 					if (relativeAngle > 0.01f)
 					{
-						Camera.main.transform.RotateAround(Vector3.zero, Vector3.up, relativeAngle);
+						currentCamera.transform.RotateAround(Vector3.zero, Vector3.up, relativeAngle);
 	
 						//Debug.Log("DEBUG: cam: " + lastCameraOrientation + ", heading: " + heading +  ", rel angle: " + relativeAngle);
 						lastCameraOrientation += relativeAngle;
 					}
 					else
 					{
-						Camera.main.transform.RotateAround(Vector3.zero, Vector3.up, heading - lastCameraOrientation);
+						currentCamera.transform.RotateAround(Vector3.zero, Vector3.up, heading - lastCameraOrientation);
 	
 						//Debug.Log("DEBUG: cam: " + lastCameraOrientation + ", heading: " + heading +  ", rel angle: " + relativeAngle);
 						lastCameraOrientation = heading;
@@ -772,19 +786,19 @@ public class Map : MonoBehaviour
 			IsDirty = false;
 			
 			if (locationMarker != null
-#if UNITY_4_0
-				&& locationMarker.gameObject.activeSelf == true)
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				&& locationMarker.gameObject.active == true)
+#else
+				&& locationMarker.gameObject.activeSelf == true)
 #endif
 				locationMarker.UpdateMarker();
 			
 			foreach (Layer layer in layers)
-			{
-#if UNITY_4_0
-				if (layer.gameObject.activeSelf == true
-#else
+			{	
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				if (layer.gameObject.active == true
+#else
+				if (layer.gameObject.activeSelf == true
 #endif
 					&& layer.enabled == true
 					&& CurrentZoom >= layer.MinZoom
@@ -794,10 +808,10 @@ public class Map : MonoBehaviour
 			
 			foreach (Marker marker in markers)
 			{
-#if UNITY_4_0
-				if (marker.gameObject.activeSelf == true
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				if (marker.gameObject.active == true
+#else
+				if (marker.gameObject.activeSelf == true
 #endif
 					&& marker.enabled == true)
 					marker.UpdateMarker();
@@ -831,10 +845,10 @@ public class Map : MonoBehaviour
 	public void CenterOnLocation()
     {
 		if (locationMarker != null
-#if UNITY_4_0
-			&& locationMarker.gameObject.activeSelf == true)
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 			&& locationMarker.gameObject.active == true)
+#else
+			&& locationMarker.gameObject.activeSelf == true)
 #endif
 			CenterWGS84 = locationMarker.CoordinatesWGS84;
         updateCenterWithLocation = true;
@@ -867,13 +881,13 @@ public class Map : MonoBehaviour
 		// setup the marker
 		marker.Map = this;
 		if (useLocation
-			&& Input.location.status == LocationServiceStatus.Running)
-			marker.CoordinatesWGS84 = new double[2] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+			&& UnityEngine.Input.location.status == LocationServiceStatus.Running)
+			marker.CoordinatesWGS84 = new double[2] { UnityEngine.Input.location.lastData.longitude, UnityEngine.Input.location.lastData.latitude };
 		else
-#if UNITY_4_0
-			markerObject.SetActive(false);
-#else
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 			markerObject.SetActiveRecursively(false);
+#else
+			markerObject.SetActive(false);
 #endif
 		
 		// set the location marker
@@ -973,11 +987,11 @@ public class Map : MonoBehaviour
 	public void Zoom(float zoomSpeed)
 	{
 		// apply the zoom
-		CurrentZoom += zoomSpeed * Time.deltaTime;
+		CurrentZoom += 4.0f * zoomSpeed * Time.deltaTime;
 
 		// move the camera
 		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
-		Transform cameraTransform = Camera.main.transform;
+		Transform cameraTransform = currentCamera.transform;
         //float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
 		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * (screenScale);// * 0.75f);
 		float t = y / cameraTransform.forward.y;
@@ -992,4 +1006,6 @@ public class Map : MonoBehaviour
 	}
 	
 	#endregion
+}
+
 }

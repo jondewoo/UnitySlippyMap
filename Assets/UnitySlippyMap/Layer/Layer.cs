@@ -21,7 +21,8 @@
 
 using UnityEngine;
 
-using System;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // An abstract class representing a map layer.
@@ -46,4 +47,6 @@ public abstract class Layer : MonoBehaviour
 	public abstract void UpdateContent();
 	
 	#endregion
+}
+
 }
