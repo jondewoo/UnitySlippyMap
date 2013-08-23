@@ -1,8 +1,9 @@
-using UnityEngine;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
+namespace UnitySlippyMap
+{
 
 public class JobEventArgs : EventArgs
 {
@@ -181,3 +182,4 @@ public class Job
 	#endregion
 }
 
+}

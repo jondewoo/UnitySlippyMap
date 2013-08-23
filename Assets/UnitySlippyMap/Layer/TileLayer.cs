@@ -24,7 +24,8 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-using UnitySlippyMap;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // An abstract class representing a tile layer.
@@ -33,9 +34,13 @@ using UnitySlippyMap;
 public abstract class TileLayer : Layer
 {
 	#region Protected members & properties
-	
+
 	protected int								tileCacheSizeLimit = 100;
-	public int									TileCacheSizeLimit { get { return tileCacheSizeLimit; } set { tileCacheSizeLimit = value; } }
+	public int									TileCacheSizeLimit
+	{
+		get { return tileCacheSizeLimit; }
+		set { tileCacheSizeLimit = value; }
+	}
 	//public int									TileSize = 256;
 	
 	// shared tile template
@@ -48,7 +53,8 @@ public abstract class TileLayer : Layer
 	protected List<string>						visitedTiles = new List<string>();
 
     protected bool                              isReadyToBeQueried = false;
-    protected bool                              needsToBeUpdatedWhenReady = false;
+	protected bool								needsToBeUpdatedWhenReady = false;
+    
 	
 	protected enum NeighbourTileDirection 
 	{
@@ -103,15 +109,15 @@ public abstract class TileLayer : Layer
 		if (tileTemplate.transform.localScale.x != Map.RoundedHalfMapScale)
 			tileTemplate.transform.localScale = new Vector3(Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
 
-        if (Camera.main != null && isReadyToBeQueried)
+        if (Map.CurrentCamera != null && isReadyToBeQueried)
         {
-            Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-
-            CleanUpTiles(frustum, Map.RoundedZoom);
+			Plane[] frustum = GeometryUtility.CalculateFrustumPlanes(Map.CurrentCamera);
 
             visitedTiles.Clear();
 
             UpdateTiles(frustum);
+
+			CleanUpTiles(frustum, Map.RoundedZoom);
         }
         else
             needsToBeUpdatedWhenReady = true;
@@ -143,6 +149,39 @@ public abstract class TileLayer : Layer
 		
 	#region Private methods
 	
+	// check if a tile is fully visible
+	private bool CheckTileExistence(int tileRoundedZoom, int tileX, int tileY)
+	{
+		string key = Tile.GetTileKey(tileRoundedZoom, tileX, tileY);
+		if (!tiles.ContainsKey(key))
+			return true; // the tile is out of the frustum
+		Tile tile = tiles[key];
+		Renderer r = tile.renderer;
+		return r.enabled && r.material.mainTexture != null && !tile.Showing;
+	}
+
+	// check if a tile is cover by an other tile with a smaller rounded zoom 
+	private bool CheckTileOutExistence(int roundedZoom, int tileRoundedZoom, int tileX, int tileY)
+	{
+		if (roundedZoom == tileRoundedZoom)
+			return CheckTileExistence(tileRoundedZoom, tileX, tileY);
+		return CheckTileOutExistence(roundedZoom, tileRoundedZoom - 1, tileX / 2, tileY / 2); 
+	}
+
+	// check if a tile is cover by others tiles with a upper rounded zoom
+	private bool CheckTileInExistence(int roundedZoom, int tileRoundedZoom, int tileX, int tileY)
+	{
+		if (roundedZoom == tileRoundedZoom)
+			return CheckTileExistence(tileRoundedZoom, tileX, tileY);
+		int currentRoundedZoom = tileRoundedZoom + 1;
+		int currentTileX = tileX * 2;
+		int currentTileY = tileY * 2;
+		return CheckTileInExistence(roundedZoom, currentRoundedZoom, currentTileX, currentTileY)
+			&& CheckTileInExistence(roundedZoom, currentRoundedZoom, currentTileX + 1, currentTileY)
+		    && CheckTileInExistence(roundedZoom, currentRoundedZoom, currentTileX, currentTileY + 1)
+		    && CheckTileInExistence(roundedZoom, currentRoundedZoom, currentTileX + 1, currentTileY + 1);
+	}
+
 	// <summary>
 	// Removes the tiles outside of the camera frustum and zoom level.
 	// </summary>
@@ -151,32 +190,48 @@ public abstract class TileLayer : Layer
 		List<string> tilesToRemove = new List<string>();
 		foreach (KeyValuePair<string, Tile> pair in tiles)
 		{
-			if (GeometryUtility.TestPlanesAABB(frustum, pair.Value.collider.bounds) == false
-				|| pair.Key.StartsWith(roundedZoom + "_") == false)
+			Tile tile = pair.Value;
+			string tileKey = pair.Key;
+
+			string[] tileAddressTokens = tileKey.Split('_');
+			int tileRoundedZoom = Int32.Parse(tileAddressTokens[0]);
+			int tileX = Int32.Parse(tileAddressTokens[1]);
+			int tileY = Int32.Parse(tileAddressTokens[2]);
+
+			int roundedZoomDif = tileRoundedZoom - roundedZoom;
+			bool inFrustum = GeometryUtility.TestPlanesAABB(frustum, tile.collider.bounds);
+
+			if (!inFrustum || roundedZoomDif != 0)
 			{
-				string[] tileAddressTokens = pair.Key.Split(new char[] { '_' });
-				
-				CancelTileRequest(Int32.Parse(tileAddressTokens[1]), Int32.Parse(tileAddressTokens[2]), Int32.Parse(tileAddressTokens[0]));
-				
-				tilesToRemove.Add(pair.Key);
-				
-				Renderer renderer = pair.Value.renderer;
-				if (renderer != null)
+				CancelTileRequest(tileX, tileY, tileRoundedZoom);
+
+				if (!inFrustum
+					|| (roundedZoomDif > 0 && CheckTileOutExistence(roundedZoom, tileRoundedZoom, tileX, tileY))
+					|| (roundedZoomDif < 0 && CheckTileInExistence(roundedZoom, tileRoundedZoom, tileX, tileY)))
 				{
-					GameObject.DestroyImmediate(renderer.material.mainTexture);
-                    //TextureAtlasManager.Instance.RemoveTexture(pair.Value.TextureId);
-					renderer.material.mainTexture = null;
+					tilesToRemove.Add(tileKey);
 				}
-				pair.Value.renderer.enabled = false;
-				
-#if DEBUG_LOG
-				Debug.Log("DEBUG: remove tile: " + pair.Key);
-#endif
 			}
 		}
+
 		foreach (string tileAddress in tilesToRemove)
 		{
 			Tile tile = tiles[tileAddress];
+
+			Renderer renderer = tile.renderer;
+			if (renderer != null)
+			{
+				GameObject.DestroyImmediate(renderer.material.mainTexture);
+				//TextureAtlasManager.Instance.RemoveTexture(pair.Value.TextureId);
+				renderer.material.mainTexture = null;
+
+				renderer.enabled = false;
+			}
+
+#if DEBUG_LOG
+			Debug.Log("DEBUG: remove tile: " + pair.Key);
+#endif
+
 			tiles.Remove(tileAddress);
 			tileCache.Add(tile);
 		}
@@ -204,7 +259,7 @@ public abstract class TileLayer : Layer
 		tileTemplate.transform.position = new Vector3(offsetX, tileTemplate.transform.position.y, offsetZ);
 		if (GeometryUtility.TestPlanesAABB(frustum, tileTemplate.collider.bounds) == true)
 		{
-			string tileAddress = Map.RoundedZoom + "_" + tileX + "_" + tileY;
+			string tileAddress = Tile.GetTileKey(Map.RoundedZoom, tileX, tileY);
 			//Debug.Log("DEBUG: tile address: " + tileAddress);
 			if (tiles.ContainsKey(tileAddress) == false)
 			{
@@ -309,3 +364,4 @@ public abstract class TileLayer : Layer
 	
 }
 
+}

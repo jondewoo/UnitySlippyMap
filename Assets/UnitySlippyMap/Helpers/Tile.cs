@@ -20,7 +20,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using UnityEngine;
-using System;
+
+namespace UnitySlippyMap
+{
 
 // FIXME: not sure the use of a namespace is appropriate
 // TODO: refactor the whole thing
@@ -40,11 +42,17 @@ public class Tile : MonoBehaviour
             textureId = value;
         }
     }
-	
+
+	private bool showing = false;
+	public bool Showing
+	{
+		get { return showing; }
+	}
+
 	private Material	material;
 	private float		apparitionDuration = 0.5f;
 	private float		apparitionStartTime = 0.0f;
-	private bool		show = false;
+	
 
     #endregion
 	
@@ -52,7 +60,7 @@ public class Tile : MonoBehaviour
 
 	private void Update()
 	{
-		if (show)
+		if (showing)
 		{
 			float delta = Time.time - apparitionStartTime;
 			float a = 1.0f;
@@ -62,7 +70,8 @@ public class Tile : MonoBehaviour
 			}
 			else
 			{
-				show = false;
+				showing = false;
+				Map.Instance.IsDirty = true;
 			}
 			Color color = material.color;
 			color.a = a;
@@ -93,7 +102,7 @@ public class Tile : MonoBehaviour
 	
 	public void Show()
 	{
-		show = true;
+		showing = true;
 		Color color = material.color;
 		color.a = 0.0f;
 		material.color = color;
@@ -254,5 +263,12 @@ public class Tile : MonoBehaviour
 		this.Show();
 	}
 
+	public static string GetTileKey(int roundedZoom, int tileX, int tileY)
+	{
+		return roundedZoom + "_" + tileX + "_" + tileY;
+	}
+
     #endregion
+}
+
 }

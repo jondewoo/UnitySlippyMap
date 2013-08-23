@@ -19,12 +19,8 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
-using UnityEngine;
-
-using UnitySlippyMap;
-using System.IO;
+namespace UnitySlippyMap
+{
 
 // <summary>
 // An abstract class representing a database tile layer.
@@ -71,4 +67,6 @@ public abstract class DBTileLayer : TileLayer
 	//protected abstract string GetTileURL(int tileX, int tileY, int roundedZoom);
 
 	#endregion
+}
+
 }

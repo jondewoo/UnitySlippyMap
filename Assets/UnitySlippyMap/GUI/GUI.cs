@@ -21,10 +21,9 @@
 
 using UnityEngine;
 
-using System;
-
 namespace UnitySlippyMap.GUI
 {
+
 	/// <summary>
 	/// GUI delegate. Returns true if a button was pressed (or if inputs were intercepted in some way)
 	/// </summary>
