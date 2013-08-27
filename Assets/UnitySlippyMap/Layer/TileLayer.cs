@@ -259,6 +259,11 @@ public abstract class TileLayer : Layer
 		tileTemplate.transform.position = new Vector3(offsetX, tileTemplate.transform.position.y, offsetZ);
 		if (GeometryUtility.TestPlanesAABB(frustum, tileTemplate.collider.bounds) == true)
 		{
+			if (tileX < 0)
+				tileX += tileCountOnX;
+			else if (tileX >= tileCountOnX)
+				tileX -= tileCountOnX;
+
 			string tileAddress = Tile.GetTileKey(Map.RoundedZoom, tileX, tileY);
 			//Debug.Log("DEBUG: tile address: " + tileAddress);
 			if (tiles.ContainsKey(tileAddress) == false)

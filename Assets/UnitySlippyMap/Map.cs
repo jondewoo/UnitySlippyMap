@@ -178,16 +178,16 @@ public class Map : MonoBehaviour
 				return ;
 			}
 
-            double[] newCenterESPG900913 = wgs84ToEPSG900913Transform.Transform(value); //GeoHelpers.WGS84ToMeters(value[0], value[1]);
-			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - newCenterESPG900913[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - newCenterESPG900913[1]) * roundedScaleMultiplier);
-			Vector3 rootPosition = this.gameObject.transform.position;
-			this.gameObject.transform.position = new Vector3(
-				rootPosition.x + displacement.x,
-				rootPosition.y + displacement.y,
-				rootPosition.z + displacement.z);			
+			double[] newCenterESPG900913 = wgs84ToEPSG900913Transform.Transform(value); //GeoHelpers.WGS84ToMeters(value[0], value[1]);
+
+			centerEPSG900913 = ComputeCenterEPSG900913(newCenterESPG900913);
+
+			if (value[0] > 180.0)
+				value[0] -= 360.0;
+			else if (value[0] < -180.0)
+				value[0] += 360.0;
 
 			centerWGS84 = value;
-			centerEPSG900913 = newCenterESPG900913;
             
             //UpdateInternals();
             
@@ -214,19 +214,28 @@ public class Map : MonoBehaviour
 #endif
 				return ;
 			}
-			
-			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - value[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - value[1]) * roundedScaleMultiplier);
-			Vector3 rootPosition = this.gameObject.transform.position;
-			this.gameObject.transform.position = new Vector3(
-				rootPosition.x + displacement.x,
-				rootPosition.y + displacement.y,
-				rootPosition.z + displacement.z);
-			
-			centerEPSG900913 = value;
+
+			centerEPSG900913 = ComputeCenterEPSG900913(value);
             centerWGS84 = epsg900913ToWGS84Transform.Transform(centerEPSG900913); //GeoHelpers.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
             
 			IsDirty = true;
 		}
+	}
+	private double[] ComputeCenterEPSG900913(double[] pos)
+	{
+		Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - pos[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - pos[1]) * roundedScaleMultiplier);
+		Vector3 rootPosition = this.gameObject.transform.position;
+		this.gameObject.transform.position = new Vector3(
+			rootPosition.x + displacement.x,
+			rootPosition.y + displacement.y,
+			rootPosition.z + displacement.z);
+
+		if (pos[0] > GeoHelpers.HalfEarthCircumference)
+			pos[0] -= GeoHelpers.EarthCircumference;
+		else if (pos[0] < -GeoHelpers.HalfEarthCircumference)
+			pos[0] += GeoHelpers.EarthCircumference;
+
+		return pos;
 	}
 	
 	// <summary>
@@ -276,16 +285,16 @@ public class Map : MonoBehaviour
 		set { zoomStepLowerThreshold = value; }
 	}
 	
-	private float							minZoom = 1.0f;
+	private float							minZoom = 3.0f;
 	public float							MinZoom
 	{
 		get { return minZoom; }
 		set
 		{
-			if (value < 1.0f
+			if (value < 3.0f
 				|| value > 18.0f)
 			{
-				minZoom = Mathf.Clamp(value, 1.0f, 18.0f);
+				minZoom = Mathf.Clamp(value, 3.0f, 18.0f);
 			}
 			else
 			{		
@@ -308,10 +317,10 @@ public class Map : MonoBehaviour
 		get { return maxZoom; }
 		set
 		{
-			if (value < 1.0f
+			if (value < 3.0f
 				|| value > 18.0f)
 			{
-				maxZoom = Mathf.Clamp(value, 1.0f, 18.0f);
+				maxZoom = Mathf.Clamp(value, 3.0f, 18.0f);
 			}
 			else
 			{		
@@ -572,7 +581,7 @@ public class Map : MonoBehaviour
         // this is the right approach either, feels kinda voodooish...
 		
         halfMapScale = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, /*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
-        roundedHalfMapScale = GeoHelpers.OsmZoomLevelToMapScale(roundedZoom, (float)/*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
+        roundedHalfMapScale = GeoHelpers.OsmZoomLevelToMapScale(roundedZoom, /*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
 
         metersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)currentZoom);
         roundedMetersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)roundedZoom);
