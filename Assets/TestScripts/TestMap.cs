@@ -68,13 +68,16 @@ public class TestMap : MonoBehaviour
 			map.Zoom(1.0f);
 			pressed = true;
 		}
-        if (Event.current.type == EventType.Repaint)
+        if (Event.current.type == EventType.MouseDrag 
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
         {
             Rect rect = GUILayoutUtility.GetLastRect();
             if (rect.Contains(Event.current.mousePosition))
+            {
                 pressed = true;
+            }
         }
-
         if (GUILayout.Button("2D/3D", GUILayout.ExpandHeight(true)))
 		{
 			if (isPerspectiveView)
@@ -90,22 +93,30 @@ public class TestMap : MonoBehaviour
 			
 			isPerspectiveView = !isPerspectiveView;
 		}
-        if (Event.current.type == EventType.Repaint)
+        if (Event.current.type == EventType.MouseDrag
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
         {
             Rect rect = GUILayoutUtility.GetLastRect();
             if (rect.Contains(Event.current.mousePosition))
+            {
                 pressed = true;
+            }
         }
 
         if (GUILayout.Button("Center", GUILayout.ExpandHeight(true)))
         {
             map.CenterOnLocation();
         }
-        if (Event.current.type == EventType.Repaint)
+        if (Event.current.type == EventType.MouseDrag
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
         {
             Rect rect = GUILayoutUtility.GetLastRect();
             if (rect.Contains(Event.current.mousePosition))
+            {
                 pressed = true;
+            }
         }
 
         string layerMessage = String.Empty;
@@ -130,17 +141,31 @@ public class TestMap : MonoBehaviour
 #endif
             map.IsDirty = true;
         }
+        if (Event.current.type == EventType.MouseDrag
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
+        {
+            Rect rect = GUILayoutUtility.GetLastRect();
+            if (rect.Contains(Event.current.mousePosition))
+            {
+                pressed = true;
+            }
+        }
 
         if (GUILayout.RepeatButton("-", GUILayout.ExpandHeight(true)))
 		{
 			map.Zoom(-1.0f);
 			pressed = true;
 		}
-        if (Event.current.type == EventType.Repaint)
+        if (Event.current.type == EventType.MouseDrag
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
         {
             Rect rect = GUILayoutUtility.GetLastRect();
             if (rect.Contains(Event.current.mousePosition))
+            {
                 pressed = true;
+            }
         }
 		
 		GUILayout.EndHorizontal();
