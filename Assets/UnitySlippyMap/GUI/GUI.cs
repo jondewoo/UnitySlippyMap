@@ -43,11 +43,32 @@ namespace UnitySlippyMap.GUI
     			map.Zoom(1.0f);
 				pressed = true;
     		}
+            if (Event.current.type == EventType.MouseDrag
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
+            {
+                Rect rect = GUILayoutUtility.GetLastRect();
+                if (rect.Contains(Event.current.mousePosition))
+                {
+                    pressed = true;
+                }
+            }
+
     		if (GUILayout.RepeatButton("-"))
     		{
     			map.Zoom(-1.0f);
 				pressed = true;
     		}
+            if (Event.current.type == EventType.MouseDrag
+            || Event.current.type == EventType.MouseDown
+            || Event.current.type == EventType.MouseUp)
+            {
+                Rect rect = GUILayoutUtility.GetLastRect();
+                if (rect.Contains(Event.current.mousePosition))
+                {
+                    pressed = true;
+                }
+            }
 			
 			GUILayout.EndVertical();
 			

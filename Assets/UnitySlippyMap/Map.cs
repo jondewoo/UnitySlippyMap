@@ -623,30 +623,16 @@ public class Map : MonoBehaviour
         hasMoved = true;
         IsDirty = true;
 	}
-	
+
 	private void OnGUI()
 	{
     	// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS, precision ???
 		// TODO: optimise, use one mesh for the tiles and combine textures in a big one (might resolve the gap bug above)
-		
 		// process the user defined GUI
         if (ShowGUIControls && guiDelegate != null)
         {
-			wasInputInterceptedByGUI = guiDelegate(this);
+            wasInputInterceptedByGUI = guiDelegate(this);
         }
-		
-		if (Event.current.type != EventType.Repaint
-            && Event.current.type != EventType.MouseDown
-            && Event.current.type != EventType.MouseDrag
-            && Event.current.type != EventType.MouseMove
-            && Event.current.type != EventType.MouseUp)
-			return ;
-		
-        if (InputsEnabled && inputDelegate != null)
-        {
-			inputDelegate(this, wasInputInterceptedByGUI);
-        }
-		
 	}
 	
 	private void Update()
@@ -654,8 +640,13 @@ public class Map : MonoBehaviour
 #if DEBUG_PROFILE
 		UnitySlippyMap.Profiler.Begin("Map.Update");
 #endif
-		
-		// update the centerWGS84 with the last location if enabled
+
+	    if (InputsEnabled && inputDelegate != null)
+	    {
+	        inputDelegate(this, wasInputInterceptedByGUI);
+	    }
+
+	    // update the centerWGS84 with the last location if enabled
 		if (useLocation
 			&& UnityEngine.Input.location.status == LocationServiceStatus.Running)
 		{
@@ -867,12 +858,12 @@ public class Map : MonoBehaviour
 		// create a GameObject and add the templated Marker component to it
         GameObject markerObject = new GameObject("[location marker]");
 		markerObject.transform.parent = this.gameObject.transform;
-		
-		T marker = markerObject.AddComponent<T>();
-		
+
 		locationGo.transform.parent = markerObject.transform;
 		locationGo.transform.localPosition = Vector3.zero;
-		
+
+		T marker = markerObject.AddComponent<T>();
+
 		if (orientationGo != null)
 		{
 			marker.OrientationMarker = orientationGo.transform;
