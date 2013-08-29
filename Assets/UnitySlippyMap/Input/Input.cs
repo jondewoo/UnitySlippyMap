@@ -119,6 +119,7 @@ namespace UnitySlippyMap.Input
             zooming = false;
             zoomingStopped = false;
             zoomFactor = 0.0f;
+            screenPosition = Vector3.zero;
             
 
             if (Application.platform == RuntimePlatform.IPhonePlayer
