@@ -101,6 +101,12 @@ public class Marker : MonoBehaviour
 	{
 		double[] offsetEPSG900913 = new double[2] { coordinatesEPSG900913[0] - Map.CenterEPSG900913[0], coordinatesEPSG900913[1] - Map.CenterEPSG900913[1] };
 		
+		double offset = offsetEPSG900913[0];
+		if (offset < 0.0)
+			offset = -offset;
+		if (offset > GeoHelpers.HalfEarthCircumference)
+			offsetEPSG900913[0] += GeoHelpers.EarthCircumference;
+
 		/*
 		Debug.LogError("DEBUG: " + this.name + ": center: " + Map.Center[0] + ", " + Map.Center[1] + " ; center meters: " + centerMeters[0] + ", " + centerMeters[1] + "\ncoordinates: " + coordinatesWGS84[0] + ", " + coordinatesWGS84[1] + " ; coordinatesWGS84 meters: " + coordinatesMeters[0] + ", " + coordinatesMeters[1] + "\noffset meters: " + offsetMeters[0] + ", " + offsetMeters[1]);
 		Debug.LogError("DEBUG: offset meters: " + offsetMeters[0] + ", " + offsetMeters[1] + "\noffset multiplier: " + offsetMultiplier + " ; half map scale: " + Map.HalfMapScale + "\npos: " + (offsetMeters[0] / offsetMultiplier) + ", " + (offsetMeters[1] / offsetMultiplier));

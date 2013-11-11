@@ -309,25 +309,19 @@ public class WMSTileLayer : WebTileLayer
 			break ;
 			
 		case NeighbourTileDirection.East:
-			if ((tileX + 1) < tileCountOnX)
-			{
-	 			nTileX = tileX + 1;
-				nTileY = tileY;
-                nOffsetX = offsetX + Map.RoundedHalfMapScale;
-                nOffsetZ = offsetZ;
-				ret = true;
-			}
+	 		nTileX = tileX + 1;
+			nTileY = tileY;
+            nOffsetX = offsetX + Map.RoundedHalfMapScale;
+            nOffsetZ = offsetZ;
+			ret = true;
 			break ;
 			
 		case NeighbourTileDirection.West:
-			if (tileX > 0)
-			{
-	 			nTileX = tileX - 1;
-				nTileY = tileY;
-                nOffsetX = offsetX - Map.RoundedHalfMapScale;
-                nOffsetZ = offsetZ;
-				ret = true;
-			}
+	 		nTileX = tileX - 1;
+			nTileY = tileY;
+            nOffsetX = offsetX - Map.RoundedHalfMapScale;
+            nOffsetZ = offsetZ;
+			ret = true;
 			break ;
 		}
 		

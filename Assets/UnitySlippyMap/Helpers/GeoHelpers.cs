@@ -32,7 +32,8 @@ namespace UnitySlippyMap
     {
         public static double OriginShift = 2.0 * Math.PI * 6378137.0 / 2.0;
         public static float MetersPerInch = 2.54f / 100.0f;
-        public static double EarthCircumference = 6378137.0 * Math.PI * 2.0;
+    	public static double HalfEarthCircumference = 6378137.0 * Math.PI;
+		public static double EarthCircumference = HalfEarthCircumference * 2.0;
 
         // <summary>
         // Converts WGS84 LatLon coordinates to OSM tile coordinates.

@@ -160,7 +160,7 @@ public class Map : MonoBehaviour
 		get { return isDirty; }
 		set { isDirty = value; }
 	}
-	
+
 	// <summary>
 	// Holds the center coordinates of the map in WGS84.
 	// </summary>
@@ -178,19 +178,18 @@ public class Map : MonoBehaviour
 				return ;
 			}
 
-            double[] newCenterESPG900913 = wgs84ToEPSG900913Transform.Transform(value); //GeoHelpers.WGS84ToMeters(value[0], value[1]);
-			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - newCenterESPG900913[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - newCenterESPG900913[1]) * roundedScaleMultiplier);
-			Vector3 rootPosition = this.gameObject.transform.position;
-			this.gameObject.transform.position = new Vector3(
-				rootPosition.x + displacement.x,
-				rootPosition.y + displacement.y,
-				rootPosition.z + displacement.z);			
+			double[] newCenterESPG900913 = wgs84ToEPSG900913Transform.Transform(value);
+
+			centerEPSG900913 = ComputeCenterEPSG900913(newCenterESPG900913);
+
+			if (value[0] > 180.0)
+				value[0] -= 360.0;
+			else if (value[0] < -180.0)
+				value[0] += 360.0;
 
 			centerWGS84 = value;
-			centerEPSG900913 = newCenterESPG900913;
-            
-            //UpdateInternals();
-            
+
+			FitVerticalBorder();
 			IsDirty = true;
 		}
 	}
@@ -214,17 +213,11 @@ public class Map : MonoBehaviour
 #endif
 				return ;
 			}
-			
-			Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - value[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - value[1]) * roundedScaleMultiplier);
-			Vector3 rootPosition = this.gameObject.transform.position;
-			this.gameObject.transform.position = new Vector3(
-				rootPosition.x + displacement.x,
-				rootPosition.y + displacement.y,
-				rootPosition.z + displacement.z);
-			
-			centerEPSG900913 = value;
-            centerWGS84 = epsg900913ToWGS84Transform.Transform(centerEPSG900913); //GeoHelpers.MetersToWGS84(centerEPSG900913[0], centerEPSG900913[1]);
-            
+
+			centerEPSG900913 = ComputeCenterEPSG900913(value);
+            centerWGS84 = epsg900913ToWGS84Transform.Transform(centerEPSG900913);
+
+			FitVerticalBorder();
 			IsDirty = true;
 		}
 	}
@@ -235,7 +228,7 @@ public class Map : MonoBehaviour
 	// TODO: implement the constraint
     //private double[]						size = new double[2];
 	
-	private float							currentZoom = 15.0f;
+	private float							currentZoom;
 	public float							CurrentZoom
 	{
 		get { return currentZoom; }
@@ -247,9 +240,12 @@ public class Map : MonoBehaviour
 #if DEBUG_LOG
 				Debug.LogError("ERROR: Map.Zoom: value must be inside range [" + minZoom + " - " + maxZoom + "]");
 #endif
-				return ;
+				return;
 			}
-			
+
+			if (currentZoom == value)
+				return;
+
 			currentZoom = value;
 			//roundedZoom = (int)Mathf.Round(currentZoom);
 			float diff = value - roundedZoom;
@@ -258,7 +254,9 @@ public class Map : MonoBehaviour
 			else if (diff < 0.0f && diff <= -zoomStepUpperThreshold)
 				roundedZoom = (int)Mathf.Floor(currentZoom);
 
-            UpdateInternals();
+			UpdateInternals();
+
+			FitVerticalBorder();
 		}
 	}
 	
@@ -276,16 +274,16 @@ public class Map : MonoBehaviour
 		set { zoomStepLowerThreshold = value; }
 	}
 	
-	private float							minZoom = 1.0f;
+	private float							minZoom = 3.0f;
 	public float							MinZoom
 	{
 		get { return minZoom; }
 		set
 		{
-			if (value < 1.0f
+			if (value < 3.0f
 				|| value > 18.0f)
 			{
-				minZoom = Mathf.Clamp(value, 1.0f, 18.0f);
+				minZoom = Mathf.Clamp(value, 3.0f, 18.0f);
 			}
 			else
 			{		
@@ -308,10 +306,10 @@ public class Map : MonoBehaviour
 		get { return maxZoom; }
 		set
 		{
-			if (value < 1.0f
+			if (value < 3.0f
 				|| value > 18.0f)
 			{
-				maxZoom = Mathf.Clamp(value, 1.0f, 18.0f);
+				maxZoom = Mathf.Clamp(value, 3.0f, 18.0f);
 			}
 			else
 			{		
@@ -562,6 +560,44 @@ public class Map : MonoBehaviour
     
     #region Private methods
     
+	private void FitVerticalBorder()
+	{
+		//TODO: take into account the camera orientation
+
+		if (currentCamera != null)
+		{
+			double[] camCenter = new double[] { centerEPSG900913[0], centerEPSG900913[1] };
+			double offset = Mathf.Floor(currentCamera.pixelHeight * 0.5f) * metersPerPixel;
+			if (camCenter[1] + offset > GeoHelpers.HalfEarthCircumference)
+			{
+				camCenter[1] -= camCenter[1] + offset - GeoHelpers.HalfEarthCircumference;
+				CenterEPSG900913 = camCenter;
+			}
+			else if (camCenter[1] - offset < -GeoHelpers.HalfEarthCircumference)
+			{
+				camCenter[1] -= camCenter[1] - offset + GeoHelpers.HalfEarthCircumference;
+				CenterEPSG900913 = camCenter;
+			}
+		}
+	}
+
+	private double[] ComputeCenterEPSG900913(double[] pos)
+	{
+		Vector3 displacement = new Vector3((float)(centerEPSG900913[0] - pos[0]) * roundedScaleMultiplier, 0.0f, (float)(centerEPSG900913[1] - pos[1]) * roundedScaleMultiplier);
+		Vector3 rootPosition = this.gameObject.transform.position;
+		this.gameObject.transform.position = new Vector3(
+			rootPosition.x + displacement.x,
+			rootPosition.y + displacement.y,
+			rootPosition.z + displacement.z);
+
+		if (pos[0] > GeoHelpers.HalfEarthCircumference)
+			pos[0] -= GeoHelpers.EarthCircumference;
+		else if (pos[0] < -GeoHelpers.HalfEarthCircumference)
+			pos[0] += GeoHelpers.EarthCircumference;
+
+		return pos;
+	}
+
     private void UpdateInternals()
     {
         // FIXME: the half map scale is a value used throughout the implementation to rule the camera elevation
@@ -571,8 +607,8 @@ public class Map : MonoBehaviour
         // FIXME: the 'division by 20000' helps the values to be kept in range for the Unity3D engine, not sure
         // this is the right approach either, feels kinda voodooish...
 		
-        halfMapScale = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, /*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
-        roundedHalfMapScale = GeoHelpers.OsmZoomLevelToMapScale(roundedZoom, (float)/*(float)centerWGS84[1]*/0.0f, tileResolution, 72) / scaleDivider;
+        halfMapScale = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider;
+        roundedHalfMapScale = GeoHelpers.OsmZoomLevelToMapScale(roundedZoom, 0.0f, tileResolution, 72) / scaleDivider;
 
         metersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)currentZoom);
         roundedMetersPerPixel = GeoHelpers.MetersPerPixel(0.0f, (float)roundedZoom);
@@ -588,9 +624,6 @@ public class Map : MonoBehaviour
 	
 	private void Awake()
 	{
-		// initialize the zoom variables
-		CurrentZoom = currentZoom;
-
         // initialize the coordinate transformation
         epsg900913 = CoordinateSystemWktReader.Parse(wktEPSG900913) as ICoordinateSystem;
         ctFactory = new CoordinateTransformationFactory();
@@ -609,26 +642,15 @@ public class Map : MonoBehaviour
             screenScale = 2.0f;
 
         // initialize the camera position and rotation
-		/*
-		Camera.main.transform.position = new Vector3(
-			0,
-            //GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-            GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider,
-			0);
-			*/
         currentCamera.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
 		Zoom(0.0f);
-
-        // set the update flag to tell the behaviour the user is manipulating the map
-        hasMoved = true;
-        IsDirty = true;
 	}
 	
 	private void OnGUI()
 	{
     	// FIXME: gaps beween tiles appear when zooming and panning the map at the same time on iOS, precision ???
 		// TODO: optimise, use one mesh for the tiles and combine textures in a big one (might resolve the gap bug above)
-		
+
 		// process the user defined GUI
         if (ShowGUIControls && guiDelegate != null)
         {
@@ -758,13 +780,6 @@ public class Map : MonoBehaviour
 				locationMarker.OrientationMarker.rotation = Quaternion.AngleAxis(heading, Vector3.up);
 			}
 		}
-	
-		/*
-		if (hasMoved)
-		{
-			CurrentZoom = Tile.MapScaleToOsmZoomLevel(Camera.main.transform.position.y * scaleDivider, 0.0f, tileResolution, 72.0f); 
-		}
-		*/
 		
 		// pause the loading operations when moving
 		if (hasMoved == true)
@@ -992,8 +1007,7 @@ public class Map : MonoBehaviour
 		// move the camera
 		// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
 		Transform cameraTransform = currentCamera.transform;
-        //float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / 10000.0f,
-		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * (screenScale);// * 0.75f);
+		float y = GeoHelpers.OsmZoomLevelToMapScale(currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
 		float t = y / cameraTransform.forward.y;
 		cameraTransform.position = new Vector3(
 			t * cameraTransform.forward.x,
