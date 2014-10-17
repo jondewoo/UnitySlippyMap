@@ -196,7 +196,7 @@ public class TileDownloader : MonoBehaviour
 #if DEBUG_PROFILE
 			UnitySlippyMap.Profiler.Begin("www error test");
 #endif
-			if (www.error == null && www.text.Contains("404 Not Found") == false)
+			if (String.IsNullOrEmpty(www.error) && www.text.Contains("404 Not Found") == false)
 			{
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.End("www error test");
