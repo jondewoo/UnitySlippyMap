@@ -176,6 +176,21 @@ namespace UnitySlippyMap
 
             return (float)((realLengthInMeters * ppi) / zoomLevelExp / tileSize / MetersPerInch);
         }
+		
+		// <summary>
+		// Returns WGS84 given a RaycastHit and Map instance.
+		// </summary>
+		// <param name='r'>
+		// The RaycastHit
+		// </param>
+		// <param name='m'>
+		// The Map instance
+		// </param>
+		public static double[] RaycastHitToWGS84(Map map, RaycastHit r)
+		{
+			double[] RaycastHitToEPSG900913 = new double[]{(map.CenterEPSG900913[0]) + (r.point.x/map.ScaleMultiplier) , (map.CenterEPSG900913[1]) + (r.point.z/map.ScaleMultiplier)};
+			return map.EPSG900913ToWGS84Transform.Transform(RaycastHitToEPSG900913);
+		}
 
     }
 }
