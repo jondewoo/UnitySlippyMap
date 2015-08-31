@@ -63,52 +63,6 @@ namespace UnitySlippyMap
         }
 
         // <summary>
-        // Converts WGS84 coordinates to EPSG 900913.
-        // </summary>
-        /*
-        public static double[] WGS84ToMeters(double lon, double lat)
-        {
-            double[] p = new double[2];
-            p[0] = lon * OriginShift / 180.0;
-            p[1] = Math.Log(Math.Tan((90.0 + lat) * Math.PI / 360.0)) / (Math.PI / 180.0);
-
-            p[1] = p[1] * OriginShift / 180.0;
-
-            return p;
-        }
-         */
-
-        // <summary>
-        // Converts EPSG 900913 coordinates to WGS84.
-        // </summary>
-        /*
-        public static double[] MetersToWGS84(double x, double y)
-        {
-            double[] p = new double[2];
-            p[0] = (x / OriginShift) * 180.0;
-            p[1] = (y / OriginShift) * 180.0;
-
-            p[1] = 180 / Math.PI * (2.0 * Math.Atan(Math.Exp(p[1] * Math.PI / 180.0)) - Math.PI / 2.0);
-
-            return p;
-        }
-         */
-
-        /*
-        public static double[] WGS84OffsetToTileUpperLeftCorner(double lon, double lat, int zoom)
-        {
-            int[] tile = WGS84ToTile(lon, lat, zoom);
-            double[] wgs84 = TileToWGS84(tile[0], tile[1], zoom);
-            double[] offset = new double[2];
-			
-            offset[0] = lon - wgs84[0];
-            offset[1] = lat - wgs84[1];
-			
-            return offset;
-        }
-        */
-
-        // <summary>
         // Returns the numbers of meters per pixel in respect to the latitude and zoom level of the map.
         // </summary>
         public static float MetersPerPixel(float latitude, float zoomLevel)
@@ -116,43 +70,6 @@ namespace UnitySlippyMap
             double realLengthInMeters = EarthCircumference * Math.Cos(Mathf.Deg2Rad * latitude);
             return (float)(realLengthInMeters / Math.Pow(2.0, zoomLevel + 8));
         }
-
-        /*
-        public static double[] MetersToPixels(float x, float y, float zoomLevel)
-        {
-            double res = Resolution(zoomLevel);
-            double[] p = new double[2];
-            double OriginShift = 2.0 * Math.PI * 6378137.0 / 2.0;
-            p[0] = (x + OriginShift) / res;
-            p[1] = (y + OriginShift) / res;
-            return p;
-        }
-		
-        public static int[] PixelsToTMS(float px, float py)
-        {
-            int[] t = new int[2];
-            t[0] = (int)( Mathf.Ceil( px / 256 ) - 1 );
-            t[1] = (int)( Mathf.Ceil( py / 256 ) - 1 );
-            return t;
-        }
-		
-        public static int[] MetersToTMS(float x, float y, float zoomLevel)
-        {
-            double[] p = MetersToPixels(x, y, zoomLevel);
-            return PixelsToTMS((float)p[0], (float)p[1]);
-        }
-		
-        public static int[] TMSToTile(int tx, int ty, float zoomLevel)
-        {
-            return new int[] { tx, (int)(Math.Pow(2, zoomLevel - 1) - ty) };
-        }
-		
-        public static double Resolution(float zoomLevel)
-        {
-            return (2.0 * Math.PI * 6378137.0) / (256 * Math.Pow(2, (double)zoomLevel));
-        }
-        */
-        //
 
         // <summary>
         // Returns the Open Street Map zoom level in respect to the map scale, latitude, tile size and resolution.

@@ -86,8 +86,6 @@ namespace UnitySlippyMap.Input
                         panningStopped = true;
                     }
                     
-                    //Debug.Log("DEBUG: panning: touch count: " + touchCount + ", screen pos: (" + screenPosition.x + " " + screenPosition.y + " " + screenPosition.z + "), panning stopped: " + panningStopped);
-                    
     				if (panningStopped)
     					panning = false;
                 }
@@ -152,23 +150,12 @@ namespace UnitySlippyMap.Input
 				{
 	    			// movements
 	    			if (UnityEngine.Input.GetMouseButton(0))
-                    /*
-					if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag)
-						&& Event.current.button == 0)
-                     */
 	    			{
-                        //Debug.LogError("DEBUG: mouse down");
                         panning = true;
 	    				screenPosition = UnityEngine.Input.mousePosition;
-						//screenPosition = new Vector2(Event.current.mousePosition.x, Screen.height - Event.current.mousePosition.y);
 	    			}
 	    			else if (UnityEngine.Input.GetMouseButtonUp(0))
-                        /*
-					else if (Event.current.type == EventType.MouseUp
-						&& Event.current.button == 0)
-                         */
 	    			{
-                        //Debug.LogError("DEBUG: mouse up");
 	    				panningStopped = true;
 	    			}
 	    			
@@ -206,21 +193,12 @@ namespace UnitySlippyMap.Input
     			RaycastHit hitInfo;
     			if (Physics.Raycast(ray, out hitInfo))
     			{
-    				//Debug.Log("DEBUG: last hit: " + lastHitPosition + ", hit: " + hitInfo.point);
     				Vector3 displacement = Vector3.zero;
     				if (lastHitPosition != Vector3.zero)
     				{
     					displacement = hitInfo.point - lastHitPosition;
-    					/*
-    					Vector3 rootPosition = this.gameObject.transform.position;
-    					this.gameObject.transform.position = new Vector3(
-    						rootPosition.x + displacement.x,
-    						rootPosition.y + displacement.y,
-    						rootPosition.z + displacement.z);
-    						*/
     				}
     				lastHitPosition = new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z);
-    				//Debug.Log("DEBUG: last hit: " + lastHitPosition + ", hit: " + hitInfo.point);
     				
     				if (displacement != Vector3.zero)
     				{
@@ -241,7 +219,6 @@ namespace UnitySlippyMap.Input
     		}
     		else if (panningStopped)
     		{
-				//Debug.Log("panning stopped");
     			// reset the last hit position
     			lastHitPosition = Vector3.zero;
     			
@@ -252,8 +229,7 @@ namespace UnitySlippyMap.Input
     		// apply the zoom
     		if (zooming)
     		{			
-    			//if (lastZoomFactor != 0.0f)// && zoomFactor != 0.0f)
-    				map.Zoom(zoomFactor - lastZoomFactor);
+				map.Zoom(zoomFactor - lastZoomFactor);
     			lastZoomFactor = zoomFactor;
     		}
     		else if (zoomingStopped)

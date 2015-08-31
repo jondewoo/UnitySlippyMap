@@ -28,45 +28,6 @@ namespace UnitySlippyMap
 // </summary>
 public abstract class DBTileLayer : TileLayer
 {
-    #region TileLayer implementation
-	
-	/*
-	protected override void RequestTile(int tileX, int tileY, int roundedZoom, Tile tile)
-	{
-        //double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
-        //Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
-		
-		TileDownloader.Instance.Get(GetTileURL(tileX, tileY, Map.RoundedZoom), tile);
-	}
-	
-	protected override void CancelTileRequest(int tileX, int tileY, int roundedZoom)
-	{
-		TileDownloader.Instance.Cancel(GetTileURL(tileX, tileY, Map.RoundedZoom));
-	}
-	*/
-
-	#endregion
-	
-	#region DBTileLayer interface
-	
-	/// <summary>
-	/// Gets the tile URL.
-	/// </summary>
-	/// <returns>
-	/// The tile URL.
-	/// </returns>
-	/// <param name='tileX'>
-	/// Tile x.
-	/// </param>
-	/// <param name='tileY'>
-	/// Tile y.
-	/// </param>
-	/// <param name='roundedZoom'>
-	/// Rounded zoom.
-	/// </param>
-	//protected abstract string GetTileURL(int tileX, int tileY, int roundedZoom);
-
-	#endregion
 }
 
 }

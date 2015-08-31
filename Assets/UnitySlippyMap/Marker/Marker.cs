@@ -106,12 +106,7 @@ public class Marker : MonoBehaviour
 			offset = -offset;
 		if (offset > GeoHelpers.HalfEarthCircumference)
 			offsetEPSG900913[0] += GeoHelpers.EarthCircumference;
-
-		/*
-		Debug.LogError("DEBUG: " + this.name + ": center: " + Map.Center[0] + ", " + Map.Center[1] + " ; center meters: " + centerMeters[0] + ", " + centerMeters[1] + "\ncoordinates: " + coordinatesWGS84[0] + ", " + coordinatesWGS84[1] + " ; coordinatesWGS84 meters: " + coordinatesMeters[0] + ", " + coordinatesMeters[1] + "\noffset meters: " + offsetMeters[0] + ", " + offsetMeters[1]);
-		Debug.LogError("DEBUG: offset meters: " + offsetMeters[0] + ", " + offsetMeters[1] + "\noffset multiplier: " + offsetMultiplier + " ; half map scale: " + Map.HalfMapScale + "\npos: " + (offsetMeters[0] / offsetMultiplier) + ", " + (offsetMeters[1] / offsetMultiplier));
-		*/
-		
+					
 		this.gameObject.transform.position = new Vector3(
 			offsetEPSG900913[0] == 0.0 ? 0.0f : (float)offsetEPSG900913[0] * Map.ScaleMultiplier,
 			this.gameObject.transform.position.y,

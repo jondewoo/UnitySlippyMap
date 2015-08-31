@@ -195,7 +195,7 @@ public class WMSTileLayer : WebTileLayer
 #endif
 						}
 
-                        /*
+#if DEBUG_LOG
                         Debug.Log(String.Format(
                             "DEBUG: capabilities:\nversion: {0}\n" +
                             "\tService:\n\t\tName: {1}\n\t\tTitle: {2}\n\t\tAbstract: {3}\n\t\tOnlineResource: {4}\n" + 
@@ -217,7 +217,7 @@ public class WMSTileLayer : WebTileLayer
                             capabilities.Service.ContactInformation.ContactElectronicMailAddress,
                             capabilities.Service.Fees
                             ));
-                        */
+#endif
 
                         CheckLayers();
                         CheckSRS();

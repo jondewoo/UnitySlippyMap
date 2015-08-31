@@ -50,9 +50,6 @@ public abstract class WebTileLayer : TileLayer
 	
 	protected override void RequestTile(int tileX, int tileY, int roundedZoom, Tile tile)
 	{
-        //double[] tile = GeoHelpers.TileToWGS84(tileX, tileY, roundedZoom);
-        //Debug.Log("DEBUG: tile: " + tileX + " " + tileY + " => " + tile[0] + " " + tile[1]);
-		
 		TileDownloader.Instance.Get(GetTileURL(tileX, tileY, roundedZoom), tile);
 	}
 

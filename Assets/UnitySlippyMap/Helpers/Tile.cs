@@ -234,27 +234,6 @@ public class Tile : MonoBehaviour
 	
 	public void SetTexture(Texture2D texture)
 	{
-		/*
-		tile.TextureId = TextureAtlasManager.Instance.AddTexture(texture);
-		TextureAtlas.TextureInfo textureInfo = TextureAtlasManager.Instance.GetTextureInfo(tile.TextureId);
-		Material sharedMaterial = SharedMaterialManager.Instance.GetSharedMaterial(textureInfo.Texture.name, "Somian/Unlit/Transparent");
-		GameObject gameObject = tile.gameObject;
-		gameObject.renderer.sharedMaterial = sharedMaterial;
-		if (sharedMaterial.mainTexture == null)
-		{
-		    sharedMaterial.mainTexture = textureInfo.Texture;
-		    sharedMaterial.mainTexture.wrapMode = TextureWrapMode.Clamp;
-		    sharedMaterial.mainTexture.filterMode = FilterMode.Trilinear;
-		}
-		
-		gameObject.GetComponent<MeshFilter>().mesh.uv = new Vector2[4] {
-		    new Vector2(textureInfo.Rect.xMax / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height),
-		    new Vector2(textureInfo.Rect.xMax / textureInfo.Texture.width, textureInfo.Rect.yMin / textureInfo.Texture.height),
-		    new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMin / textureInfo.Texture.height),
-		    new Vector2(textureInfo.Rect.xMin / textureInfo.Texture.width, textureInfo.Rect.yMax / textureInfo.Texture.height)
-		};
-		*/
-		
 		material = this.gameObject.renderer.material;
 		material.mainTexture = texture;
 		material.mainTexture.wrapMode = TextureWrapMode.Clamp;

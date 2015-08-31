@@ -339,7 +339,6 @@ public class MBTilesLayer : DBTileLayer
 
 	protected override void CancelTileRequest(int tileX, int tileY, int roundedZoom)
 	{
-		//TileDownloader.Instance.Cancel(GetTileURL(tileX, tileY, Map.RoundedZoom));
 		if (db == null) // TODO: exception
 			return ;
 	}

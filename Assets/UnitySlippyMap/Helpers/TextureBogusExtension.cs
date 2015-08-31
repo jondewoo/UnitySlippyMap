@@ -41,13 +41,6 @@ public static class TextureBogusExtension
         WWW www = new WWW ("http://www.google.com");
  
         yield return www;
-        /*
-//       Wait for download to complete
-        float elapsed = 0.0f;
-        while (Time.time < timeoutAt && !www.isDone && keepgoing) {
-            elapsed = elapsed + 0.01f;
-        }
-        */
  
         if (www.error == null)
         {
@@ -168,7 +161,6 @@ public static class TextureBogusExtension
     /// </summary>
     public static void Init (MonoBehaviour bhv)
     {
-        //Debug.Log("Init");
         bhv.StartCoroutine(obtainExampleBogusTexture());
     }
 }

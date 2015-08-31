@@ -696,9 +696,7 @@ public class Map : MonoBehaviour
 				}
 				else
 				{
-//#if DEBUG_LOG
 					Debug.LogWarning("WARNING: Map.Update: bogus location (bailing): " + UnityEngine.Input.location.lastData.longitude + " " + UnityEngine.Input.location.lastData.latitude + ":  " + UnityEngine.Input.location.status);
-//#endif
 				}
 			}
 			

@@ -285,8 +285,6 @@ public abstract class TileLayer : Layer
 				
 				tile.name = "tile_" + tileAddress;
 				tiles.Add(tileAddress, tile);
-				//MeshRenderer tileMeshRenderer = tile.GetComponent<MeshRenderer>();
-				//tileMeshRenderer.enabled = true;
 				
 				RequestTile(tileX, tileY, Map.RoundedZoom, tile);
 			}
