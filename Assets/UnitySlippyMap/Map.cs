@@ -288,7 +288,7 @@ namespace UnitySlippyMap
 		/// </summary>
 		/// <value>
 		/// This is the mininum zoom value for the map.
-		/// Inferior zoom values are clamped when setting the <see cref="UnitySlippyMap.Map.CurrentZoom">CurrentZoom</see>.
+		/// Inferior zoom values are clamped when setting the <see cref="UnitySlippyMap.Map.CurrentZoom"/>.
 		/// Additionally, values are always clamped between 3 and 18.
 		/// </value>
 		public float MinZoom {
@@ -317,7 +317,7 @@ namespace UnitySlippyMap
 		/// </summary>
 		/// <value>
 		/// This is the maximum zoom value for the map.
-		/// Superior zoom values are clamped when setting the <see cref="UnitySlippyMap.Map.CurrentZoom">CurrentZoom</see>.
+		/// Superior zoom values are clamped when setting the <see cref="UnitySlippyMap.Map.CurrentZoom"/>.
 		/// Additionally, values are always clamped between 3 and 18.
 		/// </value>
 		public float MaxZoom {
@@ -344,36 +344,67 @@ namespace UnitySlippyMap
 		/// <summary>
 		/// Gets the rounded zoom.
 		/// </summary>
-		/// <value>The rounded zoom is updated when <see cref="UnitySlippyMap.Map.CurrentZoom">CurrentZoom</see> is set.</value>
+		/// <value>The rounded zoom is updated when <see cref="UnitySlippyMap.Map.CurrentZoom"/> is set.</value>
 		public int RoundedZoom { get { return roundedZoom; } }
 	
 		private float halfMapScale = 0.0f;
 
+		/// <summary>
+		/// Gets the half map scale.
+		/// </summary>
+		/// <value>
+		/// The half map scale is a value used throughout the implementation to rule the camera elevation
+		/// and the size/scale of the tiles.
+		/// </value>
 		public float HalfMapScale { get { return halfMapScale; } }
 	
 		private float roundedHalfMapScale = 0.0f;
 
+		/// <summary>
+		/// Gets the rounded half map scale.
+		/// </summary>
+		/// <value>See <see cref="UnitySlippyMap.Map.HalfMapScale"/> .</value>
 		public float RoundedHalfMapScale { get { return roundedHalfMapScale; } }
-	
-		private float roundedMetersPerPixel = 0.0f;
-
-		public float RoundedMetersPerPixel { get { return roundedMetersPerPixel; } }
 	
 		private float metersPerPixel = 0.0f;
 
+		/// <summary>
+		/// Gets the meters per pixel.
+		/// </summary>
+		/// <value>The numbers of meters per pixel in respect to the latitude and zoom level of the map.</value>
 		public float MetersPerPixel { get { return metersPerPixel; } }
-	
-		private float roundedScaleMultiplier = 0.0f;
+		
+		private float roundedMetersPerPixel = 0.0f;
 
-		public float RoundedScaleMultiplier { get { return roundedScaleMultiplier; } }
-	
+		/// <summary>
+		/// Gets the rounded meters per pixel.
+		/// </summary>
+		/// <value>See <see cref="UnitySlippyMap.Map.MetersPerPixel"/>.</value>
+		public float RoundedMetersPerPixel { get { return roundedMetersPerPixel; } }
+		
 		private float scaleMultiplier = 0.0f;
 
+		/// <summary>
+		/// Gets the scale multiplier.
+		/// </summary>
+		/// <value>The scale multiplier helps converting meters (EPSG 900913) to Unity3D world coordinates.</value>
 		public float ScaleMultiplier { get { return scaleMultiplier; } }
+
+		private float roundedScaleMultiplier = 0.0f;
+
+		/// <summary>
+		/// Gets the rounded scale multiplier.
+		/// </summary>
+		/// <value>See <see cref="UnitySlippyMap.Map.ScaleMultiplier"/>.</value>
+		public float RoundedScaleMultiplier { get { return roundedScaleMultiplier; } }
 
 		private float scaleDivider = 20000.0f;
 		private float tileResolution = 256.0f;
 
+		/// <summary>
+		/// Gets the tile resolution.
+		/// </summary>
+		/// <value>The tile resolution in pixels.</value>
 		public float TileResolution { get { return tileResolution; } }
 
 		private float screenScale = 1.0f;
@@ -412,12 +443,16 @@ namespace UnitySlippyMap
 			}
 		}
 	
-		// <summary>
-		// Is set to false is the map is manipulated by the user.
-		// </summary>
-		private bool							updateCenterWithLocation = true;
+		private bool updateCenterWithLocation = true;
 
-		public bool								UpdateCenterWithLocation {
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> update center with location.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if update center with location; otherwise, <c>false</c>.
+		/// It is automatically set to <c>false</c> when the map is manipulated by the user.
+		/// </value>
+		public bool UpdateCenterWithLocation {
 			get {
 				return updateCenterWithLocation;
 			}
@@ -427,11 +462,12 @@ namespace UnitySlippyMap
 			}
 		}
 	
-		// <summary>
-		// Enables/disables the use of the device's orientation/compass.
-		// </summary>
 		private bool							useOrientation = false;
 
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> uses the host's orientation.
+		/// </summary>
+		/// <value><c>true</c> if use orientation; otherwise, <c>false</c>.</value>
 		public bool								UseOrientation {
 			get { return useOrientation; }
 			set {
@@ -468,12 +504,16 @@ namespace UnitySlippyMap
 			}
 		}
 	
-		/// <summary>
-		/// Enables/disables the camera to follow the compass orientation.
-		/// </summary>
-		private bool							cameraFollowsOrientation = false;
+		private bool cameraFollowsOrientation = false;
 
-		public bool								CameraFollowsOrientation {
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/>'s camera follows the host's orientation.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if the camera follows the host's orientation; otherwise, <c>false</c>.
+		/// If set to <c>true</c>, <see cref="UnitySlippyMap.Map.CameraFollowsOrientation"/> is set to <c>true</c>.
+		/// </value>
+		public bool CameraFollowsOrientation {
 			get { return cameraFollowsOrientation; }
 			set {
 				cameraFollowsOrientation = value;
@@ -481,48 +521,84 @@ namespace UnitySlippyMap
 			}
 		}
 	
-		private float							lastCameraOrientation = 0.0f;
+		private float lastCameraOrientation = 0.0f;
+
 		private List<Marker> markers = new List<Marker> ();
 
+		/// <summary>
+		/// Gets the list of markers.
+		/// </summary>
+		/// <value>The list of <see cref="UnitySlippyMap.Marker"/> instances.</value>
 		public List<Marker> Markers { get { return markers; } }
-    
-		/// <summary>
-		/// Enables/disables showing GUI controls.
-		/// </summary>
-		public bool                             ShowGUIControls = false;
-		/// <summary>
-		/// Enables/disables of the platform specific controls.
-		/// TODO: implement inputs in a user oriented customizable way
-		/// </summary>
-		public bool                             InputsEnabled = false;
-		private LocationMarker					locationMarker;
-		private List<Layer>						layers = new List<Layer> ();
-	
-		/// <summary>
-		/// Tells the map if it is being manipulated. The map will not update when it is true and will set it to false at the end of its Update.
-		/// </summary>
-		private bool							hasMoved = false;
 
-		public bool								HasMoved {
+		private bool showGUIControls = false;
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> shows GUI controls.
+		/// </summary>
+		/// <value><c>true</c> if show GUI controls; otherwise, <c>false</c>.</value>
+		public bool ShowGUIControls
+		{
+			get { return showGUIControls; }
+			set { showGUIControls = value; }
+		}
+
+		private bool inputsEnabled = false;
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> inputs are enabled.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if inputs enabled; otherwise, <c>false</c>.
+		/// TODO: implement inputs in a user oriented customizable way
+		/// </value>
+		public bool InputsEnabled
+		{
+			get { return inputsEnabled; }
+			set { inputsEnabled = value; }
+		}
+
+		private LocationMarker locationMarker;
+
+		private List<Layer> layers = new List<Layer> ();
+	
+		private bool hasMoved = false;
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> has moved.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if this instance has moved; otherwise, <c>false</c>.
+		/// The map will not update when it is true and will set it to false at the end of its Update.
+		/// </value>
+		public bool HasMoved {
 			get { return hasMoved; }
 			set { hasMoved = value; }
 		}
     
-		private GUIDelegate						guiDelegate;
+		private GUIDelegate guiDelegate;
 
-		public GUIDelegate						GUIDelegate {
+		/// <summary>
+		/// Gets or sets the GUI delegate.
+		/// </summary>
+		/// <value>The GUI delegate.</value>
+		public GUIDelegate GUIDelegate {
 			get { return guiDelegate; }
 			set { guiDelegate = value; }
 		}
 	
-		private InputDelegate					inputDelegate;
+		private InputDelegate inputDelegate;
 
-		public InputDelegate					InputDelegate {
+		/// <summary>
+		/// Gets or sets the input delegate.
+		/// </summary>
+		/// <value>The input delegate.</value>
+		public InputDelegate InputDelegate {
 			get { return inputDelegate; }
 			set { inputDelegate = value; }
 		}
 	
-		private bool							wasInputInterceptedByGUI;
+		private bool wasInputInterceptedByGUI;
 	
 	
 	
@@ -547,27 +623,45 @@ namespace UnitySlippyMap
 			"AXIS[\"x\", EAST], AXIS[\"y\", NORTH]," +
 			"AUTHORITY[\"EPSG\",\"900913\"]]";
 
-		public static string                    WKTEPSG900913 { get { return wktEPSG900913; } }
+		/// <summary>
+		/// Gets the Well-Known Text representation of the EPSG900913 projection.
+		/// </summary>
+		public static string WKTEPSG900913 { get { return wktEPSG900913; } }
 
 		private CoordinateTransformationFactory ctFactory;
 
-		public CoordinateTransformationFactory  CTFactory { get { return ctFactory; } }
+		/// <summary>
+		/// Gets the CoordinateTransformationFactory.
+		/// </summary>
+		public CoordinateTransformationFactory CTFactory { get { return ctFactory; } }
 
-		private ICoordinateSystem               epsg900913;
+		private ICoordinateSystem epsg900913;
 
-		public ICoordinateSystem                EPSG900913 { get { return epsg900913; } }
+		/// <summary>
+		/// Gets the EPSG900913 coordinate system instance.
+		/// </summary>
+		public ICoordinateSystem EPSG900913 { get { return epsg900913; } }
 
-		private ICoordinateTransformation       wgs84ToEPSG900913;
+		private ICoordinateTransformation wgs84ToEPSG900913;
 
-		public ICoordinateTransformation        WGS84ToEPSG900913 { get { return wgs84ToEPSG900913; } }
+		/// <summary>
+		/// Gets the WGS84 to EPSG900913 transformation instance.
+		/// </summary>
+		public ICoordinateTransformation WGS84ToEPSG900913 { get { return wgs84ToEPSG900913; } }
 
-		private IMathTransform                  wgs84ToEPSG900913Transform;
+		private IMathTransform wgs84ToEPSG900913Transform;
 
-		public IMathTransform                   WGS84ToEPSG900913Transform { get { return wgs84ToEPSG900913Transform; } }
+		/// <summary>
+		/// Gets the WGS84 to EPSG900913 math transform instance.
+		/// </summary>
+		public IMathTransform WGS84ToEPSG900913Transform { get { return wgs84ToEPSG900913Transform; } }
 
-		private IMathTransform                  epsg900913ToWGS84Transform;
+		private IMathTransform epsg900913ToWGS84Transform;
 
-		public IMathTransform                   EPSG900913ToWGS84Transform { get { return epsg900913ToWGS84Transform; } }
+		/// <summary>
+		/// Gets the EPSG900913 to WGS84 math transform instance.
+		/// </summary>
+		public IMathTransform EPSG900913ToWGS84Transform { get { return epsg900913ToWGS84Transform; } }
 	
 	#endregion
     

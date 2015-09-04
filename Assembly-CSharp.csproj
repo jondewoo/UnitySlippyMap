@@ -1,95 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.20506</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{770F3EAF-A465-1243-B39F-65232DC381CA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <AssemblyName>Assembly-CSharp</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <BaseDirectory>Assets</BaseDirectory>
+	<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+	<ProductVersion>10.0.20506</ProductVersion>
+	<SchemaVersion>2.0</SchemaVersion>
+	<ProjectGuid>{770F3EAF-A465-1243-B39F-65232DC381CA}</ProjectGuid>
+	<OutputType>Library</OutputType>
+	<AppDesignerFolder>Properties</AppDesignerFolder>
+	<RootNamespace></RootNamespace>
+	<AssemblyName>Assembly-CSharp</AssemblyName>
+	<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+	<FileAlignment>512</FileAlignment>
+	<BaseDirectory>Assets</BaseDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>Temp\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;UNITY_4_6_7;UNITY_4_6;UNITY_ANDROID;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_UNITYEVENTS;ENABLE_NEW_HIERARCHY ;ENABLE_AUDIO_FMOD;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;INCLUDE_IL2CPP;INCLUDE_WP8SUPPORT;ENABLE_WWW;ENABLE_IMAGEEFFECTS;ENABLE_4_6_FEATURES;INCLUDE_WP_BLUE_SUPPORT;ENABLE_WEBCAM;INCLUDE_METROSUPPORT;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;UNITY5_SCRIPTING_IN_UNITY4;ENABLE_CACHING;ENABLE_CLOTH;UNITY_ANDROID_API;ENABLE_2D_PHYSICS;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_NAVMESH_CARVING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_MONO;DEVELOPMENT_BUILD;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_OSX;UNITY_PRO_LICENSE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>0169</NoWarn>
+	<DebugSymbols>true</DebugSymbols>
+	<DebugType>full</DebugType>
+	<Optimize>false</Optimize>
+	<OutputPath>Temp\bin\Debug\</OutputPath>
+	<DefineConstants>DEBUG;TRACE;UNITY_4_6_7;UNITY_4_6;UNITY_ANDROID;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_UNITYEVENTS;ENABLE_NEW_HIERARCHY ;ENABLE_AUDIO_FMOD;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;INCLUDE_IL2CPP;INCLUDE_WP8SUPPORT;ENABLE_WWW;ENABLE_IMAGEEFFECTS;ENABLE_4_6_FEATURES;INCLUDE_WP_BLUE_SUPPORT;ENABLE_WEBCAM;INCLUDE_METROSUPPORT;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;UNITY5_SCRIPTING_IN_UNITY4;ENABLE_CACHING;ENABLE_CLOTH;UNITY_ANDROID_API;ENABLE_2D_PHYSICS;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_NAVMESH_CARVING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_MONO;DEVELOPMENT_BUILD;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_OSX;UNITY_PRO_LICENSE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>Temp\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>0169</NoWarn>
+	<DebugType>pdbonly</DebugType>
+	<Optimize>true</Optimize>
+	<OutputPath>Temp\bin\Release\</OutputPath>
+	<DefineConstants>TRACE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Applications\Unity 4\Unity.app\Contents\Frameworks\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEditor">
-      <HintPath>..\..\..\..\Applications\Unity 4\Unity.app\Contents\Frameworks\Managed\UnityEditor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
+	<Reference Include="System" />
+    <Reference Include="System.XML" />
+	<Reference Include="System.Core" />
+	<Reference Include="System.Xml.Linq" />
+	<Reference Include="UnityEngine">
+	  <HintPath>/Applications/Unity 4/Unity.app/Contents/Frameworks/Managed/UnityEngine.dll</HintPath>
+	</Reference>
+	<Reference Include="UnityEditor">
+	  <HintPath>/Applications/Unity 4/Unity.app/Contents/Frameworks/Managed/UnityEditor.dll</HintPath>
+	</Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\TestScripts\TestMap.cs" />
-    <Compile Include="Assets\UnitySlippyMap\GUI\GUI.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\CameraFacingBillboard.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\GeoHelpers.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\Job.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\JobManager.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\MD5.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\MaxRectsBinPack.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\Profiler.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\DataTable.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\SqliteDatabase.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\SRIDReader.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\SharedMaterialManager.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\TextureBogusExtension.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\Tile.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\TileDownloader.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Dispatcher.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Task.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\TaskDistributer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Thread.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\UnityThreadHelper.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\Metadata.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\TileSystem.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Helpers\WMS\WMS111.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Input\Input.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\DBTileLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\Layer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\MBTilesLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\OSMTileLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\TileLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\VirtualEarthTileLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\WMSTileLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Layer\WebTileLayer.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Map.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Marker\LocationMarker.cs" />
-    <Compile Include="Assets\UnitySlippyMap\Marker\Marker.cs" />
-    <None Include="Assets\UnitySlippyMap\Dll\ProjNet.1.2\ProjNet.xml" />
-    <None Include="Assets\UnitySlippyMap\Resources\Shaders\SomianUnlitTransparent.shader" />
-    <None Include="Assets\UnitySlippyMap\Resources\SRID.txt" />
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\Applications\Unity 4\Unity.app\Contents\UnityExtensions\Unity\GUISystem\4.6.7\Standalone\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="ProjNet">
-      <HintPath>Assets\UnitySlippyMap\Dll\ProjNet.1.2\ProjNet.dll</HintPath>
-    </Reference>
+     <Compile Include="Assets\TestScripts\TestMap.cs" />
+     <Compile Include="Assets\UnitySlippyMap\GUI\GUI.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\CameraFacingBillboard.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\GeoHelpers.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\Job.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\JobManager\JobManager.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\MD5.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\MaxRectsBinPack.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\Profiler.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\DataTable.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SQLite\SqliteDatabase.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SRIDReader.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\SharedMaterialManager.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\TextureBogusExtension.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\Tile.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\TileDownloader.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Dispatcher.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Task.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\TaskDistributer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\Thread.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\UnityThreading\UnityThreadHelper.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\Metadata.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\VirtualEarth\TileSystem.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Helpers\WMS\WMS111.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Input\Input.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\DBTileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\Layer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\MBTilesLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\OSMTileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\TileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\VirtualEarthTileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\WMSTileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Layer\WebTileLayer.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Map.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Marker\LocationMarker.cs" />
+     <Compile Include="Assets\UnitySlippyMap\Marker\Marker.cs" />
+     <None Include="Assets\UnitySlippyMap\Dll\ProjNet.1.2\ProjNet.xml" />
+     <None Include="Assets\UnitySlippyMap\Resources\Shaders\SomianUnlitTransparent.shader" />
+     <None Include="Assets\UnitySlippyMap\Resources\SRID.txt" />
+ <Reference Include="UnityEngine.UI">
+ <HintPath>/Applications/Unity 4/Unity.app/Contents/UnityExtensions/Unity/GUISystem/4.6.7/Standalone/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="ProjNet">
+ <HintPath>/Users/jonathan/Documents/UnitySlippyMap/Assets/UnitySlippyMap/Dll/ProjNet.1.2/ProjNet.dll</HintPath>
+ </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -99,4 +100,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  
 </Project>
