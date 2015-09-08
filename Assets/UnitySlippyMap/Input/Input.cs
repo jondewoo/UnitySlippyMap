@@ -186,7 +186,7 @@ namespace UnitySlippyMap.Input
     		if (panning)
     		{
     			// disable the centerWGS84 update with the last location
-    			map.UpdateCenterWithLocation = false;
+    			map.UpdatesCenterWithLocation = false;
     			
     			// apply the movements
     			Ray ray = map.CurrentCamera.ScreenPointToRay(screenPosition);
