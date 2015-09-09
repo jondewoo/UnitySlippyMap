@@ -30,7 +30,7 @@ using UnityEngine;
 using ProjNet.CoordinateSystems;
 using System.Xml;
 
-namespace UnitySlippyMap
+namespace UnitySlippyMap.Layers
 {
 
 // <summary>

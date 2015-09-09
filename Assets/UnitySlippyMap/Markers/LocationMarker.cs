@@ -21,7 +21,7 @@
 
 using UnityEngine;
 
-namespace UnitySlippyMap
+namespace UnitySlippyMap.Markers
 {
 
 public class LocationMarker : Marker

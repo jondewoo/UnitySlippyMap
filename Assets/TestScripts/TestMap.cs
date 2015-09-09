@@ -24,6 +24,8 @@ using UnityEngine;
 using System;
 
 using UnitySlippyMap;
+using UnitySlippyMap.Markers;
+using UnitySlippyMap.Layers;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;

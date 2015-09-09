@@ -27,10 +27,11 @@ using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
 
+using UnitySlippyMap.Markers;
+using UnitySlippyMap.Layers;
 using UnitySlippyMap.GUI;
 using UnitySlippyMap.Input;
 
-//using UnitySlippyMap.Input;
 
 // <summary>
 // The Map class is a singleton handling layers and markers.

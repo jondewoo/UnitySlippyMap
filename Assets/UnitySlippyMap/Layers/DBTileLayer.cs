@@ -1,5 +1,5 @@
 // 
-//  Layer.cs
+//  DBTileLayer.cs
 //  
 //  Author:
 //       Jonathan Derrough <jonathan.derrough@gmail.com>
@@ -19,34 +19,15 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using UnityEngine;
-
-namespace UnitySlippyMap
+namespace UnitySlippyMap.Layers
 {
 
 // <summary>
-// An abstract class representing a map layer.
-// One can derive from it to add custom content to the map.
+// An abstract class representing a database tile layer.
+// One can derive from it to leverage specific or custom tile services.
 // </summary>
-public abstract class Layer : MonoBehaviour
+public abstract class DBTileLayer : TileLayer
 {
-	public Map	Map;
-	
-	#region Protected members & properties
-	
-	protected float				minZoom;
-	public float				MinZoom { get { return minZoom; } set { minZoom = value; } }
-	
-	protected float				maxZoom;
-	public float				MaxZoom { get { return maxZoom; } set { maxZoom = value; } }
-	
-	#endregion
-	
-	#region Layer interface
-
-	public abstract void UpdateContent();
-	
-	#endregion
 }
 
 }

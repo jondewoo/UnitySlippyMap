@@ -25,7 +25,7 @@ using UnityEngine;
 
 using System.IO;
 
-namespace UnitySlippyMap
+namespace UnitySlippyMap.Layers
 {
 
 // <summary>

@@ -30,7 +30,7 @@ using UnityEngine;
 using System.Globalization;
 using Microsoft.MapPoint;
 
-namespace UnitySlippyMap
+namespace UnitySlippyMap.Layers
 {
 
 // <summary>
