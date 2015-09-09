@@ -760,39 +760,53 @@ namespace UnitySlippyMap
 		/// </summary>
 		public static string WKTEPSG900913 { get { return wktEPSG900913; } }
 
-		// TODO: better doc for ProjNet variables
+		/// <summary>
+		/// The CoordinateTransformationFactory instance.
+		/// </summary>
 		private CoordinateTransformationFactory ctFactory;
 
 		/// <summary>
-		/// Gets the CoordinateTransformationFactory.
+		/// Gets the CoordinateTransformationFactory instance.
 		/// </summary>
 		public CoordinateTransformationFactory CTFactory { get { return ctFactory; } }
 
+		/// <summary>
+		/// The EPSG 900913 ICoordinateSystem instance.
+		/// </summary>
 		private ICoordinateSystem epsg900913;
 
 		/// <summary>
-		/// Gets the EPSG900913 coordinate system instance.
+		/// Gets the EPSG 900913 ICoordinateSystem instance.
 		/// </summary>
 		public ICoordinateSystem EPSG900913 { get { return epsg900913; } }
 
+		/// <summary>
+		/// The WGS84 to EPSG 900913 ICoordinateTransformation instance.
+		/// </summary>
 		private ICoordinateTransformation wgs84ToEPSG900913;
 
 		/// <summary>
-		/// Gets the WGS84 to EPSG900913 transformation instance.
+		/// Gets the WGS84 to EPSG 900913 ICoordinateTransformation instance.
 		/// </summary>
 		public ICoordinateTransformation WGS84ToEPSG900913 { get { return wgs84ToEPSG900913; } }
 
+		/// <summary>
+		/// The WGS84 to EPSG 900913 IMathTransform instance.
+		/// </summary>
 		private IMathTransform wgs84ToEPSG900913Transform;
 
 		/// <summary>
-		/// Gets the WGS84 to EPSG900913 math transform instance.
+		/// Gets the WGS84 to EPSG900913 IMathTransform instance.
 		/// </summary>
 		public IMathTransform WGS84ToEPSG900913Transform { get { return wgs84ToEPSG900913Transform; } }
 
+		/// <summary>
+		/// The EPSG 900913 to WGS84 IMathTransform instance.
+		/// </summary>
 		private IMathTransform epsg900913ToWGS84Transform;
 
 		/// <summary>
-		/// Gets the EPSG900913 to WGS84 math transform instance.
+		/// Gets the EPSG 900913 to WGS84 IMathTransform instance.
 		/// </summary>
 		public IMathTransform EPSG900913ToWGS84Transform { get { return epsg900913ToWGS84Transform; } }
 	
@@ -927,7 +941,7 @@ namespace UnitySlippyMap
 			}
 		
 		}
-	
+
 		/// <summary>
 		/// Raises the Update event.
 		/// </summary>
@@ -1151,7 +1165,7 @@ namespace UnitySlippyMap
 								};
 			else
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-			markerObject.SetActiveRecursively(false);
+				markerObject.SetActiveRecursively(false);
 #else
 				markerObject.SetActive (false);
 #endif
@@ -1265,7 +1279,7 @@ namespace UnitySlippyMap
 			CurrentZoom += 4.0f * zoomSpeed * Time.deltaTime;
 
 			// move the camera
-			// FIXME: the camera jumps on the first zoom when tilted, 'cause cam altitude and zoom value are unsynced by the rotation
+			// FIXME: the camera jumps on the first zoom when tilted, because the cam altitude and zoom value are unsynced by the rotation
 			Transform cameraTransform = currentCamera.transform;
 			float y = GeoHelpers.OsmZoomLevelToMapScale (currentZoom, 0.0f, tileResolution, 72) / scaleDivider * screenScale;
 			float t = y / cameraTransform.forward.y;
@@ -1280,6 +1294,7 @@ namespace UnitySlippyMap
 		}
 	
 	#endregion
+		
 	}
 
 }
