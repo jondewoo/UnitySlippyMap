@@ -205,17 +205,19 @@ namespace UnitySlippyMap
 #endif
 					return;
 				}
-
-				double[] newCenterESPG900913 = wgs84ToEPSG900913Transform.Transform (value);
-
-				centerEPSG900913 = ComputeCenterEPSG900913 (newCenterESPG900913);
-
+				
 				if (value [0] > 180.0)
 					value [0] -= 360.0;
 				else if (value [0] < -180.0)
 					value [0] += 360.0;
-
+				
 				centerWGS84 = value;
+
+				double[] newCenterESPG900913 = wgs84ToEPSG900913Transform.Transform (centerWGS84);
+
+				centerEPSG900913 = ComputeCenterEPSG900913 (newCenterESPG900913);
+
+				Debug.Log("center: " + centerEPSG900913[0] + " " + centerEPSG900913[1]);
 
 				FitVerticalBorder ();
 				IsDirty = true;
