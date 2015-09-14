@@ -370,6 +370,13 @@ namespace UnitySlippyMap.Layers
 	
 	#region WebTileLayer implementation
 	
+		/// <summary>
+		/// Gets the tile URL. See <see cref="UnitySlippyMap.Layers.WebTileLayer.GetTileURL"/>.
+		/// </summary>
+		/// <returns>The tile UR.</returns>
+		/// <param name="tileX">Tile x.</param>
+		/// <param name="tileY">Tile y.</param>
+		/// <param name="roundedZoom">Rounded zoom.</param>
 		protected override string GetTileURL (int tileX, int tileY, int roundedZoom)
 		{
 			double[] tile = GeoHelpers.TileToWGS84 (tileX, tileY, roundedZoom);
