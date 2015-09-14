@@ -24,26 +24,48 @@ using UnityEngine;
 namespace UnitySlippyMap.Layers
 {
 
-// <summary>
-// An abstract class representing a map layer.
-// One can derive from it to add custom content to the map.
-// </summary>
+/// <summary>
+/// An abstract class representing a map layer.
+/// One can derive from it to add custom content to the map.
+/// </summary>
 public abstract class Layer : MonoBehaviour
 {
+	/// <summary>
+	/// The <see cref="UnitySlippyMap.Map"/> instance to which this <see cref="UnitySlippyMap.Layers.Layer"/> instance belongs.
+	/// </summary>
 	public Map	Map;
 	
 	#region Protected members & properties
 	
-	protected float				minZoom;
-	public float				MinZoom { get { return minZoom; } set { minZoom = value; } }
+	/// <summary>
+	/// The minimum zoom.
+	/// </summary>
+	protected float minZoom;
 	
-	protected float				maxZoom;
-	public float				MaxZoom { get { return maxZoom; } set { maxZoom = value; } }
+	/// <summary>
+	/// Gets or sets the minimum zoom.
+	/// </summary>
+	/// <value>The minimum zoom.</value>
+	public float MinZoom { get { return minZoom; } set { minZoom = value; } }
+	
+	/// <summary>
+	/// The max zoom.
+	/// </summary>
+	protected float maxZoom;
+
+	/// <summary>
+	/// Gets or sets the max zoom.
+	/// </summary>
+	/// <value>The max zoom.</value>
+	public float MaxZoom { get { return maxZoom; } set { maxZoom = value; } }
 	
 	#endregion
 	
 	#region Layer interface
-
+	
+	/// <summary>
+	/// Updates the content.
+	/// </summary>
 	public abstract void UpdateContent();
 	
 	#endregion

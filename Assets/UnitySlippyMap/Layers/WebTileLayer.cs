@@ -18,68 +18,79 @@
 // 
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 using System;
 
 namespace UnitySlippyMap.Layers
 {
 
-// <summary>
-// An abstract class representing a web tile layer.
-// One can derive from it to leverage specific or custom tile services.
-// </summary>
-public abstract class WebTileLayer : TileLayer
-{
+	/// <summary>
+	/// An abstract class representing a web tile layer.
+	/// One can derive from it to leverage specific or custom tile services.
+	/// </summary>
+	public abstract class WebTileLayer : TileLayer
+	{
 	#region Protected members & properties
 
-	protected string							baseURL;
-	public string								BaseURL
-    {
-        get { return baseURL; }
-        set 
-        {
-            if (value == null)
-                throw new ArgumentNullException("value");
-            baseURL = value;
-        }
-    }
+		/// <summary>
+		/// The base URL.
+		/// </summary>
+		protected string baseURL;
+
+		/// <summary>
+		/// Gets or sets the base URL.
+		/// </summary>
+		/// <value>The base URL.</value>
+		public string BaseURL {
+			get { return baseURL; }
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				baseURL = value;
+			}
+		}
 	
 	#endregion
 	
     #region TileLayer implementation
 	
-	protected override void RequestTile(int tileX, int tileY, int roundedZoom, Tile tile)
-	{
-		TileDownloader.Instance.Get(GetTileURL(tileX, tileY, roundedZoom), tile);
-	}
+		/// <summary>
+		/// Requests the tile's texture and assign it. See <see cref="UnitySlippyMap.Layers.TileLayer.RequestTile"/>.
+		/// </summary>
+		/// <param name="tileX">Tile x.</param>
+		/// <param name="tileY">Tile y.</param>
+		/// <param name="roundedZoom">Rounded zoom.</param>
+		/// <param name="tile">Tile.</param>
+		protected override void RequestTile (int tileX, int tileY, int roundedZoom, Tile tile)
+		{
+			TileDownloader.Instance.Get (GetTileURL (tileX, tileY, roundedZoom), tile);
+		}
 
-	protected override void CancelTileRequest(int tileX, int tileY, int roundedZoom)
-	{
-		TileDownloader.Instance.Cancel(GetTileURL(tileX, tileY, roundedZoom));
-	}
+		/// <summary>
+		/// Cancels the request for the tile's texture. See <see cref="UnitySlippyMap.Layers.TileLayer.CancelTileRequest"/>.
+		/// </summary>
+		/// <param name="tileX">Tile x.</param>
+		/// <param name="tileY">Tile y.</param>
+		/// <param name="roundedZoom">Rounded zoom.</param>
+		/// <returns><c>true</c> if this instance cancel tile request the specified tileX tileY roundedZoom; otherwise, <c>false</c>.</returns>
+		protected override void CancelTileRequest (int tileX, int tileY, int roundedZoom)
+		{
+			TileDownloader.Instance.Cancel (GetTileURL (tileX, tileY, roundedZoom));
+		}
 	
 	#endregion
 	
 	#region WebTileLayer interface
 	
-	/// <summary>
-	/// Gets the tile URL.
-	/// </summary>
-	/// <returns>
-	/// The tile URL.
-	/// </returns>
-	/// <param name='tileX'>
-	/// Tile x.
-	/// </param>
-	/// <param name='tileY'>
-	/// Tile y.
-	/// </param>
-	/// <param name='roundedZoom'>
-	/// Rounded zoom.
-	/// </param>
-	protected abstract string GetTileURL(int tileX, int tileY, int roundedZoom);
+		/// <summary>
+		/// Gets the tile URL. See <see cref="UnitySlippyMap.Layers.WebTileLayer.GetTileURL"/>.
+		/// </summary>
+		/// <returns>The tile URL.</returns>
+		/// <param name="tileX">Tile x.</param>
+		/// <param name="tileY">Tile y.</param>
+		/// <param name="roundedZoom">Rounded zoom.</param>
+		protected abstract string GetTileURL (int tileX, int tileY, int roundedZoom);
 
 	#endregion
-}
+	}
 
 }

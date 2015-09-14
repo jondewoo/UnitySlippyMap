@@ -22,12 +22,12 @@
 namespace UnitySlippyMap.Layers
 {
 
-// <summary>
-// An abstract class representing a database tile layer.
-// One can derive from it to leverage specific or custom tile services.
-// </summary>
-public abstract class DBTileLayer : TileLayer
-{
-}
+	/// <summary>
+	/// An abstract class representing a database tile layer.
+	/// One can derive from it to leverage specific or custom tile services.
+	/// </summary>
+	public abstract class DBTileLayer : TileLayer
+	{
+	}
 
 }
