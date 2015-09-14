@@ -189,10 +189,8 @@ public class TestMap : MonoBehaviour
 
 		// create a WMS tile layer
         WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("WMS");
-        //wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
-        //wmsLayer.Layers = "osm_auto:all";
-        wmsLayer.BaseURL = "http://vmap0.tiles.osgeo.org/wms/vmap0";
-        wmsLayer.Layers = "basic";
+        wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
+        wmsLayer.Layers = "osm_auto:all";
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
         wmsLayer.gameObject.SetActiveRecursively(false);
 #else
