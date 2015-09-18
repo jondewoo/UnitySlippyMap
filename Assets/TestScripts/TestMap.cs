@@ -23,7 +23,7 @@ using UnityEngine;
 
 using System;
 
-using UnitySlippyMap;
+using UnitySlippyMap.Map;
 using UnitySlippyMap.Markers;
 using UnitySlippyMap.Layers;
 using ProjNet.CoordinateSystems;
@@ -35,7 +35,7 @@ using System.Collections.Generic;
 
 public class TestMap : MonoBehaviour
 {
-	private Map		map;
+	private MapBehaviour		map;
 	
 	public Texture	LocationTexture;
 	public Texture	MarkerTexture;
@@ -51,10 +51,10 @@ public class TestMap : MonoBehaviour
 	private float	animationDuration = 0.5f;
 	private float	animationStartTime = 0.0f;
 
-    private List<Layer> layers;
+    private List<LayerBehaviour> layers;
     private int     currentLayerIndex = 0;
 	
-	bool Toolbar(Map map)
+	bool Toolbar(MapBehaviour map)
 	{
 		GUI.matrix = Matrix4x4.Scale(new Vector3(guiXScale, guiXScale, 1.0f));
 		
@@ -167,7 +167,7 @@ public class TestMap : MonoBehaviour
 		guiRect = new Rect(16.0f * guiXScale, 4.0f * guiXScale, Screen.width / guiXScale - 32.0f * guiXScale, 32.0f * guiYScale);
 
 		// create the map singleton
-		map = Map.Instance;
+		map = MapBehaviour.Instance;
 		map.CurrentCamera = Camera.main;
 		map.InputDelegate += UnitySlippyMap.Input.MapInput.BasicTouchAndKeyboard;
 		map.CurrentZoom = 15.0f;
@@ -179,7 +179,7 @@ public class TestMap : MonoBehaviour
 
 		map.GUIDelegate += Toolbar;
 
-        layers = new List<Layer>();
+        layers = new List<LayerBehaviour>();
 
 		// create an OSM tile layer
         OSMTileLayer osmLayer = map.CreateLayer<OSMTileLayer>("OSM");
@@ -188,7 +188,7 @@ public class TestMap : MonoBehaviour
         layers.Add(osmLayer);
 
 		// create a WMS tile layer
-        WMSTileLayer wmsLayer = map.CreateLayer<WMSTileLayer>("WMS");
+        WMSTileLayerBehaviour wmsLayer = map.CreateLayer<WMSTileLayerBehaviour>("WMS");
         wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
         wmsLayer.Layers = "osm_auto:all";
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
@@ -200,7 +200,7 @@ public class TestMap : MonoBehaviour
         layers.Add(wmsLayer);
 
 		// create a VirtualEarth tile layer
-        VirtualEarthTileLayer virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayer>("VirtualEarth");
+        VirtualEarthTileLayerBehaviour virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayerBehaviour>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
 #if UNITY_WEBPLAYER
@@ -262,7 +262,7 @@ public class TestMap : MonoBehaviour
 		if (error == false)
 		{
             Debug.Log("DEBUG: using MBTiles file: " + filepath);
-			MBTilesLayer mbTilesLayer = map.CreateLayer<MBTilesLayer>("MBTiles");
+			MBTilesLayerBehaviour mbTilesLayer = map.CreateLayer<MBTilesLayerBehaviour>("MBTiles");
 			mbTilesLayer.Filepath = filepath;
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
             mbTilesLayer.gameObject.SetActiveRecursively(false);
@@ -278,7 +278,7 @@ public class TestMap : MonoBehaviour
 #endif
 
         // create some test 2D markers
-		GameObject go = Tile.CreateTileTemplate(Tile.AnchorPoint.BottomCenter).gameObject;
+		GameObject go = TileBehaviour.CreateTileTemplate(TileBehaviour.AnchorPoint.BottomCenter).gameObject;
 		go.renderer.material.mainTexture = MarkerTexture;
 		go.renderer.material.renderQueue = 4001;
 		go.transform.localScale = new Vector3(0.70588235294118f, 1.0f, 1.0f);
@@ -287,24 +287,24 @@ public class TestMap : MonoBehaviour
 		
 		GameObject markerGO;
 		markerGO = Instantiate(go) as GameObject;
-		map.CreateMarker<Marker>("test marker - 9 rue Gentil, Lyon", new double[2] { 4.83527, 45.76487 }, markerGO);
+		map.CreateMarker<MarkerBehaviour>("test marker - 9 rue Gentil, Lyon", new double[2] { 4.83527, 45.76487 }, markerGO);
 
 		markerGO = Instantiate(go) as GameObject;
-		map.CreateMarker<Marker>("test marker - 31 rue de la Bourse, Lyon", new double[2] { 4.83699, 45.76535 }, markerGO);
+		map.CreateMarker<MarkerBehaviour>("test marker - 31 rue de la Bourse, Lyon", new double[2] { 4.83699, 45.76535 }, markerGO);
 		
 		markerGO = Instantiate(go) as GameObject;
-		map.CreateMarker<Marker>("test marker - 1 place St Nizier, Lyon", new double[2] { 4.83295, 45.76468 }, markerGO);
+		map.CreateMarker<MarkerBehaviour>("test marker - 1 place St Nizier, Lyon", new double[2] { 4.83295, 45.76468 }, markerGO);
 
 		DestroyImmediate(go);
 		
 		// create the location marker
-		go = Tile.CreateTileTemplate().gameObject;
+		go = TileBehaviour.CreateTileTemplate().gameObject;
 		go.renderer.material.mainTexture = LocationTexture;
 		go.renderer.material.renderQueue = 4000;
 		go.transform.localScale /= 27.0f;
 		
 		markerGO = Instantiate(go) as GameObject;
-		map.SetLocationMarker<LocationMarker>(markerGO);
+		map.SetLocationMarker<LocationMarkerBehaviour>(markerGO);
 
 		DestroyImmediate(go);
 	}

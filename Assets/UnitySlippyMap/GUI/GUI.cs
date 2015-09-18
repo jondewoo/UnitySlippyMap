@@ -21,17 +21,26 @@
 
 using UnityEngine;
 
+using UnitySlippyMap.Map;
+
 namespace UnitySlippyMap.GUI
 {
 
 	/// <summary>
 	/// GUI delegate. Returns true if a button was pressed (or if inputs were intercepted in some way)
 	/// </summary>
-	public delegate bool GUIDelegate(Map map);
-	
+	public delegate bool GUIDelegate(MapBehaviour map);
+
+	/// <summary>
+	/// The Map GUI class.
+	/// </summary>
 	public static class MapGUI
 	{
-		public static bool Zoom(Map map)
+		/// <summary>
+		/// Zoom the specified <see cref="UnitySlippyMap.Map.MapBehaviour"/> instance.
+		/// </summary>
+		/// <param name="map">Map.</param>
+		public static bool Zoom(MapBehaviour map)
 		{
 			GUILayout.BeginVertical();
 			

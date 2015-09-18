@@ -18,16 +18,18 @@
 // 
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 using System;
+
+using UnitySlippyMap.Map;
 
 namespace UnitySlippyMap.Layers
 {
-
 	/// <summary>
 	/// An abstract class representing a web tile layer.
 	/// One can derive from it to leverage specific or custom tile services.
 	/// </summary>
-	public abstract class WebTileLayer : TileLayer
+	public abstract class WebTileLayerBehaviour : TileLayerBehaviour
 	{
 	#region Protected members & properties
 
@@ -54,19 +56,19 @@ namespace UnitySlippyMap.Layers
     #region TileLayer implementation
 	
 		/// <summary>
-		/// Requests the tile's texture and assign it. See <see cref="UnitySlippyMap.Layers.TileLayer.RequestTile"/>.
+		/// Requests the tile's texture and assign it. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.RequestTile"/>.
 		/// </summary>
 		/// <param name="tileX">Tile x.</param>
 		/// <param name="tileY">Tile y.</param>
 		/// <param name="roundedZoom">Rounded zoom.</param>
 		/// <param name="tile">Tile.</param>
-		protected override void RequestTile (int tileX, int tileY, int roundedZoom, Tile tile)
+		protected override void RequestTile (int tileX, int tileY, int roundedZoom, TileBehaviour tile)
 		{
-			TileDownloader.Instance.Get (GetTileURL (tileX, tileY, roundedZoom), tile);
+			TileDownloaderBehaviour.Instance.Get (GetTileURL (tileX, tileY, roundedZoom), tile);
 		}
 
 		/// <summary>
-		/// Cancels the request for the tile's texture. See <see cref="UnitySlippyMap.Layers.TileLayer.CancelTileRequest"/>.
+		/// Cancels the request for the tile's texture. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.CancelTileRequest"/>.
 		/// </summary>
 		/// <param name="tileX">Tile x.</param>
 		/// <param name="tileY">Tile y.</param>
@@ -74,7 +76,7 @@ namespace UnitySlippyMap.Layers
 		/// <returns><c>true</c> if this instance cancel tile request the specified tileX tileY roundedZoom; otherwise, <c>false</c>.</returns>
 		protected override void CancelTileRequest (int tileX, int tileY, int roundedZoom)
 		{
-			TileDownloader.Instance.Cancel (GetTileURL (tileX, tileY, roundedZoom));
+			TileDownloaderBehaviour.Instance.Cancel (GetTileURL (tileX, tileY, roundedZoom));
 		}
 	
 	#endregion
@@ -82,7 +84,7 @@ namespace UnitySlippyMap.Layers
 	#region WebTileLayer interface
 	
 		/// <summary>
-		/// Gets the tile URL. See <see cref="UnitySlippyMap.Layers.WebTileLayer.GetTileURL"/>.
+		/// Gets the tile URL. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetTileURL"/>.
 		/// </summary>
 		/// <returns>The tile URL.</returns>
 		/// <param name="tileX">Tile x.</param>

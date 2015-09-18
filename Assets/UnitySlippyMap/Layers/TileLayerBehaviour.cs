@@ -18,10 +18,13 @@
 // 
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-using UnityEngine;
 
 using System;
 using System.Collections.Generic;
+
+using UnityEngine;
+
+using UnitySlippyMap.Map;
 
 namespace UnitySlippyMap.Layers
 {
@@ -30,7 +33,7 @@ namespace UnitySlippyMap.Layers
 	/// An abstract class representing a tile layer.
 	/// One can derive from it to leverage specific or custom tile services.
 	/// </summary>
-	public abstract class TileLayer : Layer
+	public abstract class TileLayerBehaviour : LayerBehaviour
 	{
 	#region Protected members & properties
 
@@ -47,12 +50,13 @@ namespace UnitySlippyMap.Layers
 			get { return tileCacheSizeLimit; }
 			set { tileCacheSizeLimit = value; }
 		}
+
 		//public int									TileSize = 256;
 
 		/// <summary>
 		/// The shared tile template
 		/// </summary>
-		protected static Tile tileTemplate;
+		protected static TileBehaviour tileTemplate;
 
 		/// <summary>
 		/// The tile template use count.
@@ -62,12 +66,12 @@ namespace UnitySlippyMap.Layers
 		/// <summary>
 		/// The tiles.
 		/// </summary>
-		protected Dictionary<string, Tile> tiles = new Dictionary<string, Tile> ();
+		protected Dictionary<string, TileBehaviour> tiles = new Dictionary<string, TileBehaviour> ();
 
 		/// <summary>
 		/// The tile cache.
 		/// </summary>
-		protected List<Tile> tileCache = new List<Tile> ();
+		protected List<TileBehaviour> tileCache = new List<TileBehaviour> ();
 
 		/// <summary>
 		/// The visited tiles.
@@ -107,7 +111,7 @@ namespace UnitySlippyMap.Layers
 		{
 			// create the tile template if needed
 			if (tileTemplate == null) {
-				tileTemplate = Tile.CreateTileTemplate ();
+				tileTemplate = TileBehaviour.CreateTileTemplate ();
 				tileTemplate.hideFlags = HideFlags.HideAndDontSave;
 				tileTemplate.renderer.enabled = false;
 			}
@@ -133,13 +137,6 @@ namespace UnitySlippyMap.Layers
 			// destroy the tile template if nobody is using anymore
 			if (tileTemplate != null && tileTemplateUseCount == 0)
 				DestroyImmediate (tileTemplate);
-		}
-
-		/// <summary>
-		/// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
-		/// </summary>
-		private void Update ()
-		{
 		}
 	
 	#endregion
@@ -168,7 +165,7 @@ namespace UnitySlippyMap.Layers
 			// move the tiles by the map's root translation
 			Vector3 displacement = Map.gameObject.transform.position;
 			if (displacement != Vector3.zero) {
-				foreach (KeyValuePair<string, Tile> tile in tiles) {
+				foreach (KeyValuePair<string, TileBehaviour> tile in tiles) {
 					tile.Value.transform.position += displacement;
 				}
 			}
@@ -208,10 +205,10 @@ namespace UnitySlippyMap.Layers
 		/// <param name="tileY">Tile y.</param>
 		private bool CheckTileExistence (int tileRoundedZoom, int tileX, int tileY)
 		{
-			string key = Tile.GetTileKey (tileRoundedZoom, tileX, tileY);
+			string key = TileBehaviour.GetTileKey (tileRoundedZoom, tileX, tileY);
 			if (!tiles.ContainsKey (key))
 				return true; // the tile is out of the frustum
-			Tile tile = tiles [key];
+			TileBehaviour tile = tiles [key];
 			Renderer r = tile.renderer;
 			return r.enabled && r.material.mainTexture != null && !tile.Showing;
 		}
@@ -260,8 +257,8 @@ namespace UnitySlippyMap.Layers
 		private void CleanUpTiles (Plane[] frustum, int roundedZoom)
 		{
 			List<string> tilesToRemove = new List<string> ();
-			foreach (KeyValuePair<string, Tile> pair in tiles) {
-				Tile tile = pair.Value;
+			foreach (KeyValuePair<string, TileBehaviour> pair in tiles) {
+				TileBehaviour tile = pair.Value;
 				string tileKey = pair.Key;
 
 				string[] tileAddressTokens = tileKey.Split ('_');
@@ -284,7 +281,7 @@ namespace UnitySlippyMap.Layers
 			}
 
 			foreach (string tileAddress in tilesToRemove) {
-				Tile tile = tiles [tileAddress];
+				TileBehaviour tile = tiles [tileAddress];
 
 				Renderer renderer = tile.renderer;
 				if (renderer != null) {
@@ -338,10 +335,10 @@ namespace UnitySlippyMap.Layers
 				else if (tileX >= tileCountOnX)
 					tileX -= tileCountOnX;
 
-				string tileAddress = Tile.GetTileKey (Map.RoundedZoom, tileX, tileY);
+				string tileAddress = TileBehaviour.GetTileKey (Map.RoundedZoom, tileX, tileY);
 				//Debug.Log("DEBUG: tile address: " + tileAddress);
 				if (tiles.ContainsKey (tileAddress) == false) {
-					Tile tile = null;
+					TileBehaviour tile = null;
 					if (tileCache.Count > 0) {
 						tile = tileCache [0];
 						tileCache.Remove (tile);
@@ -349,7 +346,7 @@ namespace UnitySlippyMap.Layers
 						tile.transform.localScale = new Vector3 (Map.RoundedHalfMapScale, 1.0f, Map.RoundedHalfMapScale);
 						//tile.gameObject.active = this.gameObject.active;
 					} else {
-						tile = (GameObject.Instantiate (tileTemplate.gameObject) as GameObject).GetComponent<Tile> ();
+						tile = (GameObject.Instantiate (tileTemplate.gameObject) as GameObject).GetComponent<TileBehaviour> ();
 						tile.transform.parent = this.gameObject.transform;
 					}
 				
@@ -416,7 +413,7 @@ namespace UnitySlippyMap.Layers
 		/// <param name='tile'>
 		/// Tile.
 		/// </param>
-		protected abstract void RequestTile (int tileX, int tileY, int roundedZoom, Tile tile);
+		protected abstract void RequestTile (int tileX, int tileY, int roundedZoom, TileBehaviour tile);
 	
 		/// <summary>
 		/// Cancels the request for the tile's texture.

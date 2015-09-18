@@ -19,18 +19,20 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//#define DEBUG_LOG
 using System;
 
 using UnityEngine;
 
+using UnitySlippyMap.Map;
+using UnitySlippyMap.Helpers;
+
 namespace UnitySlippyMap.Layers
 {
 
-// <summary>
-// An class representing an MBTiles tile layer.
-// </summary>
-	public class MBTilesLayer : DBTileLayer
+	/// <summary>
+	/// A class representing an MBTiles tile layer.
+	/// </summary>
+	public class MBTilesLayerBehaviour : DBTileLayerBehaviour
 	{
 	#region Private members & properties
 
@@ -383,7 +385,7 @@ namespace UnitySlippyMap.Layers
 		/// <param name="tileY">Tile y.</param>
 		/// <param name="roundedZoom">Rounded zoom.</param>
 		/// <param name="tile">Tile.</param>
-		protected override void RequestTile (int tileX, int tileY, int roundedZoom, Tile tile)
+		protected override void RequestTile (int tileX, int tileY, int roundedZoom, TileBehaviour tile)
 		{
 			if (db == null) {
 				throw new NullReferenceException ("db");

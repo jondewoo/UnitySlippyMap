@@ -18,19 +18,21 @@
 // 
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 using System;
+using System.IO;
 
 using UnityEngine;
 
-using System.IO;
+using UnitySlippyMap.Helpers;
 
 namespace UnitySlippyMap.Layers
 {
 
 	/// <summary>
-	/// A class representing an Open Street Map tile layer.
+	/// A class representing an OpenStreetMap tile layer.
 	/// </summary>
-	public class OSMTileLayer : WebTileLayer
+	public class OSMTileLayer : WebTileLayerBehaviour
 	{
 	#region Private members & properties
 	
@@ -101,7 +103,7 @@ namespace UnitySlippyMap.Layers
     #region TileLayer implementation
 
 		/// <summary>
-		/// Gets the tile count per axis. See <see cref="UnitySlippyMap.Layers.TileLayer.GetTileCountPerAxis"/>.
+		/// Gets the tile count per axis. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetTileCountPerAxis"/>.
 		/// </summary>
 		/// <param name="tileCountOnX">Tile count on x.</param>
 		/// <param name="tileCountOnY">Tile count on y.</param>
@@ -111,7 +113,7 @@ namespace UnitySlippyMap.Layers
 		}
 	
 		/// <summary>
-		/// Gets the center tile. See <see cref="UnitySlippyMap.Layers.TileLayer.GetCenterTile"/>.
+		/// Gets the center tile. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetCenterTile"/>.
 		/// </summary>
 		/// <param name="tileCountOnX">Tile count on x.</param>
 		/// <param name="tileCountOnY">Tile count on y.</param>
@@ -132,7 +134,7 @@ namespace UnitySlippyMap.Layers
 		}
 	
 		/// <summary>
-		/// Gets a neighbour tile. See <see cref="UnitySlippyMap.Layers.TileLayer.GetNeighbourTile"/>.
+		/// Gets a neighbour tile. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetNeighbourTile"/>.
 		/// </summary>
 		/// <returns><c>true</c>, if neighbour tile was gotten, <c>false</c> otherwise.</returns>
 		/// <param name="tileX">Tile x.</param>
@@ -201,7 +203,7 @@ namespace UnitySlippyMap.Layers
 	#region WebTileLayer implementation
 	
 		/// <summary>
-		/// Gets a tile URL. See <see cref="UnitySlippyMap.Layers.WebTileLayer.GetTileURL"/>.
+		/// Gets a tile URL. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetTileURL"/>.
 		/// </summary>
 		/// <returns>The tile URL.</returns>
 		/// <param name="tileX">Tile x.</param>

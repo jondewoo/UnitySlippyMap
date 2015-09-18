@@ -18,7 +18,6 @@
 // 
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-using UnityEngine;
 
 using System;
 using System.Collections.Generic;
@@ -27,93 +26,101 @@ using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using ProjNet.Converters.WellKnownText;
 
+using UnityEngine;
+
 using UnitySlippyMap.Markers;
 using UnitySlippyMap.Layers;
 using UnitySlippyMap.GUI;
 using UnitySlippyMap.Input;
+using UnitySlippyMap.Helpers;
 
-
-// <summary>
-// The Map class is a singleton handling layers and markers.
-// Tiles are GameObjects (simple planes) parented to their layer's GameObject, in turn parented to the map's GameObject.
-// Markers are empty GameObjects parented to the map's GameObject.
-// The parenting is used to position the tiles and markers in a local referential using the map's center as origin.
-// </summary>
-// <example>
-// using UnityEngine;
-//
-// using System;
-//
-// using UnitySlippyMap;
-//
-// public class TestMap : MonoBehaviour
-// {
-//	 private Map		map;
-//	
-//	 public Texture	MarkerTexture;
-//	
-//	 void Start()
-//	 {
-//		 // create the map singleton
-//		 map = Map.Instance;
-//		
-//		 // 9 rue Gentil, Lyon, France
-//		 map.CenterWGS84 = new double[2] { 4.83527, 45.76487 };
-//		 map.UseLocation = true;
-//		 map.InputsEnabled = true;
-//				
-//		 // create a test layer
-//		 TileLayer layer = map.CreateLayer<OSMTileLayer>("test tile layer");
-//		 layer.URLFormat = "http://a.tile.openstreetmap.org/{0}/{1}/{2}.png";
-//		
-//		 // create some test 2D markers
-//		 GameObject go = Tile.CreateTileTemplate();
-//		 go.renderer.material.mainTexture = MarkerTexture;
-//		 go.renderer.material.renderQueue = 4000;
-//		
-//		 GameObject markerGO;
-//		 markerGO = Instantiate(go) as GameObject;
-//		 map.CreateMarker<Marker>("test marker - 9 rue Gentil, Lyon", new double[2] { 4.83527, 45.76487 }, markerGO);
-//		
-//		 markerGO = Instantiate(go) as GameObject;
-//		 map.CreateMarker<Marker>("test marker - 31 rue de la Bourse, Lyon", new double[2] { 4.83699, 45.76535 }, markerGO);
-//		
-//		 markerGO = Instantiate(go) as GameObject;
-//		 map.CreateMarker<Marker>("test marker - 1 place St Nizier, Lyon", new double[2] { 4.83295, 45.76468 }, markerGO);
-//
-//		 DestroyImmediate(go);
-//	 }
-//	
-//	 void OnApplicationQuit()
-//	 {
-//		 map = null;
-//	 }
-// }
-// </example>
-
-namespace UnitySlippyMap
+namespace UnitySlippyMap.Map
 {
-	public class Map : MonoBehaviour
+	/// <summary>
+	/// The MapBehaviour class is a singleton handling layers and markers.
+	/// Tiles are GameObjects (simple planes) parented to their layer's GameObject, in turn parented to the map's GameObject.
+	/// Markers are empty GameObjects parented to the map's GameObject.
+	/// The parenting is used to position the tiles and markers in a local referential using the map's center as origin.
+	/// 
+	/// Below is a basic example of how to create a map with a single OSM layer a few markers.
+	/// </summary>
+	/// <code>
+	/// 
+	///		using UnityEngine;
+	///
+	///		using System;
+	///
+	///		using UnitySlippyMap.Map;
+	///		using UnitySlippyMap.Layers;
+	///		using UnitySlippyMap.Markers;
+	///
+	/// 	public class TestMap : MonoBehaviour
+	/// 	{
+	///	 		private MapBehaviour map;
+	///	
+	///	 		public Texture	MarkerTexture;
+	///	
+	///	 		void Start()
+	///	 		{
+	///		 		// create the map singleton
+	///		 		map = MapBehaviour.Instance;
+	///		
+	///				// 9 rue Gentil, Lyon, France
+	///				map.CenterWGS84 = new double[2] { 4.83527, 45.76487 };
+	///				map.UsesLocation = true;
+	///				map.InputsEnabled = true;
+	///
+	///				// create a test layer
+	///				TileLayerBehaviour layer = map.CreateLayer<OSMTileLayerBehaviour>("test tile layer");
+	///				layer.URLFormat = "http://a.tile.openstreetmap.org/{0}/{1}/{2}.png";
+	///
+	///				// create some test 2D markers
+	///				GameObject go = TileBehaviour.CreateTileTemplate();
+	///				go.renderer.material.mainTexture = MarkerTexture;
+	///				go.renderer.material.renderQueue = 4000;
+	///
+	///				GameObject markerGO;
+	///				markerGO = Instantiate(go) as GameObject;
+	///				map.CreateMarker<MarkerBehaviour>("test marker #1 - 9 rue Gentil, Lyon", new double[2] { 4.83527, 45.76487 }, markerGO);
+	///		
+	///				markerGO = Instantiate(go) as GameObject;
+	///				map.CreateMarker<MarkerBehaviour>("test marker #2 - 31 rue de la Bourse, Lyon", new double[2] { 4.83699, 45.76535 }, markerGO);
+	///		
+	///				markerGO = Instantiate(go) as GameObject;
+	///				map.CreateMarker<MarkerBehaviour>("test marker #3 - 1 place St Nizier, Lyon", new double[2] { 4.83295, 45.76468 }, markerGO);
+	///
+	///				DestroyImmediate(go);
+	/// 
+	///			}
+	///	
+	///			void OnApplicationQuit()
+	///			{
+	///				map = null;
+	///			}
+	///		}
+	///
+	/// </code>
+	public class MapBehaviour : MonoBehaviour
 	{
 	#region Singleton stuff
 
 		/// <summary>
 		/// The instance.
 		/// </summary>
-		private static Map instance = null;
+		private static MapBehaviour instance = null;
 
 		/// <summary>
 		/// Gets the instance.
 		/// </summary>
-		/// <value>The instance of the <see cref="UnitySlippyMap.Map"/> singleton.</value>
-		public static Map Instance {
+		/// <value>The instance of the <see cref="UnitySlippyMap.Map.MapBehaviour"/> singleton.</value>
+		public static MapBehaviour Instance {
 			get {
 				if (null == (object)instance) {
-					instance = FindObjectOfType (typeof(Map)) as Map;
+					instance = FindObjectOfType (typeof(MapBehaviour)) as MapBehaviour;
 					if (null == (object)instance) {
 						var go = new GameObject ("[Map]");
 						//go.hideFlags = HideFlags.HideAndDontSave;
-						instance = go.AddComponent<Map> ();
+						instance = go.AddComponent<MapBehaviour> ();
 						instance.EnsureMap ();
 					}
 				}
@@ -130,9 +137,9 @@ namespace UnitySlippyMap
 		}
 	
 		/// <summary>
-		/// Initializes a new instance of the <see cref="UnitySlippyMap.Map"/> class.
+		/// Initializes a new instance of the <see cref="UnitySlippyMap.Map.MapBehaviour"/> class.
 		/// </summary>
-		private Map ()
+		private MapBehaviour ()
 		{
 		}
 
@@ -194,7 +201,7 @@ namespace UnitySlippyMap
 		/// </summary>
 		/// <value>
 		/// When set, the map is refreshed and the <see cref="UnitySlippyMap.Map.CenterEPSG900913">center
-		/// coordinates of the map in the EPSG 900913 coordinate system</see> are also updated.
+		/// coordinates of the map in the EPSG 900913 coordinate system</see> are updated.
 		/// </value>
 		public double[] CenterWGS84 {
 			get { return centerWGS84; }
@@ -501,11 +508,11 @@ namespace UnitySlippyMap
 		/// <summary>
 		/// The "uses location" flag.
 		/// </summary>
-		/// <value>It indicates whether this <see cref="UnitySlippyMap.Map"/> uses the host's location.</value>
+		/// <value>It indicates whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> uses the host's location.</value>
 		private bool usesLocation = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> uses the host's location.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> uses the host's location.
 		/// </summary>
 		/// <value><c>true</c> if uses location; otherwise, <c>false</c>.</value>
 		public bool UsesLocation {
@@ -542,7 +549,7 @@ namespace UnitySlippyMap
 		private bool updatesCenterWithLocation = true;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> updates its center with the host's location.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> updates its center with the host's location.
 		/// </summary>
 		/// <value>
 		/// <c>true</c> if update center with location; otherwise, <c>false</c>.
@@ -564,7 +571,7 @@ namespace UnitySlippyMap
 		private bool usesOrientation = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> uses the host's orientation.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> uses the host's orientation.
 		/// </summary>
 		/// <value><c>true</c> if use orientation; otherwise, <c>false</c>.</value>
 		public bool UsesOrientation {
@@ -609,7 +616,7 @@ namespace UnitySlippyMap
 		private bool cameraFollowsOrientation = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/>'s camera follows the host's orientation.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/>'s camera follows the host's orientation.
 		/// </summary>
 		/// <value>
 		/// <c>true</c> if the camera follows the host's orientation; otherwise, <c>false</c>.
@@ -631,13 +638,13 @@ namespace UnitySlippyMap
 		/// <summary>
 		/// The list of <see cref="UnitySlippyMap.Marker"/> instances.
 		/// </summary>
-		private List<Marker> markers = new List<Marker> ();
+		private List<MarkerBehaviour> markers = new List<MarkerBehaviour> ();
 
 		/// <summary>
 		/// Gets the list of markers.
 		/// </summary>
 		/// <value>The list of <see cref="UnitySlippyMap.Marker"/> instances.</value>
-		public List<Marker> Markers { get { return markers; } }
+		public List<MarkerBehaviour> Markers { get { return markers; } }
 
 		/// <summary>
 		/// The "shows GUI controls" flag.
@@ -645,7 +652,7 @@ namespace UnitySlippyMap
 		private bool showsGUIControls = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> shows GUI controls.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> shows GUI controls.
 		/// </summary>
 		/// <value><c>true</c> if show GUI controls; otherwise, <c>false</c>.</value>
 		public bool ShowsGUIControls
@@ -660,7 +667,7 @@ namespace UnitySlippyMap
 		private bool inputsEnabled = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> inputs are enabled.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> inputs are enabled.
 		/// </summary>
 		/// <value>
 		/// <c>true</c> if inputs enabled; otherwise, <c>false</c>.
@@ -675,12 +682,12 @@ namespace UnitySlippyMap
 		/// <summary>
 		/// The location marker.
 		/// </summary>
-		private LocationMarker locationMarker;
+		private LocationMarkerBehaviour locationMarker;
 
 		/// <summary>
 		/// The list of <see cref="UnitySlippyMap.Layer"/> instances.
 		/// </summary>
-		private List<Layer> layers = new List<Layer> ();
+		private List<LayerBehaviour> layers = new List<LayerBehaviour> ();
 	
 		/// <summary>
 		/// The "has moved" flag.
@@ -688,7 +695,7 @@ namespace UnitySlippyMap
 		private bool hasMoved = false;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map"/> has moved.
+		/// Gets or sets a value indicating whether this <see cref="UnitySlippyMap.Map.MapBehaviour"/> has moved.
 		/// </summary>
 		/// <value>
 		/// <c>true</c> if this instance has moved; otherwise, <c>false</c>.
@@ -863,7 +870,7 @@ namespace UnitySlippyMap
 		}
 
 		/// <summary>
-		/// Updates the <see cref="UnitySlippyMap.Map"/> instance.
+		/// Updates the internals of the <see cref="UnitySlippyMap.Map.MapBehaviour"/> instance.
 		/// </summary>
 		private void UpdateInternals ()
 		{
@@ -946,7 +953,19 @@ namespace UnitySlippyMap
 		}
 
 		/// <summary>
-		/// Raises the Update event.
+		/// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
+		/// During an update cycle:
+		/// * The map may use the host's location to update its center (see <see cref="UnitySlippyMap.Map.MapBehaviour.UsesLocation"/>
+		/// for more information).
+		/// * It will then update the location marker accordingly if set (see <see cref="UnitySlippyMap.Map.MapBehaviour.SetLocationMarker<T>"/>
+		/// for more information).
+		/// * The camera may be rotated to follow the host's orientation (see <see cref="UnitySlippyMap.Map.MapBehaviour.UsesOrientation"/>
+		/// for more information).
+		/// * If the map has moved (see <see cref="UnitySlippyMap.Map.MapBehaviour.HasMoved"/> for more information) since the last update cycle,
+		/// all tile downloading jobs are paused temporarily until the next update cycle when the map won't have moved.
+		/// * If the map has moved (see <see cref="UnitySlippyMap.Map.MapBehaviour.HasMoved"/> for more information) and is dirty
+		/// (see <see cref="UnitySlippyMap.Map.MapBehaviour.IsDirty"/> for more information), all markers and layers are updated
+		/// and the GameObject supporting the map behaviour is repositioned to the center of the world (Vector3.Zero).
 		/// </summary>
 		private void Update ()
 		{
@@ -1045,9 +1064,9 @@ namespace UnitySlippyMap
 		
 			// pause the loading operations when moving
 			if (hasMoved == true) {
-				TileDownloader.Instance.PauseAll ();
+				TileDownloaderBehaviour.Instance.PauseAll ();
 			} else {
-				TileDownloader.Instance.UnpauseAll ();
+				TileDownloaderBehaviour.Instance.UnpauseAll ();
 			}
 			
 			// update the tiles if needed
@@ -1066,7 +1085,7 @@ namespace UnitySlippyMap
 #endif
 					locationMarker.UpdateMarker ();
 			
-				foreach (Layer layer in layers) {	
+				foreach (LayerBehaviour layer in layers) {	
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				if (layer.gameObject.active == true
 #else
@@ -1078,7 +1097,7 @@ namespace UnitySlippyMap
 						layer.UpdateContent ();
 				}
 			
-				foreach (Marker marker in markers) {
+				foreach (MarkerBehaviour marker in markers) {
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
 				if (marker.gameObject.active == true
 #else
@@ -1096,8 +1115,6 @@ namespace UnitySlippyMap
 #endif
 			}
 		
-			// TODO: pause the TileDownloader when moving
-		
 			// reset the deferred update flag
 			hasMoved = false;
 						
@@ -1108,7 +1125,7 @@ namespace UnitySlippyMap
 	
 	#endregion
 	
-	#region Map methods
+	#region MapBehaviour methods
 	
 		/// <summary>
 		/// Centers the map on the location of the host.
@@ -1131,7 +1148,7 @@ namespace UnitySlippyMap
 		/// <returns>The location marker.</returns>
 		/// <param name="locationGo">The GameObject instance.</param>
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public T SetLocationMarker<T> (GameObject locationGo) where T : LocationMarker
+		public T SetLocationMarker<T> (GameObject locationGo) where T : LocationMarkerBehaviour
 		{
 			return SetLocationMarker<T> (locationGo, null);
 		}
@@ -1143,7 +1160,7 @@ namespace UnitySlippyMap
 		/// <param name="locationGo">The location GameObject instance.</param>
 		/// <param name="orientationGo">The orientation GameObject instance.</param>
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public T SetLocationMarker<T> (GameObject locationGo, GameObject orientationGo) where T : LocationMarker
+		public T SetLocationMarker<T> (GameObject locationGo, GameObject orientationGo) where T : LocationMarkerBehaviour
 		{
 			// create a GameObject and add the templated Marker component to it
 			GameObject markerObject = new GameObject ("[location marker]");
@@ -1189,7 +1206,7 @@ namespace UnitySlippyMap
 		/// <returns>The layer.</returns>
 		/// <param name="name">The layer's name.</param>
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public T CreateLayer<T> (string name) where T : Layer
+		public T CreateLayer<T> (string name) where T : LayerBehaviour
 		{
 			// create a GameObject as the root of the layer and add the templated Layer component to it
 			GameObject layerRoot = new GameObject (name);
@@ -1221,7 +1238,7 @@ namespace UnitySlippyMap
 		/// <param name="coordinatesWGS84">Coordinates WG s84.</param>
 		/// <param name="go">Go.</param>
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public T CreateMarker<T> (string name, double[] coordinatesWGS84, GameObject go) where T : Marker
+		public T CreateMarker<T> (string name, double[] coordinatesWGS84, GameObject go) where T : MarkerBehaviour
 		{
 			// create a GameObject and add the templated Marker component to it
 			GameObject markerObject = new GameObject (name);
@@ -1259,7 +1276,7 @@ namespace UnitySlippyMap
 		/// Is thrown when an argument passed to a method is invalid because it is outside the allowable range of values as
 		/// specified by the method.
 		/// </exception>
-		public void RemoveMarker (Marker m)
+		public void RemoveMarker (MarkerBehaviour m)
 		{
 			if (m == null)
 				throw new ArgumentNullException ("m");

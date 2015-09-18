@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  VirtualEarthTileLayer.cs
 //  
 //  Author:
@@ -19,25 +19,25 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_LOG
 using System;
 using System.IO;
 using System.Xml.Serialization;
+using System.Globalization;
+
+using Microsoft.MapPoint;
 
 using UnityEngine;
 
-using System.Globalization;
-using Microsoft.MapPoint;
+using UnitySlippyMap.Helpers;
 
 namespace UnitySlippyMap.Layers
 {
-
 	/// <summary>
 	/// A class representing a VirtualEarth tile layer.
 	/// See <see cref="http://msdn.microsoft.com/en-us/library/ff701712.aspx" />.
 	/// See <see cref="http://msdn.microsoft.com/en-us/library/ff701716.aspx" />.
 	/// </summary>
-	public class VirtualEarthTileLayer : WebTileLayer
+	public class VirtualEarthTileLayerBehaviour : WebTileLayerBehaviour
 	{
 
     #region Private members & properties
@@ -241,7 +241,7 @@ namespace UnitySlippyMap.Layers
     #region TileLayer implementation
 
 		/// <summary>
-		/// Gets the numbers of tiles on each axis in respect to the map's zoom level. See <see cref="UnitySlippyMap.Layers.TileLayer.GetTileCountPerAxis"/>.
+		/// Gets the numbers of tiles on each axis in respect to the map's zoom level. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetTileCountPerAxis"/>.
 		/// </summary>
 		/// <param name="tileCountOnX">Tile count on x.</param>
 		/// <param name="tileCountOnY">Tile count on y.</param>
@@ -251,7 +251,7 @@ namespace UnitySlippyMap.Layers
 		}
 
 		/// <summary>
-		/// Gets the tile coordinates and offsets to the origin for the tile under the center of the map. See <see cref="UnitySlippyMap.Layers.TileLayer.GetCenterTile"/>.
+		/// Gets the tile coordinates and offsets to the origin for the tile under the center of the map. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetCenterTile"/>.
 		/// </summary>
 		/// <param name="tileCountOnX">Tile count on x.</param>
 		/// <param name="tileCountOnY">Tile count on y.</param>
@@ -263,7 +263,7 @@ namespace UnitySlippyMap.Layers
 		{
 			int[] tileCoordinates = GeoHelpers.WGS84ToTile (Map.CenterWGS84 [0], Map.CenterWGS84 [1], Map.RoundedZoom);
 			double[] centerTile = GeoHelpers.TileToWGS84 (tileCoordinates [0], tileCoordinates [1], Map.RoundedZoom);
-			double[] centerTileMeters = Map.WGS84ToEPSG900913Transform.Transform (centerTile); //GeoHelpers.WGS84ToMeters(centerTile[0], centerTile[1]);
+			double[] centerTileMeters = Map.WGS84ToEPSG900913Transform.Transform (centerTile);
 
 			tileX = tileCoordinates [0];
 			tileY = tileCoordinates [1];
@@ -272,7 +272,7 @@ namespace UnitySlippyMap.Layers
 		}
 
 		/// <summary>
-		/// Gets the tile coordinates and offsets to the origin for the neighbour tile in the specified direction. See <see cref="UnitySlippyMap.Layers.TileLayer.GetNeighbourTile"/>.
+		/// Gets the tile coordinates and offsets to the origin for the neighbour tile in the specified direction. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetNeighbourTile"/>.
 		/// </summary>
 		/// <returns><c>true</c>, if neighbour tile was gotten, <c>false</c> otherwise.</returns>
 		/// <param name="tileX">Tile x.</param>
@@ -341,7 +341,7 @@ namespace UnitySlippyMap.Layers
 	#region WebTileLayer implementation
 	
 		/// <summary>
-		/// Gets the tile URL. See <see cref="UnitySlippyMap.Layers.WebTileLayer.GetTileURL"/>.
+		/// Gets the tile URL. See <see cref="UnitySlippyMap.Layers.TileLayerBehaviour.GetTileURL"/>.
 		/// </summary>
 		/// <returns>The tile URL.</returns>
 		/// <param name="tileX">Tile x.</param>

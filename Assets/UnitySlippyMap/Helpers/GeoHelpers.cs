@@ -20,10 +20,13 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-using UnityEngine;
 using System;
 
-namespace UnitySlippyMap
+using UnityEngine;
+
+using UnitySlippyMap.Map;
+
+namespace UnitySlippyMap.Helpers
 {
 	/// <summary>
 	/// Helper class ported mostly from: http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/
@@ -119,9 +122,9 @@ namespace UnitySlippyMap
 		/// Returns WGS84 given a RaycastHit and Map instance.
 		/// </summary>
 		/// <returns>The WGS84 coordinates of the point hit.</returns>
-		/// <param name="map"><see cref="UnitySlippyMap.Map"/> instance.</param>
+		/// <param name="map"><see cref="UnitySlippyMap.Map.MapBehaviour"/> instance.</param>
 		/// <param name="r">The red component.</param>
-		public static double[] RaycastHitToWGS84(Map map, RaycastHit r)
+		public static double[] RaycastHitToWGS84(MapBehaviour map, RaycastHit r)
 		{
 			double[] RaycastHitToEPSG900913 = new double[]{(map.CenterEPSG900913[0]) + (r.point.x/map.ScaleMultiplier) , (map.CenterEPSG900913[1]) + (r.point.z/map.ScaleMultiplier)};
 			return map.EPSG900913ToWGS84Transform.Transform(RaycastHitToEPSG900913);
