@@ -272,7 +272,7 @@ namespace UnitySlippyMap.Map
 			};
 			
 			// add a material
-			string shaderName = "Somian/Unlit/Transparent";
+			string shaderName = "Larku/UnlitTransparent";
 			Shader shader = Shader.Find (shaderName);
 			
 #if DEBUG_LOG
@@ -293,11 +293,11 @@ namespace UnitySlippyMap.Map
 		/// <param name="texture">Texture.</param>
 		public void SetTexture (Texture2D texture)
 		{
-			material = this.gameObject.renderer.material;
+			material = this.gameObject.GetComponent<Renderer>().material;
 			material.mainTexture = texture;
 			material.mainTexture.wrapMode = TextureWrapMode.Clamp;
 			material.mainTexture.filterMode = FilterMode.Trilinear;
-			this.renderer.enabled = true;
+			this.GetComponent<Renderer>().enabled = true;
 			this.Show ();
 		}
 
