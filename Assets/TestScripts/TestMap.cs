@@ -19,6 +19,8 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// #define DEBUG_LOG
+
 using UnityEngine;
 
 using System;
@@ -53,7 +55,9 @@ public class TestMap : MonoBehaviour
 
     private List<LayerBehaviour> layers;
     private int     currentLayerIndex = 0;
-	
+
+    private string utfGridJsonString = "";
+
 	bool Toolbar(MapBehaviour map)
 	{
 		GUI.matrix = Matrix4x4.Scale(new Vector3(guiXScale, guiXScale, 1.0f));
@@ -148,8 +152,13 @@ public class TestMap : MonoBehaviour
 		GUILayout.EndHorizontal();
 					
 		GUILayout.EndArea();
-		
+
+        // Show any mbtiles utf string under the mouse position
+        if (!string.IsNullOrEmpty(utfGridJsonString))
+            GUILayout.Label(utfGridJsonString);
+
 		return pressed;
+
 	}
 	
 	private
@@ -219,7 +228,8 @@ public class TestMap : MonoBehaviour
 		bool error = false;
 		// on iOS, you need to add the db file to the Xcode project using a directory reference
 		string mbTilesDir = "MBTiles/";
-		string filename = "UnitySlippyMap_World_0_8.mbtiles";
+		//string filename = "UnitySlippyMap_World_0_8.mbtiles";
+        string filename = "CountryMapWithUTfData.mbtiles";
 		string filepath = null;
 		if (Application.platform == RuntimePlatform.IPhonePlayer)
 		{
@@ -279,8 +289,8 @@ public class TestMap : MonoBehaviour
 
         // create some test 2D markers
 		GameObject go = TileBehaviour.CreateTileTemplate(TileBehaviour.AnchorPoint.BottomCenter).gameObject;
-		go.renderer.material.mainTexture = MarkerTexture;
-		go.renderer.material.renderQueue = 4001;
+		go.GetComponent<Renderer>().material.mainTexture = MarkerTexture;
+		go.GetComponent<Renderer>().material.renderQueue = 4001;
 		go.transform.localScale = new Vector3(0.70588235294118f, 1.0f, 1.0f);
 		go.transform.localScale /= 7.0f;
         go.AddComponent<CameraFacingBillboard>().Axis = Vector3.up;
@@ -299,8 +309,8 @@ public class TestMap : MonoBehaviour
 		
 		// create the location marker
 		go = TileBehaviour.CreateTileTemplate().gameObject;
-		go.renderer.material.mainTexture = LocationTexture;
-		go.renderer.material.renderQueue = 4000;
+		go.GetComponent<Renderer>().material.mainTexture = LocationTexture;
+		go.GetComponent<Renderer>().material.renderQueue = 4000;
 		go.transform.localScale /= 27.0f;
 		
 		markerGO = Instantiate(go) as GameObject;
@@ -335,6 +345,12 @@ public class TestMap : MonoBehaviour
 			
 			map.HasMoved = true;
 		}
+
+        // if (Input.GetMouseButtonDown(0))
+        foreach (LayerBehaviour _lb in layers)
+            if (_lb.GetType() == typeof(MBTilesLayerBehaviour))
+                utfGridJsonString = ((MBTilesLayerBehaviour)_lb).UtfGridJsonString();
+
 	}
 	
 #if DEBUG_PROFILE
