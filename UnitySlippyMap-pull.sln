@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{CBEC351E-E359-2AE7-B2DA-4F9EC47A0A60}") = "UnitySlippyMap-pull", "Assembly-CSharp.csproj", "{3F277028-8655-7DA6-E8E6-C3789C8219FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F277028-8655-7DA6-E8E6-C3789C8219FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F277028-8655-7DA6-E8E6-C3789C8219FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F277028-8655-7DA6-E8E6-C3789C8219FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F277028-8655-7DA6-E8E6-C3789C8219FE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal
