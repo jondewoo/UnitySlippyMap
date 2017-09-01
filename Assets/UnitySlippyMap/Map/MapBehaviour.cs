@@ -347,14 +347,14 @@ namespace UnitySlippyMap.Map
 		/// <value>
 		/// This is the mininum zoom value for the map.
 		/// Inferior zoom values are clamped when setting the <see cref="UnitySlippyMap.Map.CurrentZoom"/>.
-		/// Additionally, values are always clamped between 3 and 18.
+		/// Additionally, values are always clamped between 3 and 19.
 		/// </value>
 		public float MinZoom {
 			get { return minZoom; }
 			set {
 				if (value < 3.0f
-					|| value > 18.0f) {
-					minZoom = Mathf.Clamp (value, 3.0f, 18.0f);
+					|| value > 19.0f) {
+					minZoom = Mathf.Clamp (value, 3.0f, 19.0f);
 				} else {		
 					minZoom = value;
 				}
@@ -371,7 +371,7 @@ namespace UnitySlippyMap.Map
 		/// <summary>
 		/// The maximum zoom level for this map.
 		/// </summary>
-		private float maxZoom = 18.0f;
+		private float maxZoom = 19.0f;
 
 		/// <summary>
 		/// Gets or sets the maximum zoom.
@@ -379,14 +379,14 @@ namespace UnitySlippyMap.Map
 		/// <value>
 		/// This is the maximum zoom value for the map.
 		/// Superior zoom values are clamped when setting the <see cref="UnitySlippyMap.Map.CurrentZoom"/>.
-		/// Additionally, values are always clamped between 3 and 18.
+		/// Additionally, values are always clamped between 3 and 19.
 		/// </value>
 		public float MaxZoom {
 			get { return maxZoom; }
 			set {
 				if (value < 3.0f
-					|| value > 18.0f) {
-					maxZoom = Mathf.Clamp (value, 3.0f, 18.0f);
+					|| value > 19.0f) {
+					maxZoom = Mathf.Clamp (value, 3.0f, 19.0f);
 				} else {		
 					maxZoom = value;
 				}

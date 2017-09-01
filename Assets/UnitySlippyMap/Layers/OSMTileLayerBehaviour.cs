@@ -100,7 +100,7 @@ namespace UnitySlippyMap.Layers
 		{
 			base.Awake ();
 			minZoom = 1;
-			maxZoom = 18;
+			maxZoom = 19;
 		}
 
     #endregion
