@@ -28,7 +28,7 @@ See the [TODO list](/jderrough/UnitySlippyMap#todo) if you want to contribute an
 License
 -------
 
-UnitySplippyMap is released under the [LGPL 3.0](http://www.gnu.org/licenses/lgpl.html).
+UnitySplippyMap is released under the [MIT License](https://opensource.org/licenses/MIT).
 
 TODO
 ----
