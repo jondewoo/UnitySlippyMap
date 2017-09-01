@@ -19,12 +19,14 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// #define DEBUG_LOG
 using System;
 
 using UnityEngine;
 
 using UnitySlippyMap.Map;
 using UnitySlippyMap.Helpers;
+using System.Collections.Generic;
 
 namespace UnitySlippyMap.Layers
 {
@@ -34,6 +36,7 @@ namespace UnitySlippyMap.Layers
 	/// </summary>
 	public class MBTilesLayerBehaviour : DBTileLayerBehaviour
 	{
+
 	#region Private members & properties
 
 		/// <summary>
@@ -277,9 +280,276 @@ namespace UnitySlippyMap.Layers
 		private void Update ()
 		{
 		}
-	
-	#endregion
-	
+
+#if DEBUG_LOG
+        void OnGUI() { GUILayout.Label("\n\n\n\n\n\n\n\n\n\n\n\n\n" + UtfString()); }      
+#endif
+    
+    #endregion
+
+    #region UTF Grid Data Methods
+
+        // - Implementation of: https://github.com/mapbox/utfgrid-spec by dan@pixelfat.com
+
+        /// <summary>
+        /// Gets utf grid data from the layer .mbtiles file representing the tile > pixel location directly below the mouse pointer.
+        /// </summary>
+        /// <value>JSON formatted string from the mbtiles file's utf grid data.</value>
+        public string UtfGridJsonString()
+        {
+
+            if (Map.CurrentZoom > maxZoom ||
+                Map.CurrentZoom < minZoom)
+                return null;
+
+            RaycastHit[] _raycastHits;
+            Ray _ray = Map.CurrentCamera.ScreenPointToRay(UnityEngine.Input.mousePosition);
+            _raycastHits = Physics.RaycastAll(_ray);
+
+            RaycastHit _tileHit = new RaycastHit();
+            bool _tileFound = false; // RaycastHit is not nullable so we need a flag to check against
+            foreach (RaycastHit _rch in _raycastHits)
+            {
+
+                // make sure it's a tile
+                if (_rch.transform.GetComponent<TileBehaviour>() != null)
+                {
+
+                    // don't bother if the renderer is off
+                    if (_rch.transform.GetComponent<MeshRenderer>().enabled == true)
+                    {
+
+                        _tileHit = _rch;
+
+                        _tileFound = true;
+
+#if DEBUG_LOG
+                        Debug.Log("Using tile: " + _tileHit.transform.name);
+#endif
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+            if (!_tileFound)
+            {
+
+#if DEBUG_LOG
+                Debug.LogWarning("No suitable tile found.");
+#endif
+                return null;
+
+            }
+
+            double[] _locWgs84 = GeoHelpers.RaycastHitToWGS84(Map, _tileHit);
+
+            // there's no sensible way to resolve _raycastHits[_hitIndex] to a tile location (z,x,y) so we'll get it here using WGS84ToTile
+            int[] _tileLoc = UnitySlippyMap.Helpers.GeoHelpers.WGS84ToTile(_locWgs84[0], -_locWgs84[1], Map.RoundedZoom);
+
+            _tileLoc = new int[3] { _tileLoc[0], _tileLoc[1], Map.RoundedZoom };
+
+            // Use the tile location to get the grid blob containing the utf keys 
+            DataTable dt;
+
+            string _query = string.Format("SELECT grid FROM grids WHERE zoom_level={0} AND tile_column={1} AND tile_row={2}", _tileLoc[2], _tileLoc[0], _tileLoc[1]);
+
+#if DEBUG_LOG
+            Debug.Log("Executing query: " + _query);
+#endif
+
+            try
+            {
+                dt = db.ExecuteQuery(_query);
+            }
+            catch (Exception e)
+            {
+
+#if DEBUG_LOG
+                Debug.LogWarning("No utf data? " + e);
+#endif
+
+                // make sure the sql shiznit can continue to be used for getting tile images
+                Close(); Open();
+
+                return null;
+
+            }
+
+            if (dt.Rows.Count == 0)
+            {
+
+#if DEBUG_LOG
+                Debug.LogWarning(String.Format("No utf grid blob data returned for tile: x={0}, y={1}, zoom={2}.", _tileLoc[2], _tileLoc[0], _tileLoc[1]));
+#endif
+
+            }
+
+            byte[] _gridBlobBytes = (byte[])dt.Rows[0]["grid"];
+
+            // decompress the bytes to a json string 
+            string _jsonString = Zip.DecompressGzipJsonBytes(_gridBlobBytes);
+
+#if DEBUG_LOG
+            Debug.Log("JSON char key string exctracted:\n" + _jsonString);
+#endif
+
+            // - NOTE: I'd prefer to use Newtonsoft.Json.dll for this and deserialise it to a class 
+            // object, but the lib is ~500KB of additional data. So, I'm using SimpleJson as it is tiny 
+            // at only 33KB and can be found here: http://wiki.unity3d.com/index.php/SimpleJSON
+            SimpleJSON.JSONNode _jsonData = SimpleJSON.JSON.Parse(_jsonString);
+
+            string _tileKey = TileBehaviour.GetTileKey(_tileLoc[2], _tileLoc[0], _tileLoc[1]);
+
+            if (!tiles.ContainsKey(_tileKey))
+            {
+
+#if DEBUG_LOG
+                Debug.LogWarning("No tile found for key: " + _tileKey);
+#endif
+                
+                return null;
+
+            }
+            else
+            {
+
+                TileBehaviour _tile = tiles[_tileKey];
+
+                int _res = _jsonData["grid"].Count;
+                int _tileSize = 256; // pixel resolution of the tile image
+
+                Vector3 _invPt = _tileHit.transform.InverseTransformPoint(_tileHit.point);
+
+                int _px = Mathf.FloorToInt(256 * (_invPt.x + 0.5f));
+                int _py = Mathf.FloorToInt(256 * (_invPt.z + 0.5f));
+
+                int _x = Mathf.FloorToInt(_px / (_tileSize / _res));
+                int _y = Mathf.FloorToInt(_py / (_tileSize / _res));
+
+                // the y order is top down, reverse it
+                _y = (_res - _y) - 1;
+                _x--;
+
+#if DEBUG_LOG
+                Debug.Log(string.Format("Finding utf data for pixel {0}, {1}...", _x, _y));
+#endif
+
+                // try to get the key from the json data
+                char _charKey;
+                try
+                {
+
+                    _charKey = ((string)_jsonData["grid"][_y])[_x];
+
+                }
+                catch (Exception e)
+                {
+
+
+#if DEBUG_LOG
+                    Debug.LogWarning(string.Format("Could not retrive char key {0}, {1} - {2}", _x, _y, e));
+#endif
+
+                    return null;
+
+                }
+
+                string _hexValue = Convert.ToInt32(_charKey).ToString("X");
+
+                //if (_charKey == ' ')
+                    //return null;
+
+                int _resolvedkey = ResolveCode(int.Parse(_hexValue, System.Globalization.NumberStyles.HexNumber));
+
+                _resolvedkey--; // ?!?
+
+                string _gridDataKey = _jsonData["keys"][_resolvedkey].ToString().Replace("\"", "");
+
+                if (_gridDataKey != null)
+                {
+
+                    _query = string.Format("SELECT key_json FROM grid_data WHERE key_name=\"{0}\" AND zoom_level={1} AND tile_column={2} AND tile_row={3}", _gridDataKey, _tileLoc[2], _tileLoc[0], _tileLoc[1]);
+
+#if DEBUG_LOG
+                    Debug.Log("Executing sql query: " + _query);
+#endif
+
+                    try
+                    {
+                        dt = db.ExecuteQuery(_query);
+                    }
+                    catch (Exception e)
+                    {
+
+#if DEBUG_LOG
+                Debug.LogWarning("Could not resolve key: " + _gridDataKey + ". - " + e);
+#endif
+
+                        // make sure the sql shiznit can continue to be used for getting tile images
+                        Close(); Open();
+
+                        return null;
+
+                    }
+
+                    if (dt.Rows.Count != 0)
+                    {
+
+                        string _returnString = (string)dt.Rows[0]["key_json"];
+
+#if DEBUG_LOG
+                        Debug.Log("Successfully retrieved json data from utf grid: " + _returnString);
+#endif
+
+                        return _returnString;
+
+                    }
+                    else
+                    {
+
+#if DEBUG_LOG
+                        Debug.LogWarning("UTF data table contained no rows.");
+#endif
+
+                        return null;
+
+                    }
+
+                }
+                else
+                {
+
+#if DEBUG_LOG
+                    Debug.LogWarning("The returned char key was null or invalid");
+#endif
+
+                    return null;
+
+                }
+
+            }
+
+        }
+
+        // See https://github.com/mapbox/utfgrid-spec/blob/master/1.0/utfgrid.md#encoding-ids
+        int ResolveCode(int key)
+        {
+
+            if (key >= 93) key--;
+            if (key >= 35) key--;
+
+            key -= 32;
+
+            return key;
+
+        }
+
+        #endregion
+
     #region TileLayer implementation
 
 		/// <summary>
@@ -288,7 +558,7 @@ namespace UnitySlippyMap.Layers
 		/// <param name="tileCountOnX">Tile count on x.</param>
 		/// <param name="tileCountOnY">Tile count on y.</param>
 		protected override void GetTileCountPerAxis (out int tileCountOnX, out int tileCountOnY)
-		{
+        {
 			tileCountOnX = tileCountOnY = (int)Mathf.Pow (2, Map.RoundedZoom);
 		}
 	
@@ -387,6 +657,7 @@ namespace UnitySlippyMap.Layers
 		/// <param name="tile">Tile.</param>
 		protected override void RequestTile (int tileX, int tileY, int roundedZoom, TileBehaviour tile)
 		{
+
 			if (db == null) {
 				throw new NullReferenceException ("db");
 			}
@@ -423,6 +694,7 @@ namespace UnitySlippyMap.Layers
 		}
 	
 	#endregion
+
 	}
 
 }
