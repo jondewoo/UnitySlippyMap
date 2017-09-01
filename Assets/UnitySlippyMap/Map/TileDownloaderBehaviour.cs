@@ -75,9 +75,7 @@ namespace UnitySlippyMap.Map
 		/// </summary>
 		private void EnsureDownloader()
 		{
-	#if !UNITY_WEBPLAYER
 			LoadTiles();
-	#endif
 		}
 	
 		/// <summary>
@@ -144,7 +142,6 @@ namespace UnitySlippyMap.Map
 		/// </summary>
 		public class TileEntry
 		{
-#if !UNITY_WEBPLAYER
 			/// <summary>
 			/// The timestamp.
 			/// </summary>
@@ -162,7 +159,6 @@ namespace UnitySlippyMap.Map
 			/// </summary>
 			[XmlAttribute("guid")]
 			public string	guid;
-#endif
 
 			/// <summary>
 			/// The URL.
@@ -182,13 +178,11 @@ namespace UnitySlippyMap.Map
 	        [XmlIgnore]
 	        public Texture2D texture;
 
-#if !UNITY_WEBPLAYER
 			/// <summary>
 			/// The cached flag.
 			/// </summary>
 	        [XmlIgnore]
 			public bool		cached = false;
-#endif
 
 			/// <summary>
 			/// The error flag.
@@ -264,8 +258,8 @@ namespace UnitySlippyMap.Map
 				string ext = Path.GetExtension(url);
 	            if (ext.Contains("?"))
 	                ext = ext.Substring(0, ext.IndexOf('?'));
-#if !UNITY_WEBPLAYER
-	            if (cached && File.Exists(Application.temporaryCachePath + "/" + this.guid + ext))
+
+                if (cached && File.Exists(Application.temporaryCachePath + "/" + this.guid + ext))
 	            {
 	                www = new WWW("file:///" + Application.temporaryCachePath + "/" + this.guid + ext);
 #if DEBUG_LOG
@@ -273,14 +267,11 @@ namespace UnitySlippyMap.Map
 #endif
             	}
             	else
-#endif
             	{
                 	www = new WWW(url);
 #if DEBUG_LOG
                 	Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from provider: url: " + www.url
-#if !UNITY_WEBPLAYER
                     	+ "(cached: " + cached + ")"
-#endif
                     	);
 #endif
 	            }
@@ -313,8 +304,8 @@ namespace UnitySlippyMap.Map
 #if DEBUG_PROFILE
 					UnitySlippyMap.Profiler.Begin("is cached?");
 #endif
-#if !UNITY_WEBPLAYER
-	                if (this.cached == false)
+
+                    if (this.cached == false)
 					{
 #if DEBUG_PROFILE
 						UnitySlippyMap.Profiler.End("is cached?");
@@ -356,7 +347,6 @@ namespace UnitySlippyMap.Map
 					}
 
 					this.timestamp = (DateTime.Now - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
-#endif
 
 #if DEBUG_PROFILE
 					UnitySlippyMap.Profiler.Begin("Tile.SetTexture");
@@ -382,7 +372,6 @@ namespace UnitySlippyMap.Map
 #endif
 			}
 		
-#if !UNITY_WEBPLAYER
 			/// <summary>
 			/// The callback called at the end of the writing operation.
 			/// </summary>
@@ -401,7 +390,6 @@ namespace UnitySlippyMap.Map
 				Debug.Log("DEBUG: TileEntry.EndWriteCallback: done writing: " + info.Entry.url + " [" + info.Entry.guid + "]");
 #endif
 			}
-#endif
 		}
 	
 	#endregion
@@ -435,7 +423,6 @@ namespace UnitySlippyMap.Map
 		/// </summary>
 		private List<TileEntry>	tilesLoading = new List<TileEntry>();
 
-#if !UNITY_WEBPLAYER
 		/// <summary>
 		/// The tiles.
 		/// </summary>
@@ -445,7 +432,6 @@ namespace UnitySlippyMap.Map
 		/// The tile path.
 		/// </summary>
     	private string tilePath;
-#endif
 	
 		/// <summary>
 		/// The max simultaneous downloads.
@@ -458,7 +444,6 @@ namespace UnitySlippyMap.Map
 		/// <value>The max simultaneous downloads.</value>
 		public int MaxSimultaneousDownloads { get { return maxSimultaneousDownloads; } set { maxSimultaneousDownloads = value; } }
 	
-#if !UNITY_WEBPLAYER
 		/// <summary>
 		/// The size of the max cache.
 		/// </summary>
@@ -474,7 +459,6 @@ namespace UnitySlippyMap.Map
 		/// The size of the cache.
 		/// </summary>
 		private int cacheSize = 0;
-#endif
 	
 	#endregion
 		
@@ -508,18 +492,15 @@ namespace UnitySlippyMap.Map
 				return ;
 			}
 			
-	#if !UNITY_WEBPLAYER
 			TileEntry cachedEntry = tiles.Find(tileURLMatchPredicate);
 
 			if (cachedEntry == null)
-	#endif
 	        {
 	#if DEBUG_LOG
 	            Debug.Log("DEBUG: TileDownloader.Get: adding '" + url + "' to loading list");
 	#endif
 	            tilesToLoad.Add(new TileEntry(url, tile));
 	        }
-	#if !UNITY_WEBPLAYER
 			else
 			{
 	#if DEBUG_LOG
@@ -530,7 +511,6 @@ namespace UnitySlippyMap.Map
 				//cachedEntry.Complete = material;
 				tilesToLoad.Add(cachedEntry);
 			}
-	#endif
 	    }
 
 		/// <summary>
@@ -580,7 +560,6 @@ namespace UnitySlippyMap.Map
 			TileEntry entry = e.Owner as TileEntry;
 			tilesLoading.Remove(entry);
 			
-	#if !UNITY_WEBPLAYER
 			if (e.WasKilled == false)
 			{
 				if (entry.error && entry.cached)
@@ -650,7 +629,6 @@ namespace UnitySlippyMap.Map
 	#endif
 				}
 			}
-	#endif
 		}
 
 		/// <summary>
@@ -748,9 +726,7 @@ namespace UnitySlippyMap.Map
 		private void OnDestroy()
 		{
 	        KillAll();		
-	#if !UNITY_WEBPLAYER
 			SaveTiles();
-	#endif
 			instance = null;
 		}
     
@@ -765,7 +741,6 @@ namespace UnitySlippyMap.Map
 	        }
 	    }
 	    
-#if !UNITY_WEBPLAYER
 		/// <summary>
 		/// Deletes the cached tile.
 		/// </summary>
@@ -825,7 +800,6 @@ namespace UnitySlippyMap.Map
 				cacheSize += tile.size;
 			}
 		}
-#endif
 	
 	#endregion
 	}

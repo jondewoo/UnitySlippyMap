@@ -202,7 +202,7 @@ namespace UnitySlippyMap.Layers
 								using (XmlReader xr = XmlReader.Create(new MemoryStream(bytes),
 							new XmlReaderSettings {
 								ProhibitDtd = false
-#if UNITY_IPHONE || UNITY_ANDROID || UNITY_WEBPLAYER
+#if UNITY_IPHONE || UNITY_ANDROID
 								, XmlResolver = null
 #endif
 							})) {

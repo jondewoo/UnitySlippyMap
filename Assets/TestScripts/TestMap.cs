@@ -161,13 +161,7 @@ public class TestMap : MonoBehaviour
 
 	}
 	
-	private
-#if !UNITY_WEBPLAYER
-        IEnumerator
-#else
-        void
-#endif
-        Start()
+	private IEnumerator Start()
 	{
         // setup the gui scale according to the screen resolution
         guiXScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
@@ -212,9 +206,7 @@ public class TestMap : MonoBehaviour
         VirtualEarthTileLayerBehaviour virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayerBehaviour>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
-#if UNITY_WEBPLAYER
-        virtualEarthLayer.ProxyURL = "http://reallyreallyreal.com/UnitySlippyMap/demo/veproxy.php";
-#endif
+
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
         virtualEarthLayer.gameObject.SetActiveRecursively(false);
 #else
@@ -223,7 +215,6 @@ public class TestMap : MonoBehaviour
 
         layers.Add(virtualEarthLayer);
 
-#if !UNITY_WEBPLAYER // FIXME: SQLite won't work in webplayer except if I find a full .NET 2.0 implementation (for free)
 		// create an MBTiles tile layer
 		bool error = false;
 		// on iOS, you need to add the db file to the Xcode project using a directory reference
@@ -284,8 +275,6 @@ public class TestMap : MonoBehaviour
 		}
         else
             Debug.LogError("ERROR: MBTiles file not found!");
-
-#endif
 
         // create some test 2D markers
 		GameObject go = TileBehaviour.CreateTileTemplate(TileBehaviour.AnchorPoint.BottomCenter).gameObject;
