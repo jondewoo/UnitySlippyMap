@@ -922,7 +922,7 @@ namespace UnitySlippyMap.Map
 			// setup the gui scale according to the screen resolution
 			if (Application.platform == RuntimePlatform.Android
 				|| Application.platform == RuntimePlatform.IPhonePlayer)
-				screenScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
+				screenScale = (Screen.orientation == ScreenOrientation.LandscapeLeft ? Screen.width : Screen.height) / 480.0f;
 			else
 				screenScale = 2.0f;
 

@@ -164,8 +164,8 @@ public class TestMap : MonoBehaviour
 	private IEnumerator Start()
 	{
         // setup the gui scale according to the screen resolution
-        guiXScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
-        guiYScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.height : Screen.width) / 640.0f;
+        guiXScale = (Screen.orientation == ScreenOrientation.LandscapeLeft ? Screen.width : Screen.height) / 480.0f;
+        guiYScale = (Screen.orientation == ScreenOrientation.LandscapeLeft ? Screen.height : Screen.width) / 640.0f;
 		// setup the gui area
 		guiRect = new Rect(16.0f * guiXScale, 4.0f * guiXScale, Screen.width / guiXScale - 32.0f * guiXScale, 32.0f * guiYScale);
 

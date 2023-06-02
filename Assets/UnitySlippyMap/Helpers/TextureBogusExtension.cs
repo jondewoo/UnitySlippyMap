@@ -33,10 +33,10 @@ public static class TextureBogusExtension
 #if DEBUG_LOG
         Debug.Log ("DEBUG: TextureBogusExtensions.obtainExampleBogusTexture: obtaining an example bogus texture by trying to load an HTML page as a texture");
 #endif
-        
+
         //bool keepgoing = true;
         //float timeoutAt = Time.time + 10.0f;                
-        _bogusTexture = new Texture ();
+        _bogusTexture = null;
  
         WWW www = new WWW ("http://www.google.com");
  
