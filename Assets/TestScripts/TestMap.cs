@@ -28,9 +28,6 @@ using System;
 using UnitySlippyMap.Map;
 using UnitySlippyMap.Markers;
 using UnitySlippyMap.Layers;
-using ProjNet.CoordinateSystems;
-using ProjNet.CoordinateSystems.Transformations;
-using ProjNet.Converters.WellKnownText;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -192,8 +189,8 @@ public class TestMap : MonoBehaviour
 
 		// create a WMS tile layer
         WMSTileLayerBehaviour wmsLayer = map.CreateLayer<WMSTileLayerBehaviour>("WMS");
-        wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
-        wmsLayer.Layers = "osm_auto:all";
+        wmsLayer.BaseURL = "http://ows.mundialis.de/services/service?"; 
+        wmsLayer.Layers = "TOPO-OSM-WMS";
 #if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
         wmsLayer.gameObject.SetActiveRecursively(false);
 #else
