@@ -21,14 +21,17 @@ UnitySlippyMap is in alpha stage and currently supports:
   * [VirtualEarth/Bing maps tiles](http://www.microsoft.com/maps/)
   * [MBTiles databases](http://mapbox.com/developers/mbtiles/)
 
-It is tested in Unity3D Editor 3.5.6f4 & 4.0.0, and on iOS (beware the [Unity 4 GPS bug](http://forum.unity3d.com/threads/159257-Unity-4.0-iOS-GPS-Fix)) and Android devices.
-
 See the [TODO list](/jderrough/UnitySlippyMap#todo) if you want to contribute and don't know where to start.
 
 License
 -------
 
 UnitySplippyMap is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+Unity Version
+-------------
+
+UnitySplippyMap requires at least Unity 2021.3.26f1
 
 TODO
 ----

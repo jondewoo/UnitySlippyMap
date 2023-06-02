@@ -116,21 +116,17 @@ public class TestMap : MonoBehaviour
             layerMessage = "\nZoom out!";
         else if (map.CurrentZoom < layers[currentLayerIndex].MinZoom)
             layerMessage = "\nZoom in!";
+
         if (GUILayout.Button(((layers != null && currentLayerIndex < layers.Count) ? layers[currentLayerIndex].name + layerMessage : "Layer"), GUILayout.ExpandHeight(true)))
         {
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-            layers[currentLayerIndex].gameObject.SetActiveRecursively(false);
-#else
 			layers[currentLayerIndex].gameObject.SetActive(false);
-#endif
             ++currentLayerIndex;
-            if (currentLayerIndex >= layers.Count)
-                currentLayerIndex = 0;
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-            layers[currentLayerIndex].gameObject.SetActiveRecursively(true);
-#else
+			if (currentLayerIndex >= layers.Count)
+			{
+				currentLayerIndex = 0;
+			}
+
 			layers[currentLayerIndex].gameObject.SetActive(true);
-#endif
             map.IsDirty = true;
         }
 
@@ -191,11 +187,7 @@ public class TestMap : MonoBehaviour
         WMSTileLayerBehaviour wmsLayer = map.CreateLayer<WMSTileLayerBehaviour>("WMS");
         wmsLayer.BaseURL = "http://ows.mundialis.de/services/service?"; 
         wmsLayer.Layers = "TOPO-OSM-WMS";
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-        wmsLayer.gameObject.SetActiveRecursively(false);
-#else
 		wmsLayer.gameObject.SetActive(false);
-#endif
 
         layers.Add(wmsLayer);
 
@@ -203,12 +195,7 @@ public class TestMap : MonoBehaviour
         VirtualEarthTileLayerBehaviour virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayerBehaviour>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
-
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-        virtualEarthLayer.gameObject.SetActiveRecursively(false);
-#else
 		virtualEarthLayer.gameObject.SetActive(false);
-#endif
 
         layers.Add(virtualEarthLayer);
 
@@ -262,11 +249,7 @@ public class TestMap : MonoBehaviour
             Debug.Log("DEBUG: using MBTiles file: " + filepath);
 			MBTilesLayerBehaviour mbTilesLayer = map.CreateLayer<MBTilesLayerBehaviour>("MBTiles");
 			mbTilesLayer.Filepath = filepath;
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-            mbTilesLayer.gameObject.SetActiveRecursively(false);
-#else
 			mbTilesLayer.gameObject.SetActive(false);
-#endif
 
             layers.Add(mbTilesLayer);
 		}
