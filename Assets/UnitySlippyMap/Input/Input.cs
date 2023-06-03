@@ -207,7 +207,7 @@ namespace UnitySlippyMap.Input
 						map.CenterEPSG900913 = centerMeters;
     					
 						#if DEBUG_LOG
-    					Debug.Log("DEBUG: Map.Update: new centerWGS84 wgs84: " + centerWGS84[0] + ", " + centerWGS84[1]);
+    					Debug.Log("DEBUG: Map.Update: new centerWGS84 wgs84: " + centerMeters[0] + ", " + centerMeters[1]);
 						#endif
 					}
     

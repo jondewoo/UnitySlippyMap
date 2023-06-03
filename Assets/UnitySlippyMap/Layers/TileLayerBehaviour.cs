@@ -298,7 +298,7 @@ namespace UnitySlippyMap.Layers
 				}
 
 #if DEBUG_LOG
-			Debug.Log("DEBUG: remove tile: " + pair.Key);
+			Debug.Log("DEBUG: remove tile: " + tileAddress);
 #endif
 
 				tiles.Remove (tileAddress);

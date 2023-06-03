@@ -31,6 +31,7 @@ using UnitySlippyMap.Layers;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public class TestMap : MonoBehaviour
 {
@@ -214,25 +215,29 @@ public class TestMap : MonoBehaviour
 		{
 			// Note: Android is a bit tricky, Unity produces APK files and those are never unzip on the device.
 			// Place your MBTiles file in the StreamingAssets folder (http://docs.unity3d.com/Documentation/Manual/StreamingAssets.html).
-			// Then you need to access the APK on the device with WWW and copy the file to persitentDataPath
+			// Then you need to access the APK on the device with UnityWebRequest and copy the file to persitentDataPath
 			// to that it can be read by SqliteDatabase as an individual file
 			string newfilepath = Application.temporaryCachePath + "/" + filename;
 			if (File.Exists(newfilepath) == false)
 			{
 				Debug.Log("DEBUG: file doesn't exist: " + newfilepath);
 				filepath = Application.streamingAssetsPath + "/" + mbTilesDir + filename;
-				// TODO: read the file with WWW and write it to persitentDataPath
-				WWW loader = new WWW(filepath);
-				yield return loader;
-				if (loader.error != null)
+
+                // TODO: read the file with UnityWebRequest and write it to persitentDataPath
+                using (var www = UnityWebRequest.Get(filepath))
 				{
-					Debug.LogError("ERROR: " + loader.error);
-					error = true;
-				}
-				else
-				{
-					Debug.Log("DEBUG: will write: '" + filepath + "' to: '" + newfilepath + "'");
-					File.WriteAllBytes(newfilepath, loader.bytes);
+					yield return www.SendWebRequest();
+
+					if (www.error != null)
+					{
+						Debug.LogError("ERROR: " + www.error);
+						error = true;
+					}
+					else
+					{
+						Debug.Log("DEBUG: will write: '" + filepath + "' to: '" + newfilepath + "'");
+						File.WriteAllBytes(newfilepath, www.downloadHandler.data);
+					}
 				}
 			}
 			else

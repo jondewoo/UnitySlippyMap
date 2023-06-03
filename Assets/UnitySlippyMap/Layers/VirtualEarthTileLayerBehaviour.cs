@@ -34,6 +34,8 @@ using Microsoft.MapPoint;
 using UnityEngine;
 
 using UnitySlippyMap.Helpers;
+using UnityEngine.Networking;
+using System.Collections;
 
 namespace UnitySlippyMap.Layers
 {
@@ -139,12 +141,12 @@ namespace UnitySlippyMap.Layers
 		/// <summary>
 		/// The loader.
 		/// </summary>
-		private WWW loader;
+		private Coroutine loaderCoroutine;
 
-		/// <summary>
-		/// Set to true when the VirtualEarthTileLayer is parsing the metadata.
-		/// </summary>
-		private bool isParsingMetadata = false;
+        /// <summary>
+        /// Set to true when the VirtualEarthTileLayer is parsing the metadata.
+        /// </summary>
+        private bool isParsingMetadata = false;
 
     #endregion
 
@@ -160,85 +162,104 @@ namespace UnitySlippyMap.Layers
 			maxZoom = 23;
 		}
 
-		/// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
-		private void Update ()
+        /// <summary>
+        /// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
+        /// </summary>
+        private void Update()
+        {
+            if ((hostnameChanged || keyChanged || metadataRequestURIChanged) && loaderCoroutine == null)
+            {
+                if (metadataRequestURI != null && metadataRequestURI != String.Empty && key != null && key != String.Empty)
+                {
+                    loaderCoroutine = StartCoroutine(GetMap());
+                }
+                else
+                {
+                    Debug.LogError("No base url has been set!");
+                }
+            }
+        }
+
+		private IEnumerator GetMap()
 		{
-			if ((hostnameChanged || keyChanged || metadataRequestURIChanged) && loader == null) {
-				if (metadataRequestURI != null && metadataRequestURI != String.Empty
-					&& key != null && key != String.Empty) {
-					string url = "http://" + hostname + "/" + metadataRequestURI + key;
-					if (proxyURL != null)
-						url = (proxyURL.StartsWith ("http://") ? "" : "http://") + proxyURL + (proxyURL.EndsWith ("?") ? "" : "?") + "url=" + WWW.EscapeURL (url);
+            var url = "http://" + hostname + "/" + metadataRequestURI + key;
+			if (proxyURL != null)
+			{
+				url = (proxyURL.StartsWith("http://") ? "" : "http://") + proxyURL + (proxyURL.EndsWith("?") ? "" : "?") + "url=" + UnityWebRequest.EscapeURL(url);
+			}
 
+            using (var www = UnityWebRequest.Get(url))
+			{
+				yield return www.SendWebRequest();
+
+                hostnameChanged = false;
+                keyChanged = false;
+                metadataRequestURIChanged = false;
+                isReadyToBeQueried = false;
+
+                if (www.error != null || www.responseCode == 404)
+                {
 #if DEBUG_LOG
-					Debug.Log ("DEBUG: VirtualEarthTileLayer.Update: launching metadata request on: " + url);
+					Debug.LogError ("ERROR: VirtualEarthTileLayer.Update: loader [" + www.url + "] error: " + www.error);// + "(" + loader.text + ")");
+#endif
+                    loaderCoroutine = null;
+                }
+                else
+                {
+                    if (isParsingMetadata == false)
+                    {
+#if DEBUG_LOG
+						Debug.Log ("DEBUG: VirtualEarthTileLayer.Update: metadata response:\n" + www.downloadHandler.text);
 #endif
 
-					loader = new WWW (url);
-				} else
-					loader = null;
+                        byte[] bytes = www.downloadHandler.data;
 
-				hostnameChanged = false;
-				keyChanged = false;
-				metadataRequestURIChanged = false;
-				isReadyToBeQueried = false;
-			} else if (loader != null && loader.isDone) {
-				if (loader.error != null || loader.text.Contains ("404 Not Found")) {
-#if DEBUG_LOG
-					Debug.LogError ("ERROR: VirtualEarthTileLayer.Update: loader [" + loader.url + "] error: " + loader.error);// + "(" + loader.text + ")");
-#endif
-					loader = null;
-					return;
-				} else {
-					if (isParsingMetadata == false) {
-#if DEBUG_LOG
-						Debug.Log ("DEBUG: VirtualEarthTileLayer.Update: metadata response:\n" + loader.text);
-#endif
+                        isParsingMetadata = true;
 
-						byte[] bytes = loader.bytes;
+                        UnityThreadHelper.CreateThread(() =>
+                        {
+                            UnitySlippyMap.VirtualEarth.Metadata metadata = null;
+                            try
+                            {
+                                XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.VirtualEarth.Metadata), "http://schemas.microsoft.com/search/local/ws/rest/v1");
+                                metadata = xs.Deserialize(new MemoryStream(bytes)) as UnitySlippyMap.VirtualEarth.Metadata;
 
-						isParsingMetadata = true;
-
-						UnityThreadHelper.CreateThread (() =>
-						{
-							UnitySlippyMap.VirtualEarth.Metadata metadata = null;
-							try {
-								XmlSerializer xs = new XmlSerializer (typeof(UnitySlippyMap.VirtualEarth.Metadata), "http://schemas.microsoft.com/search/local/ws/rest/v1");
-								metadata = xs.Deserialize (new MemoryStream (bytes)) as UnitySlippyMap.VirtualEarth.Metadata;
-
-								baseURL = (metadata.ResourceSets [0].Resources [0] as UnitySlippyMap.VirtualEarth.ImageryMetadata).ImageUrl.Replace ("{culture}", CultureInfo.CurrentCulture.ToString ());
-							} catch (
+                                baseURL = (metadata.ResourceSets[0].Resources[0] as UnitySlippyMap.VirtualEarth.ImageryMetadata).ImageUrl.Replace("{culture}", CultureInfo.CurrentCulture.ToString());
+                            }
+                            catch (
                             Exception
 #if DEBUG_LOG
                              e
 #endif
-                            ) {
+                            )
+                            {
 #if DEBUG_LOG
 								Debug.LogError ("ERROR: VirtualEarthTileLayer.Update: metadata deserialization exception:\n" + e.Source + " : " + e.InnerException + "\n" + e.Message + "\n" + e.StackTrace);
 #endif
-							}
+                            }
 
-							UnityThreadHelper.Dispatcher.Dispatch (() =>
-							{
+                            UnityThreadHelper.Dispatcher.Dispatch(() =>
+                            {
 #if DEBUG_LOG
 								Debug.Log ("DEBUG: VirtualEarthTileLayer.Update: ImageUrl: " + (metadata.ResourceSets [0].Resources [0] as UnitySlippyMap.VirtualEarth.ImageryMetadata).ImageUrl);
 #endif
 
-								isReadyToBeQueried = true;
+                                isReadyToBeQueried = true;
 
-								loader = null;
+                                loaderCoroutine = null;
 
-								isParsingMetadata = false;
+                                isParsingMetadata = false;
 
-								if (needsToBeUpdatedWhenReady) {
-									UpdateContent ();
-									needsToBeUpdatedWhenReady = false;
-								}
-							});
-						});
-					}
-				}
-			}
+                                if (needsToBeUpdatedWhenReady)
+                                {
+                                    UpdateContent();
+                                    needsToBeUpdatedWhenReady = false;
+                                }
+                            });
+                        });
+                    }
+                }
+            }
 		}
 
     #endregion
@@ -357,7 +378,9 @@ namespace UnitySlippyMap.Layers
 			string quadKey = TileSystem.TileXYToQuadKey (tileX, tileY, roundedZoom);
 			string url = baseURL.Replace ("{quadkey}", quadKey).Replace ("{subdomain}", "t0");
 			if (proxyURL != null)
-				url = (proxyURL.StartsWith ("http://") ? "" : "http://") + proxyURL + (proxyURL.EndsWith ("?") ? "" : "?") + "key=" + key + "&url=" + WWW.EscapeURL (url);
+			{
+				url = (proxyURL.StartsWith("http://") ? "" : "http://") + proxyURL + (proxyURL.EndsWith("?") ? "" : "?") + "key=" + key + "&url=" + UnityWebRequest.EscapeURL(url);
+			}
 			return url;
 		}
 	
