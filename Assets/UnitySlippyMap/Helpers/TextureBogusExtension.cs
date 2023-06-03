@@ -1,10 +1,11 @@
 using UnityEngine;
 using System.Collections;
 using System.Text;
- 
+using UnityEngine.Networking;
+
 /// <summary>
 /// 
-/// Add a feature to the Texture class which allows you to detect the case when you have attempted to download a bogus WWW Texture.
+/// Add a feature to the Texture class which allows you to detect the case when you have attempted to download a bogus Texture.
 ///
 /// by Matt "Trip" Maker, Monstrous Company :: http://monstro.us
 /// 
@@ -37,25 +38,26 @@ public static class TextureBogusExtension
         //bool keepgoing = true;
         //float timeoutAt = Time.time + 10.0f;                
         _bogusTexture = null;
- 
-        WWW www = new WWW ("http://www.google.com");
- 
-        yield return www;
- 
-        if (www.error == null)
+
+        using (var www = UnityWebRequestTexture.GetTexture("http://www.google.com"))
         {
-            _bogusTexture = www.texture;
+            yield return www.SendWebRequest();
+
+            if (www.error == null)
+            {
+                _bogusTexture = DownloadHandlerTexture.GetContent(www);
 #if DEBUG_LOG
             Debug.Log ("DEBUG: TextureBogusExtensions.obtainExampleBogusTexture: ready: bogusTexture: \'" + _bogusTexture.name + "\'," + _bogusTexture.height + "," + _bogusTexture.width + "," + _bogusTexture.filterMode + "," + _bogusTexture.anisoLevel + "," + _bogusTexture.wrapMode + "," + _bogusTexture.mipMapBias);
 #endif
-            ready = true;
-        }
-        else
-        {
+                ready = true;
+            }
+            else
+            {
 #if DEBUG_LOG
             Debug.Log ("DEBUG: TextureBogusExtensions.obtainExampleBogusTexture: not ready");
 #endif
-            ready = false;
+                ready = false;
+            }
         }
     }
  

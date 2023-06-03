@@ -25,6 +25,7 @@
 // SOFTWARE.
 
 using System;
+using System.Collections;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -32,7 +33,7 @@ using System.Xml.Serialization;
 using ProjNet.CoordinateSystems;
 
 using UnityEngine;
-
+using UnityEngine.Networking;
 using UnitySlippyMap.Helpers;
 
 namespace UnitySlippyMap.Layers
@@ -42,19 +43,21 @@ namespace UnitySlippyMap.Layers
 	/// </summary>
 	public class WMSTileLayerBehaviour : WebTileLayerBehaviour
 	{
-	#region Private members & properties
+		#region Private members & properties
 
 		/// <summary>
 		/// Gets or sets the base URL.
 		/// </summary>
 		/// <value>The base URL.</value>
-		public new string BaseURL {
+		public new string BaseURL
+		{
 			get { return baseURL; }
-			set {
+			set
+			{
 				if (value == null)
-					throw new ArgumentNullException ("value");
+					throw new ArgumentNullException("value");
 				if (value == String.Empty)
-					throw new Exception ("value cannot be empty");
+					throw new Exception("value cannot be empty");
 				baseURLChanged = true;
 				baseURL = value;
 			}
@@ -69,14 +72,17 @@ namespace UnitySlippyMap.Layers
 		/// Gets or sets the layers.
 		/// </summary>
 		/// <value>The layers.</value>
-		public string Layers {
+		public string Layers
+		{
 			get { return layers; }
-			set {
+			set
+			{
 				layers = value;
 				if (layers == null)
 					layers = String.Empty;
-				else {
-					CheckLayers ();
+				else
+				{
+					CheckLayers();
 				}
 			}
 		}
@@ -90,14 +96,16 @@ namespace UnitySlippyMap.Layers
 		/// Gets or sets the SRS.
 		/// </summary>
 		/// <value>The Spatial Reference System of the layer.</value>
-		public ICoordinateSystem SRS {
+		public ICoordinateSystem SRS
+		{
 			get { return srs; }
-			set {
+			set
+			{
 				if (value == null)
-					throw new ArgumentNullException ("value");
+					throw new ArgumentNullException("value");
 				srs = value;
 				srsName = srs.Authority + ":" + srs.AuthorityCode;
-				CheckSRS ();
+				CheckSRS();
 			}
 		}
 
@@ -111,7 +119,7 @@ namespace UnitySlippyMap.Layers
 		/// </summary>
 		/// <value>The name of the SRS.</value>
 		public string SRSName { get { return srsName; } }
-    
+
 		/// <summary>
 		/// The image format to request.
 		/// </summary>
@@ -121,15 +129,17 @@ namespace UnitySlippyMap.Layers
 		/// Gets or sets the format.
 		/// </summary>
 		/// <value>The format.</value>
-		public string Format {
+		public string Format
+		{
 			get { return format; }
-			set {
+			set
+			{
 				if (value == null)
-					throw new ArgumentNullException ("value");
-				format = value; 
+					throw new ArgumentNullException("value");
+				format = value;
 			}
 		}
-	
+
 		/// <summary>
 		/// Set it to true to notify the WMSTileLayer to reload the capabilities.
 		/// </summary>
@@ -138,17 +148,17 @@ namespace UnitySlippyMap.Layers
 		/// <summary>
 		/// The loader.
 		/// </summary>
-		private WWW loader;
+		private Coroutine loaderCoroutine;
 
 		/// <summary>
 		/// Set to true when the WMSTileLayer is parsing the capabilities.
 		/// </summary>
 		private bool isParsingGetCapabilities = false;
-    
+
 		/// <summary>
 		/// The WMS capabilities.
 		/// </summary>
-		private UnitySlippyMap.WMS.WMT_MS_Capabilities  capabilities;
+		private UnitySlippyMap.WMS.WMT_MS_Capabilities capabilities;
 
 		/// <summary>
 		/// Gets the capabilities.
@@ -156,63 +166,79 @@ namespace UnitySlippyMap.Layers
 		/// <value>The capabilities.</value>
 		public UnitySlippyMap.WMS.WMT_MS_Capabilities Capabilities { get { return capabilities; } }
 
-    #endregion
+        #endregion
 
-    #region MonoBehaviour implementation
+        #region MonoBehaviour implementation
 
-		/// <summary>
-		/// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
-		/// </summary>
-		private void Update ()
+        /// <summary>
+        /// Implementation of <see cref="http://docs.unity3d.com/ScriptReference/MonoBehaviour.html">MonoBehaviour</see>.Update().
+        /// </summary>
+        private void Update()
 		{
-			if (baseURLChanged && loader == null) {
-#if DEBUG_LOG
-				Debug.Log ("DEBUG: WMSTileLayer.Update: launching GetCapabilities on: " + baseURL);
-#endif
-
+			if (baseURLChanged && loaderCoroutine == null)
+			{
 				if (baseURL != null && baseURL != String.Empty)
-					loader = new WWW (baseURL + (baseURL.EndsWith ("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.1.1");
+				{
+					loaderCoroutine = StartCoroutine(GetMap());
+				}
 				else
-					loader = null;
+				{
+					Debug.LogError("No base url has been set!");
+				}
+			}
+		}
 
-				baseURLChanged = false;
-				isReadyToBeQueried = false;
-			} else if (loader != null && loader.isDone) {
-				if (loader.error != null || loader.text.Contains ("404 Not Found")) {
+		private IEnumerator GetMap()
+		{
+			var url = baseURL + (baseURL.EndsWith("?") ? "" : "?") + "SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.1.1";
+
+			using (var www = UnityWebRequest.Get(url))
+			{
+				yield return www.SendWebRequest();
+
+				if (www.error != null || www.responseCode == 404 )
+				{
 #if DEBUG_LOG
-					Debug.LogError ("ERROR: WMSTileLayer.Update: loader [" + loader.url + "] error: " + loader.error + "(" + loader.text + ")");
+					Debug.LogError ("ERROR: WMSTileLayer.Update: loader [" + www.url + "] error: " + www.error + "(" + www.downloadHandler.text + ")");
 #endif
-					loader = null;
-					return;
-				} else {
-					if (isParsingGetCapabilities == false) {
+                    loaderCoroutine = null;
+				}
+				else
+				{
+					if (isParsingGetCapabilities == false)
+					{
 #if DEBUG_LOG
-						Debug.Log ("DEBUG: WMSTileLayer.Update: GetCapabilities response:\n" + loader.text);
+						Debug.Log ("DEBUG: WMSTileLayer.Update: GetCapabilities response:\n" + www.downloadHandler.text);
 #endif
 
-						byte[] bytes = loader.bytes;
+						byte[] bytes = www.downloadHandler.data;
 
 						isParsingGetCapabilities = true;
 
-						UnityThreadHelper.CreateThread (() =>
+						UnityThreadHelper.CreateThread(() =>
 						{
 							capabilities = null;
-							try {
-								XmlSerializer xs = new XmlSerializer (typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
+							try
+							{
+								XmlSerializer xs = new XmlSerializer(typeof(UnitySlippyMap.WMS.WMT_MS_Capabilities));
 								using (XmlReader xr = XmlReader.Create(new MemoryStream(bytes),
-							new XmlReaderSettings {
-								ProhibitDtd = false
+								new XmlReaderSettings
+								{
+									DtdProcessing = DtdProcessing.Parse
 #if UNITY_IPHONE || UNITY_ANDROID
-								, XmlResolver = null
+									, XmlResolver = null
 #endif
-							})) {
-									capabilities = xs.Deserialize (xr/*new MemoryStream(bytes)*/) as UnitySlippyMap.WMS.WMT_MS_Capabilities;
+								}))
+								{
+									capabilities = xs.Deserialize(xr/*new MemoryStream(bytes)*/) as UnitySlippyMap.WMS.WMT_MS_Capabilities;
 								}
-							} catch (Exception
+							}
+							catch (Exception
 #if DEBUG_LOG
-							e
+								e
 #endif
-							) {
+							)
+							{
 #if DEBUG_LOG
 								Debug.LogError ("ERROR: WMSTileLayer.Update: GetCapabilities deserialization exception:\n" + e.Source + " : " + e.InnerException + "\n" + e.Message + "\n" + e.StackTrace);
 #endif
@@ -242,10 +268,10 @@ namespace UnitySlippyMap.Layers
 							));
 #endif
 
-							CheckLayers ();
-							CheckSRS ();
+							CheckLayers();
+							CheckSRS();
 
-							UnityThreadHelper.Dispatcher.Dispatch (() =>
+							UnityThreadHelper.Dispatcher.Dispatch(() =>
 							{
 #if DEBUG_LOG
 								if (capabilities != null) {
@@ -260,12 +286,13 @@ namespace UnitySlippyMap.Layers
 
 								isReadyToBeQueried = true;
 
-								loader = null;
+                                loaderCoroutine = null;
 
 								isParsingGetCapabilities = false;
 
-								if (needsToBeUpdatedWhenReady) {
-									UpdateContent ();
+								if (needsToBeUpdatedWhenReady)
+								{
+									UpdateContent();
 									needsToBeUpdatedWhenReady = false;
 								}
 							});
