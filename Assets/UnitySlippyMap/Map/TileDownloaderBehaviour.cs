@@ -31,6 +31,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace UnitySlippyMap.Map
 {
@@ -247,37 +248,43 @@ namespace UnitySlippyMap.Map
 	            job.JobComplete -= jobCompleteHandler;
 				job.Kill();
 			}
-			
+
 			/// <summary>
 			/// The download the coroutine.
 			/// </summary>
 			/// <returns>The coroutine.</returns>
 			private IEnumerator DownloadCoroutine()
 			{
-				WWW www = null;
 				string ext = Path.GetExtension(url);
-	            if (ext.Contains("?"))
-	                ext = ext.Substring(0, ext.IndexOf('?'));
 
-                if (cached && File.Exists(Application.temporaryCachePath + "/" + this.guid + ext))
-	            {
-	                www = new WWW("file:///" + Application.temporaryCachePath + "/" + this.guid + ext);
+				if (ext.Contains("?"))
+				{
+					ext = ext.Substring(0, ext.IndexOf('?'));
+				}
+
+				var fullUrl = url;
+
+				if (cached && File.Exists(Application.temporaryCachePath + "/" + this.guid + ext))
+				{
+					fullUrl = "file:///" + Application.temporaryCachePath + "/" + this.guid + ext;
 #if DEBUG_LOG
-                	Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from cache: url: " + www.url);
+                	Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from cache: url: " + fullUrl);
 #endif
-            	}
-            	else
-            	{
-                	www = new WWW(url);
+				}
+				else
+				{
 #if DEBUG_LOG
-                	Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from provider: url: " + www.url
+                	Debug.Log("DEBUG: TileDownloader.DownloadCoroutine: loading tile from provider: url: " + fullUrl
                     	+ "(cached: " + cached + ")"
                     	);
 #endif
-	            }
+				}
 
-	            yield return www;
-			
+				using (var www = UnityWebRequestTexture.GetTexture(url))
+				{ 
+
+					yield return www.SendWebRequest();
+
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.Begin("TileDownloader.TileEntry.DownloadCoroutine");
 #endif
@@ -285,7 +292,7 @@ namespace UnitySlippyMap.Map
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.Begin("www error test");
 #endif
-				if (String.IsNullOrEmpty(www.error) && www.text.Contains("404 Not Found") == false)
+				if (String.IsNullOrEmpty(www.error) && www.responseCode != 404)
 				{
 #if DEBUG_PROFILE
 					UnitySlippyMap.Profiler.End("www error test");
@@ -294,9 +301,8 @@ namespace UnitySlippyMap.Map
 					UnitySlippyMap.Profiler.Begin("www.texture");
 #endif
 
-	                Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, true);
-					www.LoadImageIntoTexture(texture);
-					
+                    Texture2D texture = DownloadHandlerTexture.GetContent(www);
+
 #if DEBUG_PROFILE
 					UnitySlippyMap.Profiler.End("www.texture");
 #endif
@@ -305,24 +311,24 @@ namespace UnitySlippyMap.Map
 					UnitySlippyMap.Profiler.Begin("is cached?");
 #endif
 
-                    if (this.cached == false)
+					if (this.cached == false)
 					{
 #if DEBUG_PROFILE
 						UnitySlippyMap.Profiler.End("is cached?");
 #endif
-    					
+
 #if DEBUG_PROFILE
 						UnitySlippyMap.Profiler.Begin("set TileEntry members");
 #endif
 
-		                byte[] bytes = www.bytes;
-						
+						byte[] bytes = www.downloadHandler.data;
+
 						this.size = bytes.Length;
 						this.guid = Guid.NewGuid().ToString();
 #if DEBUG_PROFILE
 						UnitySlippyMap.Profiler.End("set TileEntry members");
 #endif
-					
+
 #if DEBUG_PROFILE
 						UnitySlippyMap.Profiler.Begin("new FileStream & FileStream.BeginWrite");
 #endif
@@ -331,7 +337,7 @@ namespace UnitySlippyMap.Map
 #if DEBUG_PROFILE
 						UnitySlippyMap.Profiler.End("new FileStream & FileStream.BeginWrite");
 #endif
-				
+
 #if DEBUG_LOG
 						Debug.Log("DEBUG: TileEntry.DownloadCoroutine: done loading: " + www.url + ", writing to cache: " + fs.Name);
 #endif
@@ -366,10 +372,11 @@ namespace UnitySlippyMap.Map
 					Debug.LogError("ERROR: TileEntry.DownloadCoroutine: done downloading: " + www.url + " with error: " + www.error);
 #endif
 				}
-			
+
 #if DEBUG_PROFILE
 				UnitySlippyMap.Profiler.End("TileDownloader.TileEntry.DownloadCoroutine");
 #endif
+			}
 			}
 		
 			/// <summary>

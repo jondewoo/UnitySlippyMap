@@ -282,7 +282,7 @@ namespace UnitySlippyMap.Layers
 		}
 
 #if DEBUG_LOG
-        void OnGUI() { GUILayout.Label("\n\n\n\n\n\n\n\n\n\n\n\n\n" + UtfString()); }      
+        void OnGUI() { GUILayout.Label("\n\n\n\n\n\n\n\n\n\n\n\n\n"); }      
 #endif
     
     #endregion

@@ -28,12 +28,10 @@ using System;
 using UnitySlippyMap.Map;
 using UnitySlippyMap.Markers;
 using UnitySlippyMap.Layers;
-using ProjNet.CoordinateSystems;
-using ProjNet.CoordinateSystems.Transformations;
-using ProjNet.Converters.WellKnownText;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public class TestMap : MonoBehaviour
 {
@@ -119,21 +117,17 @@ public class TestMap : MonoBehaviour
             layerMessage = "\nZoom out!";
         else if (map.CurrentZoom < layers[currentLayerIndex].MinZoom)
             layerMessage = "\nZoom in!";
+
         if (GUILayout.Button(((layers != null && currentLayerIndex < layers.Count) ? layers[currentLayerIndex].name + layerMessage : "Layer"), GUILayout.ExpandHeight(true)))
         {
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-            layers[currentLayerIndex].gameObject.SetActiveRecursively(false);
-#else
 			layers[currentLayerIndex].gameObject.SetActive(false);
-#endif
             ++currentLayerIndex;
-            if (currentLayerIndex >= layers.Count)
-                currentLayerIndex = 0;
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-            layers[currentLayerIndex].gameObject.SetActiveRecursively(true);
-#else
+			if (currentLayerIndex >= layers.Count)
+			{
+				currentLayerIndex = 0;
+			}
+
 			layers[currentLayerIndex].gameObject.SetActive(true);
-#endif
             map.IsDirty = true;
         }
 
@@ -164,8 +158,8 @@ public class TestMap : MonoBehaviour
 	private IEnumerator Start()
 	{
         // setup the gui scale according to the screen resolution
-        guiXScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
-        guiYScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.height : Screen.width) / 640.0f;
+        guiXScale = (Screen.orientation == ScreenOrientation.LandscapeLeft ? Screen.width : Screen.height) / 480.0f;
+        guiYScale = (Screen.orientation == ScreenOrientation.LandscapeLeft ? Screen.height : Screen.width) / 640.0f;
 		// setup the gui area
 		guiRect = new Rect(16.0f * guiXScale, 4.0f * guiXScale, Screen.width / guiXScale - 32.0f * guiXScale, 32.0f * guiYScale);
 
@@ -192,13 +186,9 @@ public class TestMap : MonoBehaviour
 
 		// create a WMS tile layer
         WMSTileLayerBehaviour wmsLayer = map.CreateLayer<WMSTileLayerBehaviour>("WMS");
-        wmsLayer.BaseURL = "http://129.206.228.72/cached/osm?"; // http://www.osm-wms.de : seems to be of very limited use
-        wmsLayer.Layers = "osm_auto:all";
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-        wmsLayer.gameObject.SetActiveRecursively(false);
-#else
+        wmsLayer.BaseURL = "http://ows.mundialis.de/services/service?"; 
+        wmsLayer.Layers = "TOPO-OSM-WMS";
 		wmsLayer.gameObject.SetActive(false);
-#endif
 
         layers.Add(wmsLayer);
 
@@ -206,12 +196,7 @@ public class TestMap : MonoBehaviour
         VirtualEarthTileLayerBehaviour virtualEarthLayer = map.CreateLayer<VirtualEarthTileLayerBehaviour>("VirtualEarth");
         // Note: this is the key UnitySlippyMap, DO NOT use it for any other purpose than testing
         virtualEarthLayer.Key = "ArgkafZs0o_PGBuyg468RaapkeIQce996gkyCe8JN30MjY92zC_2hcgBU_rHVUwT";
-
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-        virtualEarthLayer.gameObject.SetActiveRecursively(false);
-#else
 		virtualEarthLayer.gameObject.SetActive(false);
-#endif
 
         layers.Add(virtualEarthLayer);
 
@@ -230,25 +215,29 @@ public class TestMap : MonoBehaviour
 		{
 			// Note: Android is a bit tricky, Unity produces APK files and those are never unzip on the device.
 			// Place your MBTiles file in the StreamingAssets folder (http://docs.unity3d.com/Documentation/Manual/StreamingAssets.html).
-			// Then you need to access the APK on the device with WWW and copy the file to persitentDataPath
+			// Then you need to access the APK on the device with UnityWebRequest and copy the file to persitentDataPath
 			// to that it can be read by SqliteDatabase as an individual file
 			string newfilepath = Application.temporaryCachePath + "/" + filename;
 			if (File.Exists(newfilepath) == false)
 			{
 				Debug.Log("DEBUG: file doesn't exist: " + newfilepath);
 				filepath = Application.streamingAssetsPath + "/" + mbTilesDir + filename;
-				// TODO: read the file with WWW and write it to persitentDataPath
-				WWW loader = new WWW(filepath);
-				yield return loader;
-				if (loader.error != null)
+
+                // TODO: read the file with UnityWebRequest and write it to persitentDataPath
+                using (var www = UnityWebRequest.Get(filepath))
 				{
-					Debug.LogError("ERROR: " + loader.error);
-					error = true;
-				}
-				else
-				{
-					Debug.Log("DEBUG: will write: '" + filepath + "' to: '" + newfilepath + "'");
-					File.WriteAllBytes(newfilepath, loader.bytes);
+					yield return www.SendWebRequest();
+
+					if (www.error != null)
+					{
+						Debug.LogError("ERROR: " + www.error);
+						error = true;
+					}
+					else
+					{
+						Debug.Log("DEBUG: will write: '" + filepath + "' to: '" + newfilepath + "'");
+						File.WriteAllBytes(newfilepath, www.downloadHandler.data);
+					}
 				}
 			}
 			else
@@ -265,11 +254,7 @@ public class TestMap : MonoBehaviour
             Debug.Log("DEBUG: using MBTiles file: " + filepath);
 			MBTilesLayerBehaviour mbTilesLayer = map.CreateLayer<MBTilesLayerBehaviour>("MBTiles");
 			mbTilesLayer.Filepath = filepath;
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-            mbTilesLayer.gameObject.SetActiveRecursively(false);
-#else
 			mbTilesLayer.gameObject.SetActive(false);
-#endif
 
             layers.Add(mbTilesLayer);
 		}

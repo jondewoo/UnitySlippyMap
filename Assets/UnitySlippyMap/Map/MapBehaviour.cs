@@ -922,7 +922,7 @@ namespace UnitySlippyMap.Map
 			// setup the gui scale according to the screen resolution
 			if (Application.platform == RuntimePlatform.Android
 				|| Application.platform == RuntimePlatform.IPhonePlayer)
-				screenScale = (Screen.orientation == ScreenOrientation.Landscape ? Screen.width : Screen.height) / 480.0f;
+				screenScale = (Screen.orientation == ScreenOrientation.LandscapeLeft ? Screen.width : Screen.height) / 480.0f;
 			else
 				screenScale = 2.0f;
 
@@ -1000,13 +1000,9 @@ namespace UnitySlippyMap.Map
 				}
 			
 				if (locationMarker != null) {
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-				if (locationMarker.gameObject.active == false)
-					locationMarker.gameObject.SetActiveRecursively(true);
-#else
 					if (locationMarker.gameObject.activeSelf == false)
 						locationMarker.gameObject.SetActive (true);
-#endif
+
 					if (UnityEngine.Input.location.lastData.longitude <= 180.0f
 						&& UnityEngine.Input.location.lastData.longitude >= -180.0f
 						&& UnityEngine.Input.location.lastData.latitude <= 90.0f
@@ -1083,19 +1079,12 @@ namespace UnitySlippyMap.Map
 				IsDirty = false;
 			
 				if (locationMarker != null
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-				&& locationMarker.gameObject.active == true)
-#else
 					&& locationMarker.gameObject.activeSelf == true)
-#endif
 					locationMarker.UpdateMarker ();
 			
 				foreach (LayerBehaviour layer in layers) {	
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-				if (layer.gameObject.active == true
-#else
+
 					if (layer.gameObject.activeSelf == true
-#endif
 						&& layer.enabled == true
 						&& CurrentZoom >= layer.MinZoom
 						&& CurrentZoom <= layer.MaxZoom)
@@ -1103,11 +1092,7 @@ namespace UnitySlippyMap.Map
 				}
 			
 				foreach (MarkerBehaviour marker in markers) {
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-				if (marker.gameObject.active == true
-#else
 					if (marker.gameObject.activeSelf == true
-#endif
 						&& marker.enabled == true)
 						marker.UpdateMarker ();
 				}
@@ -1138,11 +1123,7 @@ namespace UnitySlippyMap.Map
 		public void CenterOnLocation ()
 		{
 			if (locationMarker != null
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-			&& locationMarker.gameObject.active == true)
-#else
 				&& locationMarker.gameObject.activeSelf == true)
-#endif
 				CenterWGS84 = locationMarker.CoordinatesWGS84;
 			updatesCenterWithLocation = true;
 		}
@@ -1189,11 +1170,7 @@ namespace UnitySlippyMap.Map
 										UnityEngine.Input.location.lastData.latitude
 								};
 			else
-#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5 || UNITY_3_6 || UNITY_3_7 || UNITY_3_8 || UNITY_3_9
-				markerObject.SetActiveRecursively(false);
-#else
 				markerObject.SetActive (false);
-#endif
 		
 			// set the location marker
 			locationMarker = marker;
